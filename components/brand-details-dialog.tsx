@@ -35,6 +35,7 @@ import {
   filamentTypeColors,
   filamentTypeLabels,
 } from "@/components/brand-form-fields";
+import { StarRatingDisplay } from "@/components/star-rating-display";
 import type { costBenefitOptions, filamentTypeOptions } from "@/lib/schemas/brand";
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -69,22 +70,30 @@ function parseBestColors(brand: FilamentBrand) {
   return brand.best_colors.split(",").sort((a, b) => a.localeCompare(b));
 }
 
-function formatPriceRange(brand: FilamentBrand) {
-  if (brand.avg_price_min == null && brand.avg_price_max == null) return "—";
-  if (brand.avg_price_min != null && brand.avg_price_max != null) {
-    return `${currencyFormatter.format(brand.avg_price_min)} – ${currencyFormatter.format(brand.avg_price_max)}`;
+function formatPriceRange(priceMin: number | null, priceMax: number | null) {
+  if (priceMin == null && priceMax == null) return "—";
+  if (priceMin != null && priceMax != null) {
+    return `${currencyFormatter.format(priceMin)} – ${currencyFormatter.format(priceMax)}`;
   }
-  return currencyFormatter.format(brand.avg_price_min ?? brand.avg_price_max!);
+  return currencyFormatter.format(priceMin ?? priceMax!);
 }
 
 export function BrandDetailsDialog({
   brand,
   costBenefit,
+  priceMin,
+  priceMax,
+  filamentRating,
+  filamentRatingCount,
   open,
   onOpenChange,
 }: {
   brand: FilamentBrand;
   costBenefit: (typeof costBenefitOptions)[number] | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  filamentRating: number | null;
+  filamentRatingCount: number;
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
@@ -149,6 +158,24 @@ export function BrandDetailsDialog({
         ) : (
           <>
             <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
+              <dt className="text-muted-foreground">Nota</dt>
+              <dd>
+                {filamentRating != null ? (
+                  <div className="flex items-center gap-1.5">
+                    <StarRatingDisplay rating={Math.round(filamentRating)} />
+                    <span className="text-xs text-muted-foreground">
+                      {filamentRating.toFixed(1)} ({filamentRatingCount}{" "}
+                      {filamentRatingCount === 1 ? "filamento" : "filamentos"})
+                    </span>
+                  </div>
+                ) : (
+                  "—"
+                )}
+                <span className="ml-1 text-xs text-muted-foreground">
+                  (média das notas dos filamentos dessa marca)
+                </span>
+              </dd>
+
               <dt className="text-muted-foreground">Já comprei</dt>
               <dd>{brand.purchased ? "Sim" : "Não"}</dd>
 
@@ -156,7 +183,15 @@ export function BrandDetailsDialog({
               <dd>{brand.where_to_buy ?? "—"}</dd>
 
               <dt className="text-muted-foreground">Preço médio</dt>
-              <dd>{formatPriceRange(brand)}</dd>
+              <dd>
+                {formatPriceRange(priceMin, priceMax)}
+                {(brand.avg_price_min == null || brand.avg_price_max == null) &&
+                  (priceMin != null || priceMax != null) && (
+                    <span className="ml-1 text-xs text-muted-foreground">
+                      (baseado nos filamentos cadastrados dessa marca)
+                    </span>
+                  )}
+              </dd>
 
               <dt className="text-muted-foreground">Custo-benefício</dt>
               <dd>

@@ -17,6 +17,10 @@ import type { FilamentBrand } from "@/lib/types/brand";
 export type BrandListItem = {
   brand: FilamentBrand;
   costBenefit: (typeof costBenefitOptions)[number] | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  filamentRating: number | null;
+  filamentRatingCount: number;
 };
 
 function toggleInSet(set: Set<string>, value: string) {
@@ -48,7 +52,7 @@ export function BrandsPageContent({ items }: { items: BrandListItem[] }) {
     const max = priceMax.trim() ? Number(priceMax) : null;
     const query = search.trim().toLowerCase();
 
-    return items.filter(({ brand, costBenefit }) => {
+    return items.filter(({ brand, costBenefit, priceMin: itemPriceMin, priceMax: itemPriceMax }) => {
       if (query && !brand.name.toLowerCase().includes(query)) return false;
 
       if (costBenefitFilter.size > 0 && (!costBenefit || !costBenefitFilter.has(costBenefit))) {
@@ -56,7 +60,7 @@ export function BrandsPageContent({ items }: { items: BrandListItem[] }) {
       }
 
       if (min != null || max != null) {
-        const avgPrice = brandAveragePrice(brand);
+        const avgPrice = brandAveragePrice({ avg_price_min: itemPriceMin, avg_price_max: itemPriceMax });
         if (avgPrice == null) return false;
         if (min != null && avgPrice < min) return false;
         if (max != null && avgPrice > max) return false;
@@ -201,8 +205,16 @@ export function BrandsPageContent({ items }: { items: BrandListItem[] }) {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map(({ brand, costBenefit }) => (
-            <BrandCard key={brand.id} brand={brand} costBenefit={costBenefit} />
+          {filtered.map(({ brand, costBenefit, priceMin, priceMax, filamentRating, filamentRatingCount }) => (
+            <BrandCard
+              key={brand.id}
+              brand={brand}
+              costBenefit={costBenefit}
+              priceMin={priceMin}
+              priceMax={priceMax}
+              filamentRating={filamentRating}
+              filamentRatingCount={filamentRatingCount}
+            />
           ))}
         </div>
       )}

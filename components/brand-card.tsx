@@ -6,6 +6,7 @@ import { Package, CheckCircle2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { BrandDetailsDialog } from "@/components/brand-details-dialog";
+import { StarRatingDisplay } from "@/components/star-rating-display";
 import {
   costBenefitLabels,
   filamentTypeColors,
@@ -19,23 +20,31 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-function formatPriceRange(brand: FilamentBrand) {
-  if (brand.avg_price_min == null && brand.avg_price_max == null) return null;
-  if (brand.avg_price_min != null && brand.avg_price_max != null) {
-    return `${currencyFormatter.format(brand.avg_price_min)} – ${currencyFormatter.format(brand.avg_price_max)}`;
+function formatPriceRange(priceMin: number | null, priceMax: number | null) {
+  if (priceMin == null && priceMax == null) return null;
+  if (priceMin != null && priceMax != null) {
+    return `${currencyFormatter.format(priceMin)} – ${currencyFormatter.format(priceMax)}`;
   }
-  return currencyFormatter.format(brand.avg_price_min ?? brand.avg_price_max!);
+  return currencyFormatter.format(priceMin ?? priceMax!);
 }
 
 export function BrandCard({
   brand,
   costBenefit,
+  priceMin,
+  priceMax,
+  filamentRating,
+  filamentRatingCount,
 }: {
   brand: FilamentBrand;
   costBenefit: (typeof costBenefitOptions)[number] | null;
+  priceMin: number | null;
+  priceMax: number | null;
+  filamentRating: number | null;
+  filamentRatingCount: number;
 }) {
   const [open, setOpen] = useState(false);
-  const priceRange = formatPriceRange(brand);
+  const priceRange = formatPriceRange(priceMin, priceMax);
   const filamentTypes = brand.filament_types
     ? (brand.filament_types.split(",") as (typeof filamentTypeOptions)[number][]).sort((a, b) =>
         filamentTypeLabels[a].localeCompare(filamentTypeLabels[b])
@@ -68,8 +77,21 @@ export function BrandCard({
             )}
           </CardTitle>
         </CardHeader>
-        {(priceRange || costBenefit || filamentTypes.length > 0 || bestColors.length > 0) && (
+        {(priceRange ||
+          costBenefit ||
+          filamentRating != null ||
+          filamentTypes.length > 0 ||
+          bestColors.length > 0) && (
           <CardContent className="flex flex-col gap-2 text-sm text-muted-foreground">
+            {filamentRating != null && (
+              <div className="flex items-center gap-1.5">
+                <StarRatingDisplay rating={Math.round(filamentRating)} />
+                <span className="text-xs">
+                  {filamentRating.toFixed(1)} ({filamentRatingCount}{" "}
+                  {filamentRatingCount === 1 ? "filamento" : "filamentos"})
+                </span>
+              </div>
+            )}
             {priceRange && <span>{priceRange}</span>}
             {costBenefit && <span>Custo-benefício: {costBenefitLabels[costBenefit]}</span>}
             {filamentTypes.length > 0 && (
@@ -106,6 +128,10 @@ export function BrandCard({
       <BrandDetailsDialog
         brand={brand}
         costBenefit={costBenefit}
+        priceMin={priceMin}
+        priceMax={priceMax}
+        filamentRating={filamentRating}
+        filamentRatingCount={filamentRatingCount}
         open={open}
         onOpenChange={setOpen}
       />

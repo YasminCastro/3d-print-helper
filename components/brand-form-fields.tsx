@@ -114,6 +114,9 @@ export function BrandFormFields({
               placeholder="Ex: 99"
               {...form.register("avgPriceMin", { valueAsNumber: true })}
             />
+            <FieldDescription>
+              Deixe em branco para usar o menor preço já pago entre os filamentos dessa marca.
+            </FieldDescription>
             <FieldError errors={[form.formState.errors.avgPriceMin]} />
           </FieldContent>
         </Field>
@@ -128,6 +131,9 @@ export function BrandFormFields({
               placeholder="Ex: 170"
               {...form.register("avgPriceMax", { valueAsNumber: true })}
             />
+            <FieldDescription>
+              Deixe em branco para usar o maior preço já pago entre os filamentos dessa marca.
+            </FieldDescription>
             <FieldError errors={[form.formState.errors.avgPriceMax]} />
           </FieldContent>
         </Field>

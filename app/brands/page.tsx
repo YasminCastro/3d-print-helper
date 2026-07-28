@@ -10,10 +10,57 @@ export default function BrandsPage() {
     .prepare("SELECT * FROM filament_brands ORDER BY name ASC")
     .all() as FilamentBrand[];
 
-  const averagePrice = groupAveragePrice(brands);
-  const items = brands.map((brand) => ({
+  const filamentRatings = db
+    .prepare(
+      `SELECT brand_id, AVG(rating) AS avg_rating, COUNT(rating) AS rating_count
+       FROM filaments
+       WHERE brand_id IS NOT NULL AND rating IS NOT NULL
+       GROUP BY brand_id`
+    )
+    .all() as { brand_id: number; avg_rating: number; rating_count: number }[];
+  const ratingsByBrand = new Map(filamentRatings.map((row) => [row.brand_id, row]));
+
+  const filamentPriceRanges = db
+    .prepare(
+      `SELECT brand_id, MIN(price) AS computed_min, MAX(price) AS computed_max
+       FROM (
+         SELECT brand_id, min_price_paid AS price FROM filaments
+         WHERE brand_id IS NOT NULL AND min_price_paid IS NOT NULL
+         UNION ALL
+         SELECT brand_id, max_price_paid AS price FROM filaments
+         WHERE brand_id IS NOT NULL AND max_price_paid IS NOT NULL
+       )
+       GROUP BY brand_id`
+    )
+    .all() as { brand_id: number; computed_min: number; computed_max: number }[];
+  const priceRangeByBrand = new Map(filamentPriceRanges.map((row) => [row.brand_id, row]));
+
+  const pricedBrands = brands.map((brand) => {
+    const computed = priceRangeByBrand.get(brand.id);
+    return {
+      brand,
+      priceMin: brand.avg_price_min ?? computed?.computed_min ?? null,
+      priceMax: brand.avg_price_max ?? computed?.computed_max ?? null,
+    };
+  });
+
+  const averagePrice = groupAveragePrice(
+    pricedBrands.map(({ priceMin, priceMax }) => ({
+      avg_price_min: priceMin,
+      avg_price_max: priceMax,
+    }))
+  );
+
+  const items = pricedBrands.map(({ brand, priceMin, priceMax }) => ({
     brand,
-    costBenefit: computeCostBenefit(brandAveragePrice(brand), averagePrice),
+    priceMin,
+    priceMax,
+    costBenefit: computeCostBenefit(
+      brandAveragePrice({ avg_price_min: priceMin, avg_price_max: priceMax }),
+      averagePrice
+    ),
+    filamentRating: ratingsByBrand.get(brand.id)?.avg_rating ?? null,
+    filamentRatingCount: ratingsByBrand.get(brand.id)?.rating_count ?? 0,
   }));
 
   return (
