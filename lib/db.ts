@@ -61,6 +61,24 @@ function createConnection() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS calibrations (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      slicer TEXT NOT NULL,
+      filament_id INTEGER REFERENCES filaments(id) ON DELETE CASCADE,
+      status TEXT,
+      calibration_date TEXT,
+      bed_temp_first_layer REAL,
+      bed_temp_other_layers REAL,
+      nozzle_temp_initial REAL,
+      nozzle_temp_final REAL,
+      max_volumetric_speed REAL,
+      pressure_advance REAL,
+      flow_ratio REAL,
+      retraction_distance REAL,
+      notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS print_profiles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       printer_id INTEGER NOT NULL REFERENCES printers(id) ON DELETE CASCADE,
@@ -136,6 +154,29 @@ function createConnection() {
 
   if (!existingFilamentColumns.has("availability")) {
     database.exec("ALTER TABLE filaments ADD COLUMN availability TEXT");
+  }
+
+  const calibrationColumns = database
+    .prepare("PRAGMA table_info(calibrations)")
+    .all() as { name: string }[];
+  const existingCalibrationColumns = new Set(calibrationColumns.map((column) => column.name));
+
+  const newCalibrationColumns: Record<string, string> = {
+    bed_temp_first_layer: "REAL",
+    bed_temp_other_layers: "REAL",
+    nozzle_temp_initial: "REAL",
+    nozzle_temp_final: "REAL",
+    max_volumetric_speed: "REAL",
+    pressure_advance: "REAL",
+    flow_ratio: "REAL",
+    retraction_distance: "REAL",
+    notes: "TEXT",
+  };
+
+  for (const [column, type] of Object.entries(newCalibrationColumns)) {
+    if (!existingCalibrationColumns.has(column)) {
+      database.exec(`ALTER TABLE calibrations ADD COLUMN ${column} ${type}`);
+    }
   }
 
   return database;
