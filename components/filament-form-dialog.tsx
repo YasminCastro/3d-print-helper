@@ -6,7 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon } from "lucide-react";
 
 import { createFilamentAction } from "@/lib/actions/filaments";
-import { filamentFormSchema, type FilamentFormInput } from "@/lib/schemas/filament";
+import {
+  filamentFormSchema,
+  type FilamentFormInput,
+} from "@/lib/schemas/filament";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -74,9 +77,6 @@ export function FilamentFormDialog({
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
           <DialogTitle>Novo Filamento</DialogTitle>
-          <DialogDescription>
-            Cadastre um filamento para acompanhar estoque, preço e configurações de impressão.
-          </DialogDescription>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <FilamentFormFields form={form} brandOptions={brandOptions} />
