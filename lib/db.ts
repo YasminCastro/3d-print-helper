@@ -79,6 +79,33 @@ function createConnection() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS journal_entries (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      entry_date TEXT,
+      filament_id INTEGER REFERENCES filaments(id) ON DELETE SET NULL,
+      status TEXT,
+      symptom TEXT,
+      possible_causes TEXT,
+      notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
+    CREATE TABLE IF NOT EXISTS journal_attempts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entry_id INTEGER NOT NULL REFERENCES journal_entries(id) ON DELETE CASCADE,
+      position INTEGER NOT NULL,
+      attempt TEXT,
+      worked INTEGER
+    );
+
+    CREATE TABLE IF NOT EXISTS journal_photos (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      entry_id INTEGER NOT NULL REFERENCES journal_entries(id) ON DELETE CASCADE,
+      filename TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS print_profiles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       printer_id INTEGER NOT NULL REFERENCES printers(id) ON DELETE CASCADE,
@@ -177,6 +204,32 @@ function createConnection() {
     if (!existingCalibrationColumns.has(column)) {
       database.exec(`ALTER TABLE calibrations ADD COLUMN ${column} ${type}`);
     }
+  }
+
+  const journalEntryColumns = database
+    .prepare("PRAGMA table_info(journal_entries)")
+    .all() as { name: string }[];
+  const existingJournalEntryColumns = new Set(
+    journalEntryColumns.map((column) => column.name)
+  );
+
+  if (!existingJournalEntryColumns.has("possible_causes")) {
+    database.exec("ALTER TABLE journal_entries ADD COLUMN possible_causes TEXT");
+  }
+
+  if (existingJournalEntryColumns.has("solution")) {
+    database.exec("ALTER TABLE journal_entries DROP COLUMN solution");
+  }
+
+  const journalAttemptColumns = database
+    .prepare("PRAGMA table_info(journal_attempts)")
+    .all() as { name: string }[];
+  const existingJournalAttemptColumns = new Set(
+    journalAttemptColumns.map((column) => column.name)
+  );
+
+  if (!existingJournalAttemptColumns.has("worked")) {
+    database.exec("ALTER TABLE journal_attempts ADD COLUMN worked INTEGER");
   }
 
   return database;

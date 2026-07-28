@@ -1,17 +1,16 @@
 "use client";
 
 import { useState } from "react";
-import { Gauge } from "lucide-react";
+import { NotebookTextIcon } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalibrationDetailsDialog } from "@/components/calibration-details-dialog";
+import { JournalDetailsDialog } from "@/components/journal-details-dialog";
 import {
-  calibrationStatusColors,
-  calibrationStatusLabels,
-  slicerLabels,
-} from "@/components/calibration-form-fields";
-import type { calibrationStatusOptions, slicerOptions } from "@/lib/schemas/calibration";
-import type { CalibrationWithFilament } from "@/lib/types/calibration";
+  journalStatusColors,
+  journalStatusLabels,
+} from "@/components/journal-form-fields";
+import type { journalStatusOptions } from "@/lib/schemas/journal";
+import type { JournalEntryWithDetails } from "@/lib/types/journal";
 import type { FilamentOption } from "@/lib/types/filament";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR");
@@ -23,17 +22,16 @@ function formatDate(value: string | null) {
   return dateFormatter.format(date);
 }
 
-export function CalibrationCard({
-  calibration,
+export function JournalCard({
+  entry,
   filamentOptions,
 }: {
-  calibration: CalibrationWithFilament;
+  entry: JournalEntryWithDetails;
   filamentOptions: FilamentOption[];
 }) {
   const [open, setOpen] = useState(false);
-  const slicer = calibration.slicer as (typeof slicerOptions)[number];
-  const status = calibration.status as (typeof calibrationStatusOptions)[number] | null;
-  const date = formatDate(calibration.calibration_date);
+  const status = entry.status as (typeof journalStatusOptions)[number] | null;
+  const date = formatDate(entry.entry_date);
 
   return (
     <>
@@ -47,27 +45,38 @@ export function CalibrationCard({
             setOpen(true);
           }
         }}
+        size="sm"
         className="cursor-pointer transition hover:ring-primary/40"
       >
+        {entry.photos.length > 0 && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={`/uploads/journal/${entry.photos[0].filename}`}
+            alt=""
+            className="h-28 w-full object-cover"
+          />
+        )}
         <CardHeader className="flex-row items-center gap-2 space-y-0">
           <CardTitle className="flex items-center gap-1.5 text-base">
-            <span
-              className="size-4 shrink-0 rounded-full border"
-              style={{ backgroundColor: calibration.filament_color ?? "#a1a1aa" }}
-            />
-            {calibration.filament_name ?? "—"}
+            <NotebookTextIcon className="size-4 shrink-0" />
+            {entry.title}
           </CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-2 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <Gauge className="size-4 shrink-0" />
-            {slicerLabels[slicer]}
-          </span>
+          {entry.filament_name && (
+            <span className="flex items-center gap-1.5">
+              <span
+                className="size-3.5 shrink-0 rounded-full border"
+                style={{ backgroundColor: entry.filament_color ?? "#a1a1aa" }}
+              />
+              {entry.filament_name}
+            </span>
+          )}
           {(status || date) && (
             <span className="flex items-center gap-2">
               {status && (
-                <span className={calibrationStatusColors[status]}>
-                  {calibrationStatusLabels[status]}
+                <span className={journalStatusColors[status]}>
+                  {journalStatusLabels[status]}
                 </span>
               )}
               {date && <span>{date}</span>}
@@ -75,8 +84,8 @@ export function CalibrationCard({
           )}
         </CardContent>
       </Card>
-      <CalibrationDetailsDialog
-        calibration={calibration}
+      <JournalDetailsDialog
+        entry={entry}
         filamentOptions={filamentOptions}
         open={open}
         onOpenChange={setOpen}

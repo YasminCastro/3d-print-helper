@@ -20,6 +20,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { CalibrationFormFields } from "@/components/calibration-form-fields";
+import type { FilamentOption } from "@/lib/types/filament";
 
 const defaultValues: CalibrationFormInput = {
   slicer: undefined as unknown as CalibrationFormInput["slicer"],
@@ -40,7 +41,7 @@ const defaultValues: CalibrationFormInput = {
 export function CalibrationFormDialog({
   filamentOptions,
 }: {
-  filamentOptions: { id: number; name: string; color: string | null }[];
+  filamentOptions: FilamentOption[];
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();

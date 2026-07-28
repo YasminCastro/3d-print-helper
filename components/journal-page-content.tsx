@@ -8,13 +8,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalibrationCard } from "@/components/calibration-card";
-import {
-  calibrationStatusLabels,
-  slicerLabels,
-} from "@/components/calibration-form-fields";
-import { calibrationStatusOptions, slicerOptions } from "@/lib/schemas/calibration";
-import type { CalibrationWithFilament } from "@/lib/types/calibration";
+import { JournalCard } from "@/components/journal-card";
+import { journalStatusLabels } from "@/components/journal-form-fields";
+import { journalStatusOptions } from "@/lib/schemas/journal";
+import type { JournalEntryWithDetails } from "@/lib/types/journal";
 import type { FilamentOption } from "@/lib/types/filament";
 
 function toggleInSet(set: Set<string>, value: string) {
@@ -24,45 +21,38 @@ function toggleInSet(set: Set<string>, value: string) {
   return next;
 }
 
-export function CalibrationsPageContent({
-  calibrations,
+export function JournalPageContent({
+  entries,
   filamentOptions,
 }: {
-  calibrations: CalibrationWithFilament[];
+  entries: JournalEntryWithDetails[];
   filamentOptions: FilamentOption[];
 }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [slicerFilter, setSlicerFilter] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
 
-    return calibrations.filter((calibration) => {
+    return entries.filter((entry) => {
       if (
         query &&
-        !(calibration.filament_name ?? "").toLowerCase().includes(query)
+        !entry.title.toLowerCase().includes(query) &&
+        !(entry.filament_name ?? "").toLowerCase().includes(query)
       ) {
         return false;
       }
 
-      if (slicerFilter.size > 0 && !slicerFilter.has(calibration.slicer)) {
-        return false;
-      }
-
-      if (
-        statusFilter.size > 0 &&
-        (!calibration.status || !statusFilter.has(calibration.status))
-      ) {
+      if (statusFilter.size > 0 && (!entry.status || !statusFilter.has(entry.status))) {
         return false;
       }
 
       return true;
     });
-  }, [calibrations, search, slicerFilter, statusFilter]);
+  }, [entries, search, statusFilter]);
 
-  const activeFilterCount = slicerFilter.size + statusFilter.size;
+  const activeFilterCount = statusFilter.size;
 
   return (
     <div className="flex flex-col gap-4">
@@ -70,7 +60,7 @@ export function CalibrationsPageContent({
         <div className="relative flex-1">
           <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Pesquisar por nome do filamento..."
+            placeholder="Pesquisar por título ou filamento..."
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             className="pl-8"
@@ -87,33 +77,16 @@ export function CalibrationsPageContent({
         <div className="flex flex-col gap-4 rounded-lg border p-4">
           <div>
             <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              Fatiador
-            </span>
-            <div className="mt-2 flex flex-wrap gap-3">
-              {slicerOptions.map((option) => (
-                <label key={option} className="flex items-center gap-1.5 text-sm">
-                  <Checkbox
-                    checked={slicerFilter.has(option)}
-                    onCheckedChange={() => setSlicerFilter((prev) => toggleInSet(prev, option))}
-                  />
-                  {slicerLabels[option]}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
               Status
             </span>
             <div className="mt-2 flex flex-wrap gap-3">
-              {calibrationStatusOptions.map((option) => (
+              {journalStatusOptions.map((option) => (
                 <label key={option} className="flex items-center gap-1.5 text-sm">
                   <Checkbox
                     checked={statusFilter.has(option)}
                     onCheckedChange={() => setStatusFilter((prev) => toggleInSet(prev, option))}
                   />
-                  {calibrationStatusLabels[option]}
+                  {journalStatusLabels[option]}
                 </label>
               ))}
             </div>
@@ -125,16 +98,16 @@ export function CalibrationsPageContent({
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-normal text-muted-foreground">
-              Nenhuma calibração encontrada com os filtros selecionados.
+              Nenhuma entrada encontrada com os filtros selecionados.
             </CardTitle>
           </CardHeader>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map((calibration) => (
-            <CalibrationCard
-              key={calibration.id}
-              calibration={calibration}
+          {filtered.map((entry) => (
+            <JournalCard
+              key={entry.id}
+              entry={entry}
               filamentOptions={filamentOptions}
             />
           ))}

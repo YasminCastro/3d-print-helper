@@ -20,3 +20,11 @@ export type Filament = {
 };
 
 export type FilamentWithBrand = Filament & { brand_name: string | null };
+
+export type FilamentOption = {
+  id: number;
+  name: string;
+  color: string | null;
+  material: string | null;
+  brand_name: string | null;
+};

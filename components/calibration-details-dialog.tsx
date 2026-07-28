@@ -14,6 +14,7 @@ import {
   type CalibrationFormInput,
 } from "@/lib/schemas/calibration";
 import type { CalibrationWithFilament } from "@/lib/types/calibration";
+import type { FilamentOption } from "@/lib/types/filament";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -83,7 +84,7 @@ export function CalibrationDetailsDialog({
   onOpenChange,
 }: {
   calibration: CalibrationWithFilament;
-  filamentOptions: { id: number; name: string; color: string | null }[];
+  filamentOptions: FilamentOption[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {

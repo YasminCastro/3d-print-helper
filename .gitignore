@@ -40,6 +40,9 @@ yarn-error.log*
 /data/*.db
 /data/*.db-journal
 
+# uploaded journal photos
+/public/uploads/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

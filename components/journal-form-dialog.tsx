@@ -1,0 +1,106 @@
+"use client";
+
+import { useState, useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { PlusIcon } from "lucide-react";
+
+import { addJournalPhotosAction, createJournalEntryAction } from "@/lib/actions/journal";
+import {
+  journalFormSchema,
+  type JournalFormInput,
+} from "@/lib/schemas/journal";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Field, FieldContent, FieldLabel } from "@/components/ui/field";
+import { JournalFormFields } from "@/components/journal-form-fields";
+import { JournalPhotoPicker } from "@/components/journal-photo-picker";
+import type { FilamentOption } from "@/lib/types/filament";
+
+const defaultValues: JournalFormInput = {
+  title: "",
+  entryDate: "",
+  filamentId: "",
+  status: undefined,
+  symptom: "",
+  possibleCauses: "",
+  attempts: [],
+  notes: "",
+};
+
+export function JournalFormDialog({
+  filamentOptions,
+}: {
+  filamentOptions: FilamentOption[];
+}) {
+  const [open, setOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
+  const [photoFiles, setPhotoFiles] = useState<File[]>([]);
+
+  const form = useForm<JournalFormInput>({
+    resolver: zodResolver(journalFormSchema),
+    defaultValues,
+  });
+
+  function onSubmit(values: JournalFormInput) {
+    startTransition(async () => {
+      const entryId = await createJournalEntryAction(values);
+
+      if (photoFiles.length > 0) {
+        const formData = new FormData();
+        for (const file of photoFiles) {
+          formData.append("photos", file);
+        }
+        await addJournalPhotosAction(entryId, formData);
+      }
+
+      form.reset(defaultValues);
+      setPhotoFiles([]);
+      setOpen(false);
+    });
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen);
+        if (!nextOpen) {
+          form.reset(defaultValues);
+          setPhotoFiles([]);
+        }
+      }}
+    >
+      <DialogTrigger render={<Button />}>
+        <PlusIcon />
+        Nova Entrada
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-3xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Nova Entrada do Diário</DialogTitle>
+        </DialogHeader>
+        <form onSubmit={form.handleSubmit(onSubmit)}>
+          <JournalFormFields form={form} filamentOptions={filamentOptions} />
+          <Field className="mt-4">
+            <FieldLabel>Fotos</FieldLabel>
+            <FieldContent>
+              <JournalPhotoPicker files={photoFiles} onFilesChange={setPhotoFiles} />
+            </FieldContent>
+          </Field>
+          <DialogFooter className="mt-4">
+            <Button type="submit" disabled={isPending}>
+              {isPending ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+}

@@ -2,7 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Printer, Package, Layers, Gauge } from "lucide-react";
+import {
+  LayoutDashboard,
+  Printer,
+  Package,
+  Layers,
+  Gauge,
+  NotebookText,
+} from "lucide-react";
 
 import {
   Sidebar,
@@ -22,6 +29,7 @@ const NAV_ITEMS = [
   { title: "Marcas", url: "/brands", icon: Package },
   { title: "Filamentos", url: "/filaments", icon: Layers },
   { title: "Calibrações", url: "/calibrations", icon: Gauge },
+  { title: "Diário", url: "/journal", icon: NotebookText },
 ];
 
 export function AppSidebar() {

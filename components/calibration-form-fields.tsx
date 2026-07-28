@@ -24,6 +24,21 @@ import {
   slicerOptions,
   type CalibrationFormInput,
 } from "@/lib/schemas/calibration";
+import type { FilamentOption } from "@/lib/types/filament";
+import { filamentTypeLabels } from "@/components/brand-form-fields";
+import type { filamentTypeOptions } from "@/lib/schemas/brand";
+
+function filamentOptionLabel(filament: FilamentOption) {
+  const parts = [filament.name];
+  if (filament.material) {
+    parts.push(
+      filamentTypeLabels[filament.material as (typeof filamentTypeOptions)[number]] ??
+        filament.material
+    );
+  }
+  if (filament.brand_name) parts.push(filament.brand_name);
+  return parts.join(" - ");
+}
 
 export const slicerLabels: Record<(typeof slicerOptions)[number], string> = {
   orca: "Orca",
@@ -53,7 +68,7 @@ export function CalibrationFormFields({
   filamentOptions,
 }: {
   form: UseFormReturn<CalibrationFormInput>;
-  filamentOptions: { id: number; name: string; color: string | null }[];
+  filamentOptions: FilamentOption[];
 }) {
   return (
     <FieldGroup>
@@ -91,7 +106,7 @@ export function CalibrationFormFields({
           <Select
             items={filamentOptions.map((filament) => ({
               value: String(filament.id),
-              label: filament.name,
+              label: filamentOptionLabel(filament),
             }))}
             value={form.watch("filamentId") ?? ""}
             onValueChange={(value) => form.setValue("filamentId", value ?? "")}
@@ -107,7 +122,7 @@ export function CalibrationFormFields({
                       className="size-3.5 shrink-0 rounded-full border"
                       style={{ backgroundColor: filament.color ?? "#a1a1aa" }}
                     />
-                    {filament.name}
+                    {filamentOptionLabel(filament)}
                   </span>
                 </SelectItem>
               ))}
