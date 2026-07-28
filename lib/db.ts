@@ -26,6 +26,20 @@ function createConnection() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
 
+    CREATE TABLE IF NOT EXISTS filament_brands (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      where_to_buy TEXT,
+      avg_price_min REAL,
+      avg_price_max REAL,
+      cost_benefit TEXT,
+      filament_types TEXT,
+      best_colors TEXT,
+      purchased INTEGER,
+      notes TEXT,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+
     CREATE TABLE IF NOT EXISTS print_profiles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       printer_id INTEGER NOT NULL REFERENCES printers(id) ON DELETE CASCADE,
@@ -61,6 +75,23 @@ function createConnection() {
     if (!existingColumns.has(column)) {
       database.exec(`ALTER TABLE printers ADD COLUMN ${column} ${type}`);
     }
+  }
+
+  const brandColumns = database
+    .prepare("PRAGMA table_info(filament_brands)")
+    .all() as { name: string }[];
+  const existingBrandColumns = new Set(brandColumns.map((column) => column.name));
+
+  if (!existingBrandColumns.has("filament_types")) {
+    database.exec("ALTER TABLE filament_brands ADD COLUMN filament_types TEXT");
+  }
+
+  if (!existingBrandColumns.has("best_colors")) {
+    database.exec("ALTER TABLE filament_brands ADD COLUMN best_colors TEXT");
+  }
+
+  if (!existingBrandColumns.has("purchased")) {
+    database.exec("ALTER TABLE filament_brands ADD COLUMN purchased INTEGER");
   }
 
   return database;

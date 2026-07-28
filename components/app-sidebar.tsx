@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Printer, Sliders, LineChart } from "lucide-react";
+import { LayoutDashboard, Printer, Sliders, LineChart, Package } from "lucide-react";
 
 import {
   Sidebar,
@@ -19,6 +19,7 @@ import {
 const NAV_ITEMS = [
   { title: "Início", url: "/", icon: LayoutDashboard },
   { title: "Impressoras", url: "/printers", icon: Printer },
+  { title: "Marcas", url: "/brands", icon: Package },
   { title: "Perfis de Impressão", url: "/profiles", icon: Sliders },
   { title: "Gráficos", url: "/charts", icon: LineChart },
 ];
