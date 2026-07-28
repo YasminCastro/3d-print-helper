@@ -105,7 +105,7 @@ export function BrandFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.avgPriceMin}>
-          <FieldLabel htmlFor="brand-price-min">Preço médio mín. (R$)</FieldLabel>
+          <FieldLabel htmlFor="brand-price-min">Preço mínimo (R$)</FieldLabel>
           <FieldContent>
             <Input
               id="brand-price-min"
@@ -119,7 +119,7 @@ export function BrandFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.avgPriceMax}>
-          <FieldLabel htmlFor="brand-price-max">Preço médio máx. (R$)</FieldLabel>
+          <FieldLabel htmlFor="brand-price-max">Preço máximo (R$)</FieldLabel>
           <FieldContent>
             <Input
               id="brand-price-max"
