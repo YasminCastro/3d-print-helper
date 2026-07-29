@@ -6,7 +6,10 @@ import {
   availabilityLabels,
   availabilityColors,
 } from "@/components/filament-form-fields";
-import type { Filament } from "@/lib/types/filament";
+import { FilamentFormDialog } from "@/components/filament-form-dialog";
+import { CalibrationFormDialog } from "@/components/calibration-form-dialog";
+import { JournalFormDialog } from "@/components/journal-form-dialog";
+import type { Filament, FilamentOption } from "@/lib/types/filament";
 
 const alertIcons: Record<
   "indisponivel" | "quase_acabando",
@@ -35,8 +38,33 @@ export default function Home() {
     )
     .all() as Filament[];
 
+  const brandOptions = db
+    .prepare("SELECT id, name FROM filament_brands ORDER BY name ASC")
+    .all() as { id: number; name: string }[];
+
+  const filamentOptions = db
+    .prepare(
+      `SELECT filaments.id, filaments.name, filaments.color, filaments.material,
+              filament_brands.name AS brand_name
+       FROM filaments
+       LEFT JOIN filament_brands ON filaments.brand_id = filament_brands.id
+       ORDER BY filaments.name ASC`
+    )
+    .all() as FilamentOption[];
+
   return (
     <div className="flex flex-col gap-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Atalhos</CardTitle>
+        </CardHeader>
+        <CardContent className="flex flex-wrap gap-2">
+          <FilamentFormDialog brandOptions={brandOptions} />
+          <CalibrationFormDialog filamentOptions={filamentOptions} />
+          <JournalFormDialog filamentOptions={filamentOptions} />
+        </CardContent>
+      </Card>
+
       {alerts.length > 0 && (
         <Card>
           <CardHeader>
