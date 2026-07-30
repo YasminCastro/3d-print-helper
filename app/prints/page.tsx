@@ -72,6 +72,18 @@ export default function PrintsPage() {
     .prepare("SELECT * FROM app_settings WHERE id = 1")
     .get() as AppSettings;
 
+  const lastPrint = db
+    .prepare(
+      "SELECT printer_id FROM prints WHERE printer_id IS NOT NULL ORDER BY created_at DESC LIMIT 1"
+    )
+    .get() as { printer_id: number } | undefined;
+
+  const lastPrintProfit = db
+    .prepare(
+      "SELECT profit_percent FROM prints WHERE profit_percent IS NOT NULL ORDER BY created_at DESC LIMIT 1"
+    )
+    .get() as { profit_percent: number } | undefined;
+
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
@@ -81,6 +93,8 @@ export default function PrintsPage() {
           filamentOptions={filamentOptions}
           printerOptions={printerOptions}
           defaultProfitPercent={settings.default_profit_percent}
+          lastPrinterId={lastPrint?.printer_id}
+          lastProfitPercent={lastPrintProfit?.profit_percent}
         />
       </div>
 
@@ -93,7 +107,7 @@ export default function PrintsPage() {
           </CardHeader>
         </Card>
       ) : (
-        <PrintsPageContent prints={printsWithDetails} />
+        <PrintsPageContent prints={printsWithDetails} categoryOptions={categoryOptions} />
       )}
     </div>
   );

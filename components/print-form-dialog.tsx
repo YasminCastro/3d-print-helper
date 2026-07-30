@@ -20,35 +20,45 @@ import {
 } from "@/components/ui/dialog";
 import { PrintFormFields } from "@/components/print-form-fields";
 
-const defaultValues: PrintFormInput = {
-  name: "",
-  printDate: "",
-  durationHours: undefined,
-  durationMinutes: undefined,
-  status: undefined,
-  result: undefined,
-  categoryId: "",
-  newCategoryName: "",
-  printerId: "",
-  filaments: [],
-  printLink: "",
-  profitPercent: undefined,
-};
+function buildDefaultValues(
+  lastPrinterId?: number | null,
+  lastProfitPercent?: number | null
+): PrintFormInput {
+  return {
+    name: "",
+    printDate: "",
+    durationHours: undefined,
+    durationMinutes: undefined,
+    status: undefined,
+    result: undefined,
+    categoryId: "",
+    newCategoryName: "",
+    printerId: lastPrinterId ? String(lastPrinterId) : "",
+    filaments: [],
+    printLink: "",
+    profitPercent: lastProfitPercent ?? 100,
+  };
+}
 
 export function PrintFormDialog({
   categoryOptions,
   filamentOptions,
   printerOptions,
   defaultProfitPercent,
+  lastPrinterId,
+  lastProfitPercent,
 }: {
   categoryOptions: PrintCategory[];
   filamentOptions: FilamentOption[];
   printerOptions: { id: number; name: string }[];
   defaultProfitPercent: number;
+  lastPrinterId?: number | null;
+  lastProfitPercent?: number | null;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const defaultValues = buildDefaultValues(lastPrinterId, lastProfitPercent);
 
   const form = useForm<PrintFormInput>({
     resolver: zodResolver(printFormSchema),

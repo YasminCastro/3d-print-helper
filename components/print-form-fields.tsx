@@ -21,6 +21,7 @@ import {
   type PrintFormInput,
 } from "@/lib/schemas/print";
 import type { PrintCategory } from "@/lib/types/print";
+import { categoryDotColorClass } from "@/lib/category-colors";
 import type { FilamentOption } from "@/lib/types/filament";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
@@ -47,6 +48,11 @@ export const printStatusColors: Record<(typeof printStatusOptions)[number], stri
   pronto: "text-green-600 dark:text-green-400",
 };
 
+export const printStatusDotColors: Record<(typeof printStatusOptions)[number], string> = {
+  fila: "bg-yellow-600 dark:bg-yellow-400",
+  pronto: "bg-green-600 dark:bg-green-400",
+};
+
 export const printResultLabels: Record<(typeof printResultOptions)[number], string> = {
   ruim: "Ruim",
   razoavel: "Razoável",
@@ -59,6 +65,13 @@ export const printResultColors: Record<(typeof printResultOptions)[number], stri
   razoavel: "text-yellow-600 dark:text-yellow-400",
   bom: "text-lime-600 dark:text-lime-400",
   perfeito: "text-green-600 dark:text-green-400",
+};
+
+export const printResultDotColors: Record<(typeof printResultOptions)[number], string> = {
+  ruim: "bg-red-600 dark:bg-red-400",
+  razoavel: "bg-yellow-600 dark:bg-yellow-400",
+  bom: "bg-lime-600 dark:bg-lime-400",
+  perfeito: "bg-green-600 dark:bg-green-400",
 };
 
 export function PrintFormFields({
@@ -120,7 +133,12 @@ export function PrintFormFields({
               <SelectContent>
                 {printResultOptions.map((option) => (
                   <SelectItem key={option} value={option}>
-                    {printResultLabels[option]}
+                    <span className="flex items-center gap-2">
+                      <span
+                        className={`size-2.5 shrink-0 rounded-full ${printResultDotColors[option]}`}
+                      />
+                      {printResultLabels[option]}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -134,7 +152,18 @@ export function PrintFormFields({
         <Field data-invalid={!!form.formState.errors.printDate}>
           <FieldLabel htmlFor="print-date">Data da impressão</FieldLabel>
           <FieldContent>
-            <Input id="print-date" type="date" {...form.register("printDate")} />
+            <div className="flex items-center gap-2">
+              <Input id="print-date" type="date" {...form.register("printDate")} />
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() =>
+                  form.setValue("printDate", new Date().toISOString().slice(0, 10))
+                }
+              >
+                Hoje
+              </Button>
+            </div>
             <FieldError errors={[form.formState.errors.printDate]} />
           </FieldContent>
         </Field>
@@ -158,7 +187,12 @@ export function PrintFormFields({
               <SelectContent>
                 {printStatusOptions.map((option) => (
                   <SelectItem key={option} value={option}>
-                    {printStatusLabels[option]}
+                    <span className="flex items-center gap-2">
+                      <span
+                        className={`size-2.5 shrink-0 rounded-full ${printStatusDotColors[option]}`}
+                      />
+                      {printStatusLabels[option]}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -191,7 +225,12 @@ export function PrintFormFields({
             <SelectContent>
               {categoryOptions.map((category) => (
                 <SelectItem key={category.id} value={String(category.id)}>
-                  {category.name}
+                  <span className="flex items-center gap-2">
+                    <span
+                      className={`size-2.5 shrink-0 rounded-full ${categoryDotColorClass(category.name)}`}
+                    />
+                    {category.name}
+                  </span>
                 </SelectItem>
               ))}
               <SelectItem value={NEW_CATEGORY_VALUE}>
@@ -211,31 +250,47 @@ export function PrintFormFields({
         </FieldContent>
       </Field>
 
-      <Field data-invalid={!!form.formState.errors.printerId}>
-        <FieldLabel htmlFor="print-printer">Impressora</FieldLabel>
-        <FieldContent>
-          <Select
-            items={printerOptions.map((printer) => ({
-              value: String(printer.id),
-              label: printer.name,
-            }))}
-            value={form.watch("printerId") ?? ""}
-            onValueChange={(value) => form.setValue("printerId", value ?? "")}
-          >
-            <SelectTrigger id="print-printer" className="w-full">
-              <SelectValue placeholder="Selecione a impressora" />
-            </SelectTrigger>
-            <SelectContent>
-              {printerOptions.map((printer) => (
-                <SelectItem key={printer.id} value={String(printer.id)}>
-                  {printer.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FieldError errors={[form.formState.errors.printerId]} />
-        </FieldContent>
-      </Field>
+      <div className="grid grid-cols-2 gap-4">
+        <Field data-invalid={!!form.formState.errors.printerId}>
+          <FieldLabel htmlFor="print-printer">Impressora</FieldLabel>
+          <FieldContent>
+            <Select
+              items={printerOptions.map((printer) => ({
+                value: String(printer.id),
+                label: printer.name,
+              }))}
+              value={form.watch("printerId") ?? ""}
+              onValueChange={(value) => form.setValue("printerId", value ?? "")}
+            >
+              <SelectTrigger id="print-printer" className="w-full">
+                <SelectValue placeholder="Selecione a impressora" />
+              </SelectTrigger>
+              <SelectContent>
+                {printerOptions.map((printer) => (
+                  <SelectItem key={printer.id} value={String(printer.id)}>
+                    {printer.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError errors={[form.formState.errors.printerId]} />
+          </FieldContent>
+        </Field>
+
+        <Field data-invalid={!!form.formState.errors.profitPercent}>
+          <FieldLabel htmlFor="print-profit-percent">Lucro (%)</FieldLabel>
+          <FieldContent>
+            <Input
+              id="print-profit-percent"
+              type="number"
+              step="any"
+              placeholder={String(defaultProfitPercent)}
+              {...form.register("profitPercent", { valueAsNumber: true })}
+            />
+            <FieldError errors={[form.formState.errors.profitPercent]} />
+          </FieldContent>
+        </Field>
+      </div>
 
       <Field>
         <FieldLabel>Filamentos</FieldLabel>
@@ -341,23 +396,6 @@ export function PrintFormFields({
               form.formState.errors.durationMinutes,
             ]}
           />
-        </FieldContent>
-      </Field>
-
-      <Field data-invalid={!!form.formState.errors.profitPercent}>
-        <FieldLabel htmlFor="print-profit-percent">
-          Lucro (%) — deixe em branco para usar o padrão ({defaultProfitPercent}%)
-        </FieldLabel>
-        <FieldContent>
-          <Input
-            id="print-profit-percent"
-            type="number"
-            step="any"
-            placeholder={String(defaultProfitPercent)}
-            className="max-w-40"
-            {...form.register("profitPercent", { valueAsNumber: true })}
-          />
-          <FieldError errors={[form.formState.errors.profitPercent]} />
         </FieldContent>
       </Field>
 

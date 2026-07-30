@@ -10,10 +10,12 @@ import { ArrowLeftIcon, PencilIcon, Trash2Icon } from "lucide-react";
 import { deletePrintAction, updatePrintAction } from "@/lib/actions/prints";
 import { printFormSchema, type PrintFormInput } from "@/lib/schemas/print";
 import type { PrintCategory, PrintWithDetails } from "@/lib/types/print";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import { categoryColorClass } from "@/lib/category-colors";
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -74,7 +76,7 @@ function toFormValues(print: PrintWithDetails): PrintFormInput {
       grams: filament.grams ?? undefined,
     })),
     printLink: print.print_link ?? "",
-    profitPercent: print.profit_percent ?? undefined,
+    profitPercent: print.profit_percent ?? 100,
   };
 }
 
@@ -378,7 +380,21 @@ export function PrintDetailView({
                 </dd>
 
                 <dt className="text-muted-foreground">Categoria</dt>
-                <dd className="text-right">{print.category_name ?? "—"}</dd>
+                <dd className="text-right">
+                  {print.category_name ? (
+                    <Badge
+                      variant="outline"
+                      className={cn(
+                        "border-transparent",
+                        categoryColorClass(print.category_name)
+                      )}
+                    >
+                      {print.category_name}
+                    </Badge>
+                  ) : (
+                    "—"
+                  )}
+                </dd>
 
                 <dt className="text-muted-foreground">Impressora</dt>
                 <dd className="text-right">{print.printer_name ?? "—"}</dd>
