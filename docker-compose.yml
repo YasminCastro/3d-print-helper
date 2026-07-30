@@ -1,0 +1,16 @@
+services:
+  mongo:
+    container_name: 3d-print-helper-mongo
+    image: mongo:7
+    restart: unless-stopped
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: print-helper
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
