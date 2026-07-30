@@ -2,6 +2,8 @@ import Database from "better-sqlite3";
 import path from "node:path";
 import fs from "node:fs";
 
+import { recalculatePrintCalculations } from "@/lib/print-calculations";
+
 const DATA_DIR = path.join(process.cwd(), "data");
 const DB_PATH = path.join(DATA_DIR, "print-helper.db");
 
@@ -278,7 +280,13 @@ function createConnection() {
     result: "TEXT",
     print_link: "TEXT",
     profit_percent: "REAL",
+    filament_cost: "REAL",
+    print_cost: "REAL",
+    sale_value: "REAL",
+    sale_value_worst_case: "REAL",
   };
+
+  const needsCalculationsBackfill = !existingPrintColumns.has("sale_value");
 
   for (const [column, type] of Object.entries(newPrintColumns)) {
     if (!existingPrintColumns.has(column)) {
@@ -313,6 +321,13 @@ function createConnection() {
   database.exec(
     "INSERT OR IGNORE INTO app_settings (id, default_profit_percent) VALUES (1, 50)"
   );
+
+  if (needsCalculationsBackfill) {
+    const printIds = database.prepare("SELECT id FROM prints").all() as { id: number }[];
+    for (const { id } of printIds) {
+      recalculatePrintCalculations(database, id);
+    }
+  }
 
   return database;
 }

@@ -22,10 +22,10 @@ export function PrintCard({ print }: { print: PrintWithDetails }) {
   const hasDetails = print.filaments.length > 0 || duration || print.category_name;
 
   return (
-    <Link href={`/prints/${print.id}`}>
+    <Link href={`/prints/${print.id}`} className="block h-full">
       <Card
         size="sm"
-        className="cursor-pointer transition hover:ring-primary/40"
+        className="flex h-full flex-col cursor-pointer pt-0 transition hover:ring-primary/40"
       >
         {print.photo_filename ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -68,20 +68,16 @@ export function PrintCard({ print }: { print: PrintWithDetails }) {
                 {duration}
               </span>
             )}
-            {print.filaments.length > 0 && (
-              <span className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                {print.filaments.map((filament) => (
-                  <span key={filament.id} className="flex items-center gap-2">
-                    <span
-                      className="size-2.5 shrink-0 rounded-full border"
-                      style={{ backgroundColor: filament.filament_color ?? "#a1a1aa" }}
-                    />
-                    {filament.filament_name ?? "—"}
-                    {filament.grams != null && ` (${filament.grams}g)`}
-                  </span>
-                ))}
+            {print.filaments.map((filament) => (
+              <span key={filament.id} className="flex items-center gap-2">
+                <span
+                  className="size-2.5 shrink-0 rounded-full border"
+                  style={{ backgroundColor: filament.filament_color ?? "#a1a1aa" }}
+                />
+                {filament.filament_name ?? "—"}
+                {filament.grams != null && ` (${filament.grams}g)`}
               </span>
-            )}
+            ))}
           </CardContent>
         )}
       </Card>

@@ -95,8 +95,8 @@ export default function Home() {
        FROM prints
        LEFT JOIN print_categories ON prints.category_id = print_categories.id
        LEFT JOIN printers ON prints.printer_id = printers.id
-       ORDER BY prints.created_at DESC
-       LIMIT 5`
+       ORDER BY COALESCE(prints.print_date, prints.created_at) DESC
+       LIMIT 4`
     )
     .all() as PrintWithCategory[];
 
@@ -154,7 +154,7 @@ export default function Home() {
           <CardHeader>
             <CardTitle className="text-base">Últimas impressões</CardTitle>
           </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {recentPrintsWithDetails.map((print) => (
               <PrintCard key={print.id} print={print} />
             ))}

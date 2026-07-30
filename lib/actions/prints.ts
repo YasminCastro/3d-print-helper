@@ -8,6 +8,7 @@ import { refresh } from "next/cache";
 
 import { db } from "@/lib/db";
 import { NEW_CATEGORY_VALUE } from "@/lib/schemas/print";
+import { recalculatePrintCalculations } from "@/lib/print-calculations";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "prints");
 
@@ -167,7 +168,9 @@ export async function createPrintAction(formData: FormData) {
         profitPercent
       );
 
-    insertFilaments(Number(insertResult.lastInsertRowid), filaments);
+    const printId = Number(insertResult.lastInsertRowid);
+    insertFilaments(printId, filaments);
+    recalculatePrintCalculations(db, printId);
   });
 
   transaction();
@@ -222,6 +225,7 @@ export async function updatePrintAction(id: number, formData: FormData) {
 
     db.prepare("DELETE FROM print_filaments WHERE print_id = ?").run(id);
     insertFilaments(id, filaments);
+    recalculatePrintCalculations(db, id);
   });
 
   transaction();

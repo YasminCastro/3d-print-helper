@@ -16,6 +16,10 @@ export type Print = {
   printer_id: number | null;
   print_link: string | null;
   profit_percent: number | null;
+  filament_cost: number | null;
+  print_cost: number | null;
+  sale_value: number | null;
+  sale_value_worst_case: number | null;
   created_at: string;
 };
 

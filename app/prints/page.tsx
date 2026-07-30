@@ -22,7 +22,7 @@ export default function PrintsPage() {
        FROM prints
        LEFT JOIN print_categories ON prints.category_id = print_categories.id
        LEFT JOIN printers ON prints.printer_id = printers.id
-       ORDER BY prints.created_at DESC`
+       ORDER BY COALESCE(prints.print_date, prints.created_at) DESC`
     )
     .all() as PrintWithCategory[];
 
