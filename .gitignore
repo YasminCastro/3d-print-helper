@@ -52,3 +52,6 @@ next-env.d.ts
 
 
 logs
+
+# graphify knowledge graph (regenerable output)
+graphify-out/
