@@ -1,16 +1,16 @@
 services:
-  mongo:
-    container_name: 3d-print-helper-mongo
-    image: mongo:7
+  postgres:
+    container_name: 3d-print-helper-postgres
+    image: postgres:16
     restart: unless-stopped
     ports:
-      - '27017:27017'
+      - '5432:5432'
     environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
-      MONGO_INITDB_DATABASE: print-helper
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: print-helper
     volumes:
-      - mongo-data:/data/db
+      - postgres-data:/var/lib/postgresql/data
 
 volumes:
-  mongo-data:
+  postgres-data:
