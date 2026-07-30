@@ -9,7 +9,10 @@ import {
 import { FilamentFormDialog } from "@/components/filament-form-dialog";
 import { CalibrationFormDialog } from "@/components/calibration-form-dialog";
 import { JournalFormDialog } from "@/components/journal-form-dialog";
+import { PrintFormDialog } from "@/components/print-form-dialog";
 import type { Filament, FilamentOption } from "@/lib/types/filament";
+import type { PrintCategory } from "@/lib/types/print";
+import type { AppSettings } from "@/lib/types/settings";
 
 const alertIcons: Record<
   "indisponivel" | "quase_acabando",
@@ -52,6 +55,18 @@ export default function Home() {
     )
     .all() as FilamentOption[];
 
+  const printCategoryOptions = db
+    .prepare("SELECT * FROM print_categories ORDER BY name ASC")
+    .all() as PrintCategory[];
+
+  const printerOptions = db
+    .prepare("SELECT id, name FROM printers ORDER BY name ASC")
+    .all() as { id: number; name: string }[];
+
+  const settings = db
+    .prepare("SELECT * FROM app_settings WHERE id = 1")
+    .get() as AppSettings;
+
   return (
     <div className="flex flex-col gap-4">
       <Card>
@@ -62,6 +77,12 @@ export default function Home() {
           <FilamentFormDialog brandOptions={brandOptions} />
           <CalibrationFormDialog filamentOptions={filamentOptions} />
           <JournalFormDialog filamentOptions={filamentOptions} />
+          <PrintFormDialog
+            categoryOptions={printCategoryOptions}
+            filamentOptions={filamentOptions}
+            printerOptions={printerOptions}
+            defaultProfitPercent={settings.default_profit_percent}
+          />
         </CardContent>
       </Card>
 
