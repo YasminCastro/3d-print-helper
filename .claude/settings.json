@@ -1,7 +1,15 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(git mv *)",
+      "Bash(mv next-env.d.ts frontend/)",
+      "Bash(mv tsconfig.tsbuildinfo frontend/)",
+      "Bash(mv node_modules frontend/)",
+      "Bash(mv .next frontend/)",
+      "Bash(npm ls *)",
+      "Read(//c/Users/yasmi/AppData/Roaming/npm/node_modules/typescript-express-starter/bin/**)",
+      "Read(//c/Users/yasmi/AppData/Roaming/npm/node_modules/typescript-express-starter/**)"
     ]
   }
 }
