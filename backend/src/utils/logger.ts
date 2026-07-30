@@ -88,7 +88,7 @@ const transport = pino.transport({
             dateFormat: 'yyyy-MM-dd',
             extension: '.log',
             mkdir: true,
-            symlink: true,
+            symlink: false,
             limit: { count: 7 },
           },
         },

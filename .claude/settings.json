@@ -9,7 +9,11 @@
       "Bash(mv .next frontend/)",
       "Bash(npm ls *)",
       "Read(//c/Users/yasmi/AppData/Roaming/npm/node_modules/typescript-express-starter/bin/**)",
-      "Read(//c/Users/yasmi/AppData/Roaming/npm/node_modules/typescript-express-starter/**)"
+      "Read(//c/Users/yasmi/AppData/Roaming/npm/node_modules/typescript-express-starter/**)",
+      "Bash(git check-ignore *)",
+      "Bash(echo \"exit:$?\")",
+      "Bash(printf 'export LANG=en_US.UTF-8\\\\nexport LC_ALL=en_US.UTF-8\\\\n')",
+      "Read(//c/Users/yasmi/**)"
     ]
   }
 }
