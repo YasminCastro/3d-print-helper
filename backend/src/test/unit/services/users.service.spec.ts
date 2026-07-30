@@ -1,23 +1,25 @@
 import { User, type UserCreateData } from '@entities/user.entity';
-import { UsersRepository } from '@repositories/users.repository';
+import { InMemoryUsersRepository } from '@repositories/in-memory-users.repository';
 import { UsersService } from '@services/users.service';
 
-describe('UsersService (with UsersRepository)', () => {
+describe('UsersService (with InMemoryUsersRepository)', () => {
   let usersService: UsersService;
-  let userRepo: UsersRepository;
+  let userRepo: InMemoryUsersRepository;
 
   beforeEach(async () => {
-    userRepo = new UsersRepository();
+    userRepo = new InMemoryUsersRepository();
     userRepo.reset();
 
     // Create test users using Entity
     const user1 = await User.create({
       email: 'one@example.com',
       password: 'password1',
+      name: 'One',
     });
     const user2 = await User.create({
       email: 'two@example.com',
       password: 'password2',
+      name: 'Two',
     });
 
     await userRepo.save(user1);
@@ -49,6 +51,7 @@ describe('UsersService (with UsersRepository)', () => {
     const userData: UserCreateData = {
       email: 'new@example.com',
       password: 'newpass3',
+      name: 'New User',
     };
 
     const created = await usersService.createUser(userData);
@@ -61,6 +64,7 @@ describe('UsersService (with UsersRepository)', () => {
     const userData: UserCreateData = {
       email: 'one@example.com', // already exists
       password: 'password9',
+      name: 'Duplicate',
     };
 
     await expect(usersService.createUser(userData)).rejects.toThrow(/exists/);

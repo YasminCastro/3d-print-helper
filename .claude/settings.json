@@ -15,7 +15,25 @@
       "Bash(printf 'export LANG=en_US.UTF-8\\\\nexport LC_ALL=en_US.UTF-8\\\\n')",
       "Read(//c/Users/yasmi/**)",
       "Bash(xxd graphify-out/.graphify_python)",
-      "Read(//c/Users/yasmi/.claude/skills/graphify/references/**)"
+      "Read(//c/Users/yasmi/.claude/skills/graphify/references/**)",
+      "Bash(git status *)",
+      "Bash(npx prisma *)",
+      "Bash(mkdir -p \"app/\\(app\\)/prints/[id]\")",
+      "Bash(rmdir \"app/prints/[id]\" \"app/prints\")",
+      "Bash(npx jest *)",
+      "Bash(npm run *)",
+      "Bash(xargs grep -l -i \"signup\\\\|auth\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(p.dependencies['react-hook-form'], p.dependencies['@hookform/resolvers']\\)\")",
+      "Bash(node -e \"const p=require\\('./package.json'\\); console.log\\(JSON.stringify\\(p.scripts,null,2\\)\\)\")",
+      "Bash(curl -s -i -X POST http://localhost:4000/api/v1/auth/signup -H \"Content-Type: application/json\" -d '{\"email\":\"debuglog-test@example.com\",\"password\":\"senha123\",\"name\":\"Debug Log\"}')",
+      "Bash(powershell -Command 'Get-CimInstance Win32_Process | Where-Object { $_.CommandLine -match '\\\\''server.ts|nodemon|tsx'\\\\'' } | Select-Object ProcessId,ParentProcessId,CommandLine | Format-List')",
+      "Bash(powershell -Command \"Get-CimInstance Win32_Process -Filter \\\\\"Name='node.exe'\\\\\" | Select-Object ProcessId,ParentProcessId,CommandLine | Format-List\")",
+      "Bash(powershell -Command \"Get-CimInstance Win32_Process -Filter 'ProcessId=41156' | Select-Object ParentProcessId; Get-CimInstance Win32_Process -Filter 'ProcessId=35704' | Select-Object ProcessId,ParentProcessId,CommandLine; Get-CimInstance Win32_Process -Filter 'ProcessId=36580' | Select-Object ProcessId,ParentProcessId,CommandLine\")",
+      "PowerShell(taskkill /F /IM node.exe)",
+      "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id,ProcessName\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/login)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\\\\n\" -b \"Authorization=fake\" http://localhost:3000/login)"
     ]
   },
   "hooks": {

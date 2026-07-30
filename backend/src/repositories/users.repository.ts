@@ -1,5 +1,6 @@
 import { singleton } from 'tsyringe';
-import { User, type UserPersistenceData } from '@entities/user.entity';
+import { User } from '@entities/user.entity';
+import { prisma } from '@config/prisma';
 
 export interface IUsersRepository {
   findAll(): Promise<User[]>;
@@ -12,44 +13,39 @@ export interface IUsersRepository {
 
 @singleton()
 export class UsersRepository implements IUsersRepository {
-  private users: UserPersistenceData[] = [];
-
   async findAll(): Promise<User[]> {
-    return this.users.map((userData) => User.fromPersistence(userData));
+    const rows = await prisma.user.findMany();
+    return rows.map((row) => User.fromPersistence(row));
   }
 
   async findById(id: string): Promise<User | undefined> {
-    const userData = this.users.find((u) => u.id === id);
-    return userData ? User.fromPersistence(userData) : undefined;
+    const row = await prisma.user.findUnique({ where: { id } });
+    return row ? User.fromPersistence(row) : undefined;
   }
 
   async findByEmail(email: string): Promise<User | undefined> {
-    const userData = this.users.find((u) => u.email === email.toLowerCase());
-    return userData ? User.fromPersistence(userData) : undefined;
+    const row = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    return row ? User.fromPersistence(row) : undefined;
   }
 
   async save(user: User): Promise<User> {
-    const persistenceData = user.toPersistence();
-    this.users.push(persistenceData);
+    await prisma.user.create({ data: user.toPersistence() });
     return user;
   }
 
   async update(id: string, user: User): Promise<User | undefined> {
-    const idx = this.users.findIndex((u) => u.id === id);
-    if (idx === -1) return undefined;
+    const exists = await prisma.user.findUnique({ where: { id } });
+    if (!exists) return undefined;
 
-    this.users[idx] = user.toPersistence();
+    await prisma.user.update({ where: { id }, data: user.toPersistence() });
     return user;
   }
 
   async delete(id: string): Promise<boolean> {
-    const idx = this.users.findIndex((u) => u.id === id);
-    if (idx === -1) return false;
-    this.users.splice(idx, 1);
-    return true;
-  }
+    const exists = await prisma.user.findUnique({ where: { id } });
+    if (!exists) return false;
 
-  reset() {
-    this.users = [];
+    await prisma.user.delete({ where: { id } });
+    return true;
   }
 }

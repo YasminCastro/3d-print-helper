@@ -16,6 +16,7 @@ import {
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -24,6 +25,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { LogoutButton } from "@/components/logout-button";
 
 const NAV_ITEMS = [
   { title: "Início", url: "/", icon: LayoutDashboard },
@@ -36,7 +38,7 @@ const NAV_ITEMS = [
   { title: "Configurações", url: "/settings", icon: Settings },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ isLoggedIn }: { isLoggedIn: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -70,6 +72,15 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
+      {isLoggedIn && (
+        <SidebarFooter>
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <LogoutButton />
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarFooter>
+      )}
     </Sidebar>
   );
 }

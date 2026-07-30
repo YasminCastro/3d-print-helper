@@ -2,13 +2,6 @@ import type { Metadata } from "next";
 import { Roboto, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
-import { AppSidebar } from "@/components/app-sidebar";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -40,21 +33,7 @@ export default function RootLayout({
     >
       <body className="min-h-full">
         <TooltipProvider>
-          <SidebarProvider>
-            <AppSidebar />
-            <SidebarInset>
-              <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
-                <SidebarTrigger />
-                <Separator orientation="vertical" className="h-4" />
-                <span className="text-sm font-medium text-muted-foreground">
-                  3D Print Helper
-                </span>
-              </header>
-              <main className="flex flex-1 flex-col gap-4 p-4">
-                {children}
-              </main>
-            </SidebarInset>
-          </SidebarProvider>
+          {children}
           <Toaster />
         </TooltipProvider>
       </body>

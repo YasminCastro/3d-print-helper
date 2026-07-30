@@ -13,7 +13,7 @@ describe('Auth API', () => {
     resetUserDB(); // Reset repository before each test
   });
 
-  const user = { email: 'authuser@example.com', password: 'authpassword123' };
+  const user = { email: 'authuser@example.com', password: 'authpassword123', name: 'Auth User' };
 
   it('should successfully register a new user', async () => {
     const res = await request(server).post(`${prefix}/auth/signup`).send(user);

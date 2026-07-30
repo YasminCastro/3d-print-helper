@@ -13,7 +13,7 @@ describe('Users API', () => {
     resetUserDB(); // Reset repository before each test
   });
 
-  const user = { email: 'user1@example.com', password: 'password123' };
+  const user = { email: 'user1@example.com', password: 'password123', name: 'User One' };
 
   it('should create a new user', async () => {
     const res = await request(server).post(`${prefix}/users`).send(user);

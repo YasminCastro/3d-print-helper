@@ -26,6 +26,8 @@ const EnvSchema = z
 
     SECRET_KEY: z.string().min(1),
 
+    DATABASE_URL: z.string().min(1),
+
     LOG_FORMAT: z.string().min(1).optional(), // 기본값은 app.ts에서 'dev'
     LOG_DIR: z.string().min(1),
     LOG_LEVEL: z.string().min(1),
@@ -59,6 +61,8 @@ const env = parsed.data;
 export const NODE_ENV = env.NODE_ENV;
 export const PORT = env.PORT; // app.ts에서 PORT || 3000
 export const SECRET_KEY = env.SECRET_KEY;
+
+export const DATABASE_URL = env.DATABASE_URL;
 
 export const LOG_FORMAT = env.LOG_FORMAT; // app.ts에서 LOG_FORMAT || 'dev'
 export const LOG_DIR = env.LOG_DIR;

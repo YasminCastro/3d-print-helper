@@ -1,15 +1,15 @@
 import { compare, hash } from 'bcryptjs';
 import { CreateUserDto } from '@dtos/users.dto';
 import { User } from '@entities/user.entity';
-import { UsersRepository } from '@repositories/users.repository';
+import { InMemoryUsersRepository } from '@repositories/in-memory-users.repository';
 import { AuthService } from '@services/auth.service';
 
 describe('AuthService (with UserMemoryRepository)', () => {
   let authService: AuthService;
-  let userRepo: UsersRepository;
+  let userRepo: InMemoryUsersRepository;
 
   beforeEach(async () => {
-    userRepo = new UsersRepository();
+    userRepo = new InMemoryUsersRepository();
     authService = new AuthService(userRepo);
   });
 
@@ -17,6 +17,7 @@ describe('AuthService (with UserMemoryRepository)', () => {
     const dto: CreateUserDto = {
       email: 'newuser@example.com',
       password: 'newpassword123',
+      name: 'New User',
     };
     const created = await authService.signup(dto);
     expect(created.email).toBe(dto.email);
@@ -31,12 +32,14 @@ describe('AuthService (with UserMemoryRepository)', () => {
     const existingUser = await User.create({
       email: 'existing@example.com',
       password: 'password123',
+      name: 'Existing User',
     });
     await userRepo.save(existingUser);
 
     const dto: CreateUserDto = {
       email: 'existing@example.com',
       password: 'anypass1',
+      name: 'Anyone',
     };
     await expect(authService.signup(dto)).rejects.toThrow(/already/);
   });
@@ -45,7 +48,7 @@ describe('AuthService (with UserMemoryRepository)', () => {
     // Create user using Entity
     const plainPassword = 'mySecret123';
     const email = 'loginuser@example.com';
-    const user = await User.create({ email, password: plainPassword });
+    const user = await User.create({ email, password: plainPassword, name: 'Login User' });
     await userRepo.save(user);
 
     const result = await authService.login({ email, password: plainPassword });
@@ -60,7 +63,11 @@ describe('AuthService (with UserMemoryRepository)', () => {
     ).rejects.toThrow(/Invalid email or password/i);
 
     // Create user and test wrong password
-    const user = await User.create({ email: 'test@example.com', password: 'correctpass1' });
+    const user = await User.create({
+      email: 'test@example.com',
+      password: 'correctpass1',
+      name: 'Test User',
+    });
     await userRepo.save(user);
 
     await expect(
@@ -69,7 +76,11 @@ describe('AuthService (with UserMemoryRepository)', () => {
   });
 
   it('should successfully logout without errors', async () => {
-    const user = await User.create({ email: 'logout@example.com', password: 'password123' });
+    const user = await User.create({
+      email: 'logout@example.com',
+      password: 'password123',
+      name: 'Logout User',
+    });
     await expect(authService.logout(user)).resolves.toBeUndefined();
   });
 });

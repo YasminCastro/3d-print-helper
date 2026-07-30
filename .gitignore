@@ -55,3 +55,6 @@ logs
 
 # graphify knowledge graph (regenerable output)
 graphify-out/
+
+# prisma generated client (backend)
+backend/src/generated/prisma

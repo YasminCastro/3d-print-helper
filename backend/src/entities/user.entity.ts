@@ -5,6 +5,7 @@ export interface UserPersistenceData {
   id: string;
   email: string;
   password: string;
+  name: string;
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -12,6 +13,7 @@ export interface UserPersistenceData {
 export interface UserCreateData {
   email: string;
   password: string;
+  name: string;
 }
 
 export class User {
@@ -19,6 +21,7 @@ export class User {
     private readonly _id: string,
     private _email: string,
     private _password: string,
+    private _name: string,
     private readonly _createdAt: Date = new Date(),
     private _updatedAt: Date = new Date(),
   ) {}
@@ -27,9 +30,10 @@ export class User {
   static async create(data: UserCreateData): Promise<User> {
     const id = User.generateId();
     const validatedEmail = User.validateEmail(data.email);
+    const validatedName = User.validateName(data.name);
     const hashedPassword = await User.hashPassword(data.password);
 
-    return new User(id, validatedEmail, hashedPassword);
+    return new User(id, validatedEmail, hashedPassword, validatedName);
   }
 
   // 기존 데이터로부터 복원 (DB에서 조회한 경우)
@@ -38,6 +42,7 @@ export class User {
       data.id,
       data.email,
       data.password,
+      data.name,
       data.createdAt || new Date(),
       data.updatedAt || new Date(),
     );
@@ -87,6 +92,25 @@ export class User {
     return trimmedEmail.toLowerCase();
   }
 
+  // 도메인 규칙 - 이름 검증
+  private static validateName(name: string): string {
+    if (!name || typeof name !== 'string') {
+      throw new Error('Name is required');
+    }
+
+    const trimmedName = name.trim();
+
+    if (trimmedName.length === 0) {
+      throw new Error('Name cannot be empty');
+    }
+
+    if (trimmedName.length > 100) {
+      throw new Error('Name is too long (max 100 characters)');
+    }
+
+    return trimmedName;
+  }
+
   // 도메인 규칙 - 패스워드 검증
   private static validatePassword(password: string): void {
     if (!password || typeof password !== 'string') {
@@ -128,6 +152,9 @@ export class User {
   get email(): string {
     return this._email;
   }
+  get name(): string {
+    return this._name;
+  }
   get password(): string {
     return this._password;
   }
@@ -163,6 +190,7 @@ export class User {
       id: this._id,
       email: this._email,
       password: this._password,
+      name: this._name,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
     };
@@ -172,12 +200,14 @@ export class User {
   toResponse(): {
     id: string;
     email: string;
+    name: string;
     createdAt: Date;
     updatedAt: Date;
   } {
     return {
       id: this._id,
       email: this._email,
+      name: this._name,
       createdAt: this._createdAt,
       updatedAt: this._updatedAt,
     };

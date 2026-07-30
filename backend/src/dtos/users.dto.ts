@@ -17,10 +17,18 @@ export const passwordSchema = z
     message: 'Password must contain at least one letter and one number',
   });
 
+// 이름 스키마 - Entity의 검증 규칙과 일치
+export const nameSchema = z
+  .string()
+  .min(1, { message: 'Name is required' })
+  .max(100, { message: 'Name is too long (max 100 characters)' })
+  .transform((name) => name.trim());
+
 // 회원가입/로그인 DTO
 export const createUserSchema = z.object({
   email: emailSchema,
   password: passwordSchema,
+  name: nameSchema,
 });
 
 export type CreateUserDto = z.infer<typeof createUserSchema>;

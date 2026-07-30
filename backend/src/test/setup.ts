@@ -4,14 +4,15 @@ import App from '@/app';
 import { AuthRoute } from '@routes/auth.route';
 import { UsersRoute } from '@routes/users.route';
 import { UsersRepository, IUsersRepository } from '@repositories/users.repository';
+import { InMemoryUsersRepository } from '@repositories/in-memory-users.repository';
 
-let sharedRepo: UsersRepository;
+let sharedRepo: InMemoryUsersRepository;
 
 export function createTestApp({ mockRepo }: { mockRepo?: IUsersRepository } = {}) {
   // 항상 새로운 인스턴스를 주입하고 싶으면 reset logic 추가 필요
   if (!sharedRepo) {
-    sharedRepo = new UsersRepository();
-    container.registerInstance(UsersRepository, sharedRepo);
+    sharedRepo = new InMemoryUsersRepository();
+    container.registerInstance(UsersRepository, sharedRepo as unknown as UsersRepository);
   }
   // mockRepo가 있으면 주입
   if (mockRepo) {

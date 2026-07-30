@@ -4,6 +4,7 @@ describe('User Entity', () => {
   const validUserData: UserCreateData = {
     email: 'test@example.com',
     password: 'password123',
+    name: 'Test User',
   };
 
   describe('create', () => {
@@ -74,6 +75,7 @@ describe('User Entity', () => {
         id: 'user_123',
         email: 'test@example.com',
         password: 'hashedpassword',
+        name: 'Test User',
         createdAt: new Date('2025-01-01'),
         updatedAt: new Date('2025-01-02'),
       };
@@ -92,6 +94,7 @@ describe('User Entity', () => {
         id: 'user_123',
         email: 'test@example.com',
         password: 'hashedpassword',
+        name: 'Test User',
       };
 
       const user = User.fromPersistence(persistenceData);
@@ -217,6 +220,7 @@ describe('User Entity', () => {
         id: user.id,
         email: user.email,
         password: user.password,
+        name: user.name,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       });
@@ -231,6 +235,7 @@ describe('User Entity', () => {
       expect(responseData).toEqual({
         id: user.id,
         email: user.email,
+        name: user.name,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       });
@@ -248,6 +253,7 @@ describe('User Entity', () => {
         id: user1.id,
         email: userData2.email,
         password: 'different',
+        name: userData2.name,
       });
 
       expect(user1.equals(user2)).toBe(true);

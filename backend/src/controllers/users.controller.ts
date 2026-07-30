@@ -16,7 +16,7 @@ export class UsersController {
   });
 
   getUserById = asyncHandler(async (req: Request, res: Response) => {
-    const userId: string = req.params.id;
+    const userId = String(req.params.id);
     const user = await this.userService.getUserById(userId);
 
     res.json({ data: user.toResponse(), message: 'findById' });
@@ -30,7 +30,7 @@ export class UsersController {
   });
 
   updateUser = asyncHandler(async (req: Request, res: Response) => {
-    const userId: string = req.params.id;
+    const userId = String(req.params.id);
     const updateData: { email?: string; password?: string } = req.body;
     const user = await this.userService.updateUser(userId, updateData);
 
@@ -38,7 +38,7 @@ export class UsersController {
   });
 
   deleteUser = asyncHandler(async (req: Request, res: Response) => {
-    const userId: string = req.params.id;
+    const userId = String(req.params.id);
     await this.userService.deleteUser(userId);
 
     res.status(204).json({ message: 'delete' });
