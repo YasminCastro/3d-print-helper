@@ -36,7 +36,7 @@ import {
   filamentTypeLabels,
 } from "@/components/brand-form-fields";
 import { StarRatingDisplay } from "@/components/star-rating-display";
-import type { costBenefitOptions, filamentTypeOptions } from "@/lib/schemas/brand";
+import type { costBenefitOptions } from "@/lib/schemas/brand";
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -46,28 +46,24 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
 function toFormValues(brand: FilamentBrand): BrandFormInput {
   return {
     name: brand.name,
-    whereToBuy: brand.where_to_buy ?? "",
-    avgPriceMin: brand.avg_price_min ?? undefined,
-    avgPriceMax: brand.avg_price_max ?? undefined,
-    filamentTypes: brand.filament_types
-      ? (brand.filament_types.split(",") as BrandFormInput["filamentTypes"])
-      : [],
-    bestColors: brand.best_colors ? brand.best_colors.split(",") : [],
-    purchased: !!brand.purchased,
+    whereToBuy: brand.whereToBuy ?? "",
+    avgPriceMin: brand.avgPriceMin ?? undefined,
+    avgPriceMax: brand.avgPriceMax ?? undefined,
+    filamentTypes: brand.filamentTypes,
+    bestColors: brand.bestColors,
+    purchased: brand.purchased,
     notes: brand.notes ?? "",
   };
 }
 
 function parseFilamentTypes(brand: FilamentBrand) {
-  if (!brand.filament_types) return [];
-  return (brand.filament_types.split(",") as (typeof filamentTypeOptions)[number][]).sort((a, b) =>
+  return [...brand.filamentTypes].sort((a, b) =>
     filamentTypeLabels[a].localeCompare(filamentTypeLabels[b])
   );
 }
 
 function parseBestColors(brand: FilamentBrand) {
-  if (!brand.best_colors) return [];
-  return brand.best_colors.split(",").sort((a, b) => a.localeCompare(b));
+  return [...brand.bestColors].sort((a, b) => a.localeCompare(b));
 }
 
 function formatPriceRange(priceMin: number | null, priceMax: number | null) {
@@ -180,12 +176,12 @@ export function BrandDetailsDialog({
               <dd>{brand.purchased ? "Sim" : "Não"}</dd>
 
               <dt className="text-muted-foreground">Onde compra</dt>
-              <dd>{brand.where_to_buy ?? "—"}</dd>
+              <dd>{brand.whereToBuy ?? "—"}</dd>
 
               <dt className="text-muted-foreground">Preço médio</dt>
               <dd>
                 {formatPriceRange(priceMin, priceMax)}
-                {(brand.avg_price_min == null || brand.avg_price_max == null) &&
+                {(brand.avgPriceMin == null || brand.avgPriceMax == null) &&
                   (priceMin != null || priceMax != null) && (
                     <span className="ml-1 text-xs text-muted-foreground">
                       (baseado nos filamentos cadastrados dessa marca)

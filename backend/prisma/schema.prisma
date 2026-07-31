@@ -32,3 +32,18 @@ model Printer {
 
   @@map("printers")
 }
+
+model FilamentBrand {
+  id            Int      @id @default(autoincrement())
+  name          String
+  whereToBuy    String?  @map("where_to_buy")
+  avgPriceMin   Float?   @map("avg_price_min")
+  avgPriceMax   Float?   @map("avg_price_max")
+  filamentTypes String?  @map("filament_types")
+  bestColors    String?  @map("best_colors")
+  purchased     Int?     @default(0)
+  notes         String?
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  @@map("filament_brands")
+}

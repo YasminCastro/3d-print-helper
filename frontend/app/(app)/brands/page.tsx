@@ -3,12 +3,10 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrandFormDialog } from "@/components/brand-form-dialog";
 import { BrandsPageContent } from "@/components/brands-page-content";
 import { brandAveragePrice, computeCostBenefit, groupAveragePrice } from "@/lib/cost-benefit";
-import type { FilamentBrand } from "@/lib/types/brand";
+import { getBrands } from "@/lib/actions/brands";
 
-export default function BrandsPage() {
-  const brands = db
-    .prepare("SELECT * FROM filament_brands ORDER BY name ASC")
-    .all() as FilamentBrand[];
+export default async function BrandsPage() {
+  const brands = [...(await getBrands())].sort((a, b) => a.name.localeCompare(b.name));
 
   const filamentRatings = db
     .prepare(
@@ -39,15 +37,15 @@ export default function BrandsPage() {
     const computed = priceRangeByBrand.get(brand.id);
     return {
       brand,
-      priceMin: brand.avg_price_min ?? computed?.computed_min ?? null,
-      priceMax: brand.avg_price_max ?? computed?.computed_max ?? null,
+      priceMin: brand.avgPriceMin ?? computed?.computed_min ?? null,
+      priceMax: brand.avgPriceMax ?? computed?.computed_max ?? null,
     };
   });
 
   const averagePrice = groupAveragePrice(
     pricedBrands.map(({ priceMin, priceMax }) => ({
-      avg_price_min: priceMin,
-      avg_price_max: priceMax,
+      avgPriceMin: priceMin,
+      avgPriceMax: priceMax,
     }))
   );
 
@@ -56,7 +54,7 @@ export default function BrandsPage() {
     priceMin,
     priceMax,
     costBenefit: computeCostBenefit(
-      brandAveragePrice({ avg_price_min: priceMin, avg_price_max: priceMax }),
+      brandAveragePrice({ avgPriceMin: priceMin, avgPriceMax: priceMax }),
       averagePrice
     ),
     filamentRating: ratingsByBrand.get(brand.id)?.avg_rating ?? null,

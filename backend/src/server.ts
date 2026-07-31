@@ -4,6 +4,7 @@ import { container } from 'tsyringe';
 import App from '@/app';
 import { UsersRepository } from '@repositories/users.repository';
 import { AuthRoute } from '@routes/auth.route';
+import { BrandsRoute } from '@routes/brands.route';
 import { PrintersRoute } from '@routes/printers.route';
 import { UsersRoute } from '@routes/users.route';
 
@@ -15,6 +16,7 @@ const routes = [
   container.resolve(UsersRoute),
   container.resolve(AuthRoute),
   container.resolve(PrintersRoute),
+  container.resolve(BrandsRoute),
 ];
 
 // API prefix는 app.ts에서 기본값 세팅, 필요하면 인자로 전달

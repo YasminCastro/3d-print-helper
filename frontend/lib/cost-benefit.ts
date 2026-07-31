@@ -1,13 +1,13 @@
 import { costBenefitOptions } from "@/lib/schemas/brand";
 import type { FilamentBrand } from "@/lib/types/brand";
 
-type BrandPrice = Pick<FilamentBrand, "avg_price_min" | "avg_price_max">;
+type BrandPrice = Pick<FilamentBrand, "avgPriceMin" | "avgPriceMax">;
 
 export function brandAveragePrice(brand: BrandPrice) {
-  const { avg_price_min, avg_price_max } = brand;
-  if (avg_price_min == null && avg_price_max == null) return null;
-  if (avg_price_min != null && avg_price_max != null) return (avg_price_min + avg_price_max) / 2;
-  return avg_price_min ?? avg_price_max;
+  const { avgPriceMin, avgPriceMax } = brand;
+  if (avgPriceMin == null && avgPriceMax == null) return null;
+  if (avgPriceMin != null && avgPriceMax != null) return (avgPriceMin + avgPriceMax) / 2;
+  return avgPriceMin ?? avgPriceMax;
 }
 
 export function groupAveragePrice(brands: BrandPrice[]) {

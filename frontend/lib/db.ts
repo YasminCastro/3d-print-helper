@@ -15,27 +15,13 @@ function createConnection() {
   database.pragma("foreign_keys = ON");
 
   database.exec(`
-    CREATE TABLE IF NOT EXISTS filament_brands (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      where_to_buy TEXT,
-      avg_price_min REAL,
-      avg_price_max REAL,
-      cost_benefit TEXT,
-      filament_types TEXT,
-      best_colors TEXT,
-      purchased INTEGER,
-      notes TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-
     CREATE TABLE IF NOT EXISTS filaments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       availability TEXT,
       last_purchase_date TEXT,
       material TEXT,
-      brand_id INTEGER REFERENCES filament_brands(id) ON DELETE SET NULL,
+      brand_id INTEGER,
       purchase_link TEXT,
       sale_name TEXT,
       min_price_paid REAL,
@@ -146,32 +132,13 @@ function createConnection() {
     );
   `);
 
-  const brandColumns = database
-    .prepare("PRAGMA table_info(filament_brands)")
-    .all() as { name: string }[];
-  const existingBrandColumns = new Set(brandColumns.map((column) => column.name));
-
-  if (!existingBrandColumns.has("filament_types")) {
-    database.exec("ALTER TABLE filament_brands ADD COLUMN filament_types TEXT");
-  }
-
-  if (!existingBrandColumns.has("best_colors")) {
-    database.exec("ALTER TABLE filament_brands ADD COLUMN best_colors TEXT");
-  }
-
-  if (!existingBrandColumns.has("purchased")) {
-    database.exec("ALTER TABLE filament_brands ADD COLUMN purchased INTEGER");
-  }
-
   const filamentColumns = database
     .prepare("PRAGMA table_info(filaments)")
     .all() as { name: string }[];
   const existingFilamentColumns = new Set(filamentColumns.map((column) => column.name));
 
   if (!existingFilamentColumns.has("brand_id")) {
-    database.exec(
-      "ALTER TABLE filaments ADD COLUMN brand_id INTEGER REFERENCES filament_brands(id)"
-    );
+    database.exec("ALTER TABLE filaments ADD COLUMN brand_id INTEGER");
   }
 
   if (!existingFilamentColumns.has("rating")) {

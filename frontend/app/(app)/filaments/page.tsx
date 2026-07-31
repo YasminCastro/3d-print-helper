@@ -2,21 +2,25 @@ import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { FilamentFormDialog } from "@/components/filament-form-dialog";
 import { FilamentsPageContent } from "@/components/filaments-page-content";
-import type { FilamentWithBrand } from "@/lib/types/filament";
+import { getBrands } from "@/lib/actions/brands";
+import type { Filament, FilamentWithBrand } from "@/lib/types/filament";
 
-export default function FilamentsPage() {
-  const filaments = db
-    .prepare(
-      `SELECT filaments.*, filament_brands.name AS brand_name
-       FROM filaments
-       LEFT JOIN filament_brands ON filaments.brand_id = filament_brands.id
-       ORDER BY filaments.name ASC`
-    )
-    .all() as FilamentWithBrand[];
+export default async function FilamentsPage() {
+  const brands = await getBrands();
+  const brandsById = new Map(brands.map((brand) => [brand.id, brand.name]));
 
-  const brandOptions = db
-    .prepare("SELECT id, name FROM filament_brands ORDER BY name ASC")
-    .all() as { id: number; name: string }[];
+  const filamentsRaw = db
+    .prepare("SELECT * FROM filaments ORDER BY name ASC")
+    .all() as Filament[];
+
+  const filaments: FilamentWithBrand[] = filamentsRaw.map((filament) => ({
+    ...filament,
+    brand_name: filament.brand_id != null ? (brandsById.get(filament.brand_id) ?? null) : null,
+  }));
+
+  const brandOptions = [...brands]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((brand) => ({ id: brand.id, name: brand.name }));
 
   return (
     <div className="flex flex-col gap-4">

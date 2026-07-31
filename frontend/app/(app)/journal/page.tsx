@@ -2,15 +2,15 @@ import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { JournalFormDialog } from "@/components/journal-form-dialog";
 import { JournalPageContent } from "@/components/journal-page-content";
+import { getFilamentOptions } from "@/lib/actions/filaments";
 import type {
   JournalAttempt,
   JournalEntryWithDetails,
   JournalEntryWithFilament,
   JournalPhoto,
 } from "@/lib/types/journal";
-import type { FilamentOption } from "@/lib/types/filament";
 
-export default function JournalPage() {
+export default async function JournalPage() {
   const entries = db
     .prepare(
       `SELECT journal_entries.*, filaments.name AS filament_name, filaments.color AS filament_color
@@ -48,15 +48,7 @@ export default function JournalPage() {
     photos: photosByEntry.get(entry.id) ?? [],
   }));
 
-  const filamentOptions = db
-    .prepare(
-      `SELECT filaments.id, filaments.name, filaments.color, filaments.material,
-              filament_brands.name AS brand_name
-       FROM filaments
-       LEFT JOIN filament_brands ON filaments.brand_id = filament_brands.id
-       ORDER BY filaments.name ASC`
-    )
-    .all() as FilamentOption[];
+  const filamentOptions = await getFilamentOptions();
 
   return (
     <div className="flex flex-col gap-4">

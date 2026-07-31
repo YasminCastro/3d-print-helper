@@ -4,13 +4,13 @@ import { PrintFormDialog } from "@/components/print-form-dialog";
 import { PrintsPageContent } from "@/components/prints-page-content";
 import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
+import { getFilamentOptions } from "@/lib/actions/filaments";
 import type {
   Print,
   PrintCategory,
   PrintFilamentWithDetails,
   PrintWithDetails,
 } from "@/lib/types/print";
-import type { FilamentOption } from "@/lib/types/filament";
 import type { AppSettings } from "@/lib/types/settings";
 
 export default async function PrintsPage() {
@@ -61,15 +61,7 @@ export default async function PrintsPage() {
     .prepare("SELECT * FROM print_categories ORDER BY name ASC")
     .all() as PrintCategory[];
 
-  const filamentOptions = db
-    .prepare(
-      `SELECT filaments.id, filaments.name, filaments.color, filaments.material,
-              filament_brands.name AS brand_name
-       FROM filaments
-       LEFT JOIN filament_brands ON filaments.brand_id = filament_brands.id
-       ORDER BY filaments.name ASC`
-    )
-    .all() as FilamentOption[];
+  const filamentOptions = await getFilamentOptions();
 
   const printerOptions = [...printers]
     .sort((a, b) => a.name.localeCompare(b.name))

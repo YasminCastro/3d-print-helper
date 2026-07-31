@@ -13,7 +13,9 @@ import { PrintFormDialog } from "@/components/print-form-dialog";
 import { PrintCard } from "@/components/print-card";
 import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
-import type { Filament, FilamentOption } from "@/lib/types/filament";
+import { getBrands } from "@/lib/actions/brands";
+import { getFilamentOptions } from "@/lib/actions/filaments";
+import type { Filament } from "@/lib/types/filament";
 import type {
   Print,
   PrintCategory,
@@ -52,19 +54,12 @@ export default async function Home() {
     )
     .all() as Filament[];
 
-  const brandOptions = db
-    .prepare("SELECT id, name FROM filament_brands ORDER BY name ASC")
-    .all() as { id: number; name: string }[];
+  const brands = await getBrands();
+  const brandOptions = [...brands]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((brand) => ({ id: brand.id, name: brand.name }));
 
-  const filamentOptions = db
-    .prepare(
-      `SELECT filaments.id, filaments.name, filaments.color, filaments.material,
-              filament_brands.name AS brand_name
-       FROM filaments
-       LEFT JOIN filament_brands ON filaments.brand_id = filament_brands.id
-       ORDER BY filaments.name ASC`
-    )
-    .all() as FilamentOption[];
+  const filamentOptions = await getFilamentOptions();
 
   const printCategoryOptions = db
     .prepare("SELECT * FROM print_categories ORDER BY name ASC")

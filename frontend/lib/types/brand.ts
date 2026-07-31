@@ -1,12 +1,14 @@
+import type { filamentTypeOptions } from "@/lib/schemas/brand";
+
 export type FilamentBrand = {
   id: number;
   name: string;
-  where_to_buy: string | null;
-  avg_price_min: number | null;
-  avg_price_max: number | null;
-  filament_types: string | null;
-  best_colors: string | null;
-  purchased: number | null;
+  whereToBuy: string | null;
+  avgPriceMin: number | null;
+  avgPriceMax: number | null;
+  filamentTypes: (typeof filamentTypeOptions)[number][];
+  bestColors: string[];
+  purchased: boolean;
   notes: string | null;
-  created_at: string;
+  createdAt: string;
 };

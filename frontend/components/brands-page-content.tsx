@@ -42,7 +42,7 @@ export function BrandsPageContent({ items }: { items: BrandListItem[] }) {
   const availableColors = useMemo(() => {
     const set = new Set<string>();
     for (const { brand } of items) {
-      brand.best_colors?.split(",").forEach((color) => set.add(color));
+      brand.bestColors.forEach((color) => set.add(color));
     }
     return Array.from(set).sort((a, b) => a.localeCompare(b));
   }, [items]);
@@ -60,20 +60,18 @@ export function BrandsPageContent({ items }: { items: BrandListItem[] }) {
       }
 
       if (min != null || max != null) {
-        const avgPrice = brandAveragePrice({ avg_price_min: itemPriceMin, avg_price_max: itemPriceMax });
+        const avgPrice = brandAveragePrice({ avgPriceMin: itemPriceMin, avgPriceMax: itemPriceMax });
         if (avgPrice == null) return false;
         if (min != null && avgPrice < min) return false;
         if (max != null && avgPrice > max) return false;
       }
 
       if (filamentTypeFilter.size > 0) {
-        const types = brand.filament_types?.split(",") ?? [];
-        if (!types.some((type) => filamentTypeFilter.has(type))) return false;
+        if (!brand.filamentTypes.some((type) => filamentTypeFilter.has(type))) return false;
       }
 
       if (colorFilter.size > 0) {
-        const colors = brand.best_colors?.split(",") ?? [];
-        if (!colors.some((color) => colorFilter.has(color))) return false;
+        if (!brand.bestColors.some((color) => colorFilter.has(color))) return false;
       }
 
       return true;

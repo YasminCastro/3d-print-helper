@@ -2,56 +2,78 @@
 
 import { refresh } from "next/cache";
 
-import { db } from "@/lib/db";
+import { backendUrl } from "@/lib/backend-url";
 import { brandFormSchema, type BrandFormInput } from "@/lib/schemas/brand";
+import type { FilamentBrand } from "@/lib/types/brand";
 
-function toRow(values: BrandFormInput) {
+function toPayload(values: BrandFormInput) {
   const parsed = brandFormSchema.parse(values);
 
   return {
     name: parsed.name,
-    whereToBuy: parsed.whereToBuy ?? null,
+    whereToBuy: parsed.whereToBuy || null,
     avgPriceMin: parsed.avgPriceMin ?? null,
     avgPriceMax: parsed.avgPriceMax ?? null,
-    filamentTypes: parsed.filamentTypes?.length ? parsed.filamentTypes.join(",") : null,
-    bestColors: parsed.bestColors?.length ? parsed.bestColors.join(",") : null,
-    purchased: parsed.purchased ? 1 : 0,
-    notes: parsed.notes ?? null,
+    filamentTypes: parsed.filamentTypes ?? [],
+    bestColors: parsed.bestColors ?? [],
+    purchased: parsed.purchased ?? false,
+    notes: parsed.notes || null,
   };
 }
 
-export async function createBrandAction(values: BrandFormInput) {
-  const row = toRow(values);
+export async function getBrands(): Promise<FilamentBrand[]> {
+  const response = await fetch(backendUrl("/brands"), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("Não foi possível carregar as marcas");
+  }
+  const body = await response.json();
+  return body.data;
+}
 
-  db.prepare(
-    `INSERT INTO filament_brands (name, where_to_buy, avg_price_min, avg_price_max, filament_types, best_colors, purchased, notes)
-     VALUES (@name, @whereToBuy, @avgPriceMin, @avgPriceMax, @filamentTypes, @bestColors, @purchased, @notes)`
-  ).run(row);
+export async function getBrand(id: number): Promise<FilamentBrand | null> {
+  const response = await fetch(backendUrl(`/brands/${id}`), { cache: "no-store" });
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error("Não foi possível carregar a marca");
+  }
+  const body = await response.json();
+  return body.data;
+}
+
+export async function createBrandAction(values: BrandFormInput) {
+  const response = await fetch(backendUrl("/brands"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(toPayload(values)),
+  });
+
+  if (!response.ok) {
+    throw new Error("Não foi possível criar a marca");
+  }
 
   refresh();
 }
 
 export async function updateBrandAction(id: number, values: BrandFormInput) {
-  const row = toRow(values);
+  const response = await fetch(backendUrl(`/brands/${id}`), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(toPayload(values)),
+  });
 
-  db.prepare(
-    `UPDATE filament_brands
-     SET name = @name,
-         where_to_buy = @whereToBuy,
-         avg_price_min = @avgPriceMin,
-         avg_price_max = @avgPriceMax,
-         filament_types = @filamentTypes,
-         best_colors = @bestColors,
-         purchased = @purchased,
-         notes = @notes
-     WHERE id = @id`
-  ).run({ ...row, id });
+  if (!response.ok) {
+    throw new Error("Não foi possível atualizar a marca");
+  }
 
   refresh();
 }
 
 export async function deleteBrandAction(id: number) {
-  db.prepare("DELETE FROM filament_brands WHERE id = ?").run(id);
+  const response = await fetch(backendUrl(`/brands/${id}`), { method: "DELETE" });
+
+  if (!response.ok && response.status !== 404) {
+    throw new Error("Não foi possível excluir a marca");
+  }
 
   refresh();
 }

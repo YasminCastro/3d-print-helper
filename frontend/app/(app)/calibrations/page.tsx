@@ -2,10 +2,10 @@ import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalibrationFormDialog } from "@/components/calibration-form-dialog";
 import { CalibrationsPageContent } from "@/components/calibrations-page-content";
+import { getFilamentOptions } from "@/lib/actions/filaments";
 import type { CalibrationWithFilament } from "@/lib/types/calibration";
-import type { FilamentOption } from "@/lib/types/filament";
 
-export default function CalibrationsPage() {
+export default async function CalibrationsPage() {
   const calibrations = db
     .prepare(
       `SELECT calibrations.*, filaments.name AS filament_name, filaments.color AS filament_color
@@ -15,15 +15,7 @@ export default function CalibrationsPage() {
     )
     .all() as CalibrationWithFilament[];
 
-  const filamentOptions = db
-    .prepare(
-      `SELECT filaments.id, filaments.name, filaments.color, filaments.material,
-              filament_brands.name AS brand_name
-       FROM filaments
-       LEFT JOIN filament_brands ON filaments.brand_id = filament_brands.id
-       ORDER BY filaments.name ASC`
-    )
-    .all() as FilamentOption[];
+  const filamentOptions = await getFilamentOptions();
 
   return (
     <div className="flex flex-col gap-4">

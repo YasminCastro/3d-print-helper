@@ -45,14 +45,10 @@ export function BrandCard({
 }) {
   const [open, setOpen] = useState(false);
   const priceRange = formatPriceRange(priceMin, priceMax);
-  const filamentTypes = brand.filament_types
-    ? (brand.filament_types.split(",") as (typeof filamentTypeOptions)[number][]).sort((a, b) =>
-        filamentTypeLabels[a].localeCompare(filamentTypeLabels[b])
-      )
-    : [];
-  const bestColors = brand.best_colors
-    ? brand.best_colors.split(",").sort((a, b) => a.localeCompare(b))
-    : [];
+  const filamentTypes = [...brand.filamentTypes].sort((a, b) =>
+    filamentTypeLabels[a].localeCompare(filamentTypeLabels[b])
+  );
+  const bestColors = [...brand.bestColors].sort((a, b) => a.localeCompare(b));
 
   return (
     <>
