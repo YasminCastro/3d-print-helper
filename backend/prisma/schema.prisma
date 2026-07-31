@@ -17,3 +17,18 @@ model User {
 
   @@map("users")
 }
+
+model Printer {
+  id                     Int      @id @default(autoincrement())
+  name                   String
+  model                  String?
+  brand                  String?
+  powerConsumptionW      Float?   @map("power_consumption_w")
+  maintenanceCostPerHour Float?   @map("maintenance_cost_per_hour")
+  purchasePrice          Float?   @map("purchase_price")
+  lifespanHours          Int?     @map("lifespan_hours")
+  energyCostPerKwh       Float?   @map("energy_cost_per_kwh")
+  createdAt              DateTime @default(now()) @map("created_at")
+
+  @@map("printers")
+}

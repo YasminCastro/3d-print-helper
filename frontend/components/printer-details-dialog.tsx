@@ -42,11 +42,11 @@ function toFormValues(printer: Printer): PrinterFormInput {
   return {
     name: printer.name,
     brand: printer.brand ?? "",
-    powerConsumptionW: printer.power_consumption_w ?? undefined,
-    maintenanceCostPerHour: printer.maintenance_cost_per_hour ?? undefined,
-    purchasePrice: printer.purchase_price ?? undefined,
-    lifespanHours: printer.lifespan_hours ?? undefined,
-    energyCostPerKwh: printer.energy_cost_per_kwh ?? undefined,
+    powerConsumptionW: printer.powerConsumptionW ?? undefined,
+    maintenanceCostPerHour: printer.maintenanceCostPerHour ?? undefined,
+    purchasePrice: printer.purchasePrice ?? undefined,
+    lifespanHours: printer.lifespanHours ?? undefined,
+    energyCostPerKwh: printer.energyCostPerKwh ?? undefined,
   };
 }
 
@@ -125,36 +125,36 @@ export function PrinterDetailsDialog({
 
               <dt className="text-muted-foreground">Consumo</dt>
               <dd>
-                {printer.power_consumption_w != null
-                  ? `${printer.power_consumption_w} W`
+                {printer.powerConsumptionW != null
+                  ? `${printer.powerConsumptionW} W`
                   : "—"}
               </dd>
 
               <dt className="text-muted-foreground">Vida útil</dt>
               <dd>
-                {printer.lifespan_hours != null
-                  ? `${printer.lifespan_hours} h`
+                {printer.lifespanHours != null
+                  ? `${printer.lifespanHours} h`
                   : "—"}
               </dd>
 
               <dt className="text-muted-foreground">Preço pago</dt>
               <dd>
-                {printer.purchase_price != null
-                  ? currencyFormatter.format(printer.purchase_price)
+                {printer.purchasePrice != null
+                  ? currencyFormatter.format(printer.purchasePrice)
                   : "—"}
               </dd>
 
               <dt className="text-muted-foreground">Preço do kWh</dt>
               <dd>
-                {printer.energy_cost_per_kwh != null
-                  ? currencyFormatter.format(printer.energy_cost_per_kwh)
+                {printer.energyCostPerKwh != null
+                  ? currencyFormatter.format(printer.energyCostPerKwh)
                   : "—"}
               </dd>
 
               <dt className="text-muted-foreground">Manutenção</dt>
               <dd>
-                {printer.maintenance_cost_per_hour != null
-                  ? `${currencyFormatter.format(printer.maintenance_cost_per_hour)}/h`
+                {printer.maintenanceCostPerHour != null
+                  ? `${currencyFormatter.format(printer.maintenanceCostPerHour)}/h`
                   : "—"}
               </dd>
             </dl>

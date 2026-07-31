@@ -33,9 +33,9 @@ export function PrinterCard({ printer }: { printer: Printer }) {
           <PrinterIcon className="size-4 text-primary" />
           <CardTitle className="text-base">{printer.name}</CardTitle>
         </CardHeader>
-        {printer.purchase_price != null && (
+        {printer.purchasePrice != null && (
           <CardContent className="text-sm text-muted-foreground">
-            {currencyFormatter.format(printer.purchase_price)}
+            {currencyFormatter.format(printer.purchasePrice)}
           </CardContent>
         )}
       </Card>

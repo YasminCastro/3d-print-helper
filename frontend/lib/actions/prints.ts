@@ -9,6 +9,7 @@ import { refresh } from "next/cache";
 import { db } from "@/lib/db";
 import { NEW_CATEGORY_VALUE } from "@/lib/schemas/print";
 import { recalculatePrintCalculations } from "@/lib/print-calculations";
+import { getPrinter } from "@/lib/actions/printers";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "prints");
 
@@ -149,6 +150,8 @@ export async function createPrintAction(formData: FormData) {
     filename = await savePhoto(photo);
   }
 
+  const printer = printerId ? await getPrinter(printerId) : null;
+
   const transaction = db.transaction(() => {
     const insertResult = db
       .prepare(
@@ -170,7 +173,7 @@ export async function createPrintAction(formData: FormData) {
 
     const printId = Number(insertResult.lastInsertRowid);
     insertFilaments(printId, filaments);
-    recalculatePrintCalculations(db, printId);
+    recalculatePrintCalculations(db, printId, printer);
   });
 
   transaction();
@@ -203,6 +206,8 @@ export async function updatePrintAction(id: number, formData: FormData) {
     filename = await savePhoto(photo);
   }
 
+  const printer = printerId ? await getPrinter(printerId) : null;
+
   const transaction = db.transaction(() => {
     db.prepare(
       `UPDATE prints
@@ -225,7 +230,7 @@ export async function updatePrintAction(id: number, formData: FormData) {
 
     db.prepare("DELETE FROM print_filaments WHERE print_id = ?").run(id);
     insertFilaments(id, filaments);
-    recalculatePrintCalculations(db, id);
+    recalculatePrintCalculations(db, id, printer);
   });
 
   transaction();

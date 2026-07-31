@@ -8,6 +8,7 @@ import {
   type LoginFormInput,
   type SignupFormInput,
 } from "@/lib/schemas/auth";
+import { backendUrl } from "@/lib/backend-url";
 
 type SignupResult =
   | { success: true }
@@ -16,14 +17,6 @@ type SignupResult =
 type LoginResult =
   | { success: true }
   | { success: false; error: string };
-
-function backendUrl(path: string) {
-  const base = process.env.BACKEND_API_URL;
-  if (!base) {
-    throw new Error("BACKEND_API_URL não está configurada");
-  }
-  return `${base.replace(/\/$/, "")}${path}`;
-}
 
 export async function signupAction(values: SignupFormInput): Promise<SignupResult> {
   const parsed = signupFormSchema.safeParse(values);

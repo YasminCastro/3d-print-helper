@@ -1,13 +1,10 @@
-import { db } from "@/lib/db";
+import { getPrinters } from "@/lib/actions/printers";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PrinterFormDialog } from "@/components/printer-form-dialog";
 import { PrinterCard } from "@/components/printer-card";
-import type { Printer } from "@/lib/types/printer";
 
-export default function PrintersPage() {
-  const printers = db
-    .prepare("SELECT * FROM printers ORDER BY created_at DESC")
-    .all() as Printer[];
+export default async function PrintersPage() {
+  const printers = await getPrinters();
 
   return (
     <div className="flex flex-col gap-4">

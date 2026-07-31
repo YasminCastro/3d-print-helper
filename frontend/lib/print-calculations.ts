@@ -61,24 +61,18 @@ export function printCost(
 
 export function recalculatePrintCalculations(
   database: import("better-sqlite3").Database,
-  printId: number
+  printId: number,
+  printer?: {
+    powerConsumptionW: number | null;
+    energyCostPerKwh: number | null;
+    maintenanceCostPerHour: number | null;
+  } | null
 ) {
   const print = database
-    .prepare(
-      `SELECT prints.duration_minutes, prints.profit_percent,
-              printers.power_consumption_w AS printer_power_consumption_w,
-              printers.energy_cost_per_kwh AS printer_energy_cost_per_kwh,
-              printers.maintenance_cost_per_hour AS printer_maintenance_cost_per_hour
-       FROM prints
-       LEFT JOIN printers ON prints.printer_id = printers.id
-       WHERE prints.id = ?`
-    )
+    .prepare(`SELECT duration_minutes, profit_percent FROM prints WHERE id = ?`)
     .get(printId) as {
     duration_minutes: number | null;
     profit_percent: number | null;
-    printer_power_consumption_w: number | null;
-    printer_energy_cost_per_kwh: number | null;
-    printer_maintenance_cost_per_hour: number | null;
   };
 
   const printFilaments = database
@@ -143,9 +137,9 @@ export function recalculatePrintCalculations(
 
   const printerInput = {
     durationMinutes: print.duration_minutes,
-    powerConsumptionW: print.printer_power_consumption_w,
-    energyCostPerKwh: print.printer_energy_cost_per_kwh,
-    maintenanceCostPerHour: print.printer_maintenance_cost_per_hour,
+    powerConsumptionW: printer?.powerConsumptionW ?? null,
+    energyCostPerKwh: printer?.energyCostPerKwh ?? null,
+    maintenanceCostPerHour: printer?.maintenanceCostPerHour ?? null,
   };
   const effectiveProfitPercent = print.profit_percent ?? settings.default_profit_percent;
 

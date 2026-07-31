@@ -15,19 +15,6 @@ function createConnection() {
   database.pragma("foreign_keys = ON");
 
   database.exec(`
-    CREATE TABLE IF NOT EXISTS printers (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      model TEXT,
-      brand TEXT,
-      power_consumption_w REAL,
-      maintenance_cost_per_hour REAL,
-      purchase_price REAL,
-      lifespan_hours INTEGER,
-      energy_cost_per_kwh REAL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-
     CREATE TABLE IF NOT EXISTS filament_brands (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
@@ -123,7 +110,7 @@ function createConnection() {
       status TEXT,
       result TEXT,
       category_id INTEGER REFERENCES print_categories(id) ON DELETE SET NULL,
-      printer_id INTEGER REFERENCES printers(id) ON DELETE SET NULL,
+      printer_id INTEGER,
       print_link TEXT,
       profit_percent REAL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
@@ -144,7 +131,7 @@ function createConnection() {
 
     CREATE TABLE IF NOT EXISTS print_profiles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      printer_id INTEGER NOT NULL REFERENCES printers(id) ON DELETE CASCADE,
+      printer_id INTEGER NOT NULL,
       name TEXT NOT NULL,
       material TEXT,
       nozzle_temp INTEGER,
@@ -158,26 +145,6 @@ function createConnection() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
-
-  const printerColumns = database
-    .prepare("PRAGMA table_info(printers)")
-    .all() as { name: string }[];
-  const existingColumns = new Set(printerColumns.map((column) => column.name));
-
-  const newPrinterColumns: Record<string, string> = {
-    brand: "TEXT",
-    power_consumption_w: "REAL",
-    maintenance_cost_per_hour: "REAL",
-    purchase_price: "REAL",
-    lifespan_hours: "INTEGER",
-    energy_cost_per_kwh: "REAL",
-  };
-
-  for (const [column, type] of Object.entries(newPrinterColumns)) {
-    if (!existingColumns.has(column)) {
-      database.exec(`ALTER TABLE printers ADD COLUMN ${column} ${type}`);
-    }
-  }
 
   const brandColumns = database
     .prepare("PRAGMA table_info(filament_brands)")
@@ -301,9 +268,7 @@ function createConnection() {
   }
 
   if (!existingPrintColumns.has("printer_id")) {
-    database.exec(
-      "ALTER TABLE prints ADD COLUMN printer_id INTEGER REFERENCES printers(id)"
-    );
+    database.exec("ALTER TABLE prints ADD COLUMN printer_id INTEGER");
   }
 
   if (existingPrintColumns.has("filament_id")) {

@@ -4,13 +4,18 @@ import { container } from 'tsyringe';
 import App from '@/app';
 import { UsersRepository } from '@repositories/users.repository';
 import { AuthRoute } from '@routes/auth.route';
+import { PrintersRoute } from '@routes/printers.route';
 import { UsersRoute } from '@routes/users.route';
 
 // DI 등록
 container.registerInstance(UsersRepository, new UsersRepository());
 
 // 라우트 모듈을 필요에 따라 동적으로 배열화 가능
-const routes = [container.resolve(UsersRoute), container.resolve(AuthRoute)];
+const routes = [
+  container.resolve(UsersRoute),
+  container.resolve(AuthRoute),
+  container.resolve(PrintersRoute),
+];
 
 // API prefix는 app.ts에서 기본값 세팅, 필요하면 인자로 전달
 const appInstance = new App(routes);

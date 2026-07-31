@@ -2,29 +2,36 @@ import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PrintFormDialog } from "@/components/print-form-dialog";
 import { PrintsPageContent } from "@/components/prints-page-content";
+import { getPrinters } from "@/lib/actions/printers";
+import { printerDenormalizedFields } from "@/lib/printer-helpers";
 import type {
+  Print,
   PrintCategory,
   PrintFilamentWithDetails,
-  PrintWithCategory,
   PrintWithDetails,
 } from "@/lib/types/print";
 import type { FilamentOption } from "@/lib/types/filament";
 import type { AppSettings } from "@/lib/types/settings";
 
-export default function PrintsPage() {
-  const prints = db
+export default async function PrintsPage() {
+  const printers = await getPrinters();
+  const printersById = new Map(printers.map((printer) => [printer.id, printer]));
+
+  const printsRaw = db
     .prepare(
-      `SELECT prints.*, print_categories.name AS category_name,
-              printers.name AS printer_name,
-              printers.power_consumption_w AS printer_power_consumption_w,
-              printers.energy_cost_per_kwh AS printer_energy_cost_per_kwh,
-              printers.maintenance_cost_per_hour AS printer_maintenance_cost_per_hour
+      `SELECT prints.*, print_categories.name AS category_name
        FROM prints
        LEFT JOIN print_categories ON prints.category_id = print_categories.id
-       LEFT JOIN printers ON prints.printer_id = printers.id
        ORDER BY COALESCE(prints.print_date, prints.created_at) DESC`
     )
-    .all() as PrintWithCategory[];
+    .all() as (Print & { category_name: string | null })[];
+
+  const prints = printsRaw.map((print) => ({
+    ...print,
+    ...printerDenormalizedFields(
+      print.printer_id != null ? printersById.get(print.printer_id) : null
+    ),
+  }));
 
   const printFilaments = db
     .prepare(
@@ -64,9 +71,9 @@ export default function PrintsPage() {
     )
     .all() as FilamentOption[];
 
-  const printerOptions = db
-    .prepare("SELECT id, name FROM printers ORDER BY name ASC")
-    .all() as { id: number; name: string }[];
+  const printerOptions = [...printers]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((printer) => ({ id: printer.id, name: printer.name }));
 
   const settings = db
     .prepare("SELECT * FROM app_settings WHERE id = 1")

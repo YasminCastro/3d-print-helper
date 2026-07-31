@@ -11,11 +11,13 @@ import { CalibrationFormDialog } from "@/components/calibration-form-dialog";
 import { JournalFormDialog } from "@/components/journal-form-dialog";
 import { PrintFormDialog } from "@/components/print-form-dialog";
 import { PrintCard } from "@/components/print-card";
+import { getPrinters } from "@/lib/actions/printers";
+import { printerDenormalizedFields } from "@/lib/printer-helpers";
 import type { Filament, FilamentOption } from "@/lib/types/filament";
 import type {
+  Print,
   PrintCategory,
   PrintFilamentWithDetails,
-  PrintWithCategory,
   PrintWithDetails,
 } from "@/lib/types/print";
 import type { AppSettings } from "@/lib/types/settings";
@@ -38,7 +40,10 @@ const alertIconColors: Record<"indisponivel" | "quase_acabando", string> = {
   quase_acabando: "text-yellow-800 dark:text-yellow-500",
 };
 
-export default function Home() {
+export default async function Home() {
+  const printers = await getPrinters();
+  const printersById = new Map(printers.map((printer) => [printer.id, printer]));
+
   const alerts = db
     .prepare(
       `SELECT * FROM filaments
@@ -65,9 +70,9 @@ export default function Home() {
     .prepare("SELECT * FROM print_categories ORDER BY name ASC")
     .all() as PrintCategory[];
 
-  const printerOptions = db
-    .prepare("SELECT id, name FROM printers ORDER BY name ASC")
-    .all() as { id: number; name: string }[];
+  const printerOptions = [...printers]
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .map((printer) => ({ id: printer.id, name: printer.name }));
 
   const settings = db
     .prepare("SELECT * FROM app_settings WHERE id = 1")
@@ -85,20 +90,22 @@ export default function Home() {
     )
     .get() as { profit_percent: number } | undefined;
 
-  const recentPrints = db
+  const recentPrintsRaw = db
     .prepare(
-      `SELECT prints.*, print_categories.name AS category_name,
-              printers.name AS printer_name,
-              printers.power_consumption_w AS printer_power_consumption_w,
-              printers.energy_cost_per_kwh AS printer_energy_cost_per_kwh,
-              printers.maintenance_cost_per_hour AS printer_maintenance_cost_per_hour
+      `SELECT prints.*, print_categories.name AS category_name
        FROM prints
        LEFT JOIN print_categories ON prints.category_id = print_categories.id
-       LEFT JOIN printers ON prints.printer_id = printers.id
        ORDER BY COALESCE(prints.print_date, prints.created_at) DESC
        LIMIT 4`
     )
-    .all() as PrintWithCategory[];
+    .all() as (Print & { category_name: string | null })[];
+
+  const recentPrints = recentPrintsRaw.map((print) => ({
+    ...print,
+    ...printerDenormalizedFields(
+      print.printer_id != null ? printersById.get(print.printer_id) : null
+    ),
+  }));
 
   const recentPrintIds = recentPrints.map((print) => print.id);
   const recentPrintFilaments = recentPrintIds.length
