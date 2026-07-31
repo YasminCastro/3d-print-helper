@@ -66,6 +66,13 @@ export function recalculatePrintCalculations(
     powerConsumptionW: number | null;
     energyCostPerKwh: number | null;
     maintenanceCostPerHour: number | null;
+  } | null,
+  filamentPricing?: {
+    filamentsById: Map<
+      number,
+      { material: string | null; min_price_paid: number | null; max_price_paid: number | null }
+    >;
+    materialMaxPrices: Record<string, number>;
   } | null
 ) {
   const print = database
@@ -76,58 +83,40 @@ export function recalculatePrintCalculations(
   };
 
   const printFilaments = database
-    .prepare(
-      `SELECT print_filaments.grams,
-              filaments.material AS filament_material,
-              filaments.min_price_paid AS filament_min_price_paid,
-              filaments.max_price_paid AS filament_max_price_paid
-       FROM print_filaments
-       LEFT JOIN filaments ON print_filaments.filament_id = filaments.id
-       WHERE print_filaments.print_id = ?`
-    )
-    .all(printId) as {
-    grams: number | null;
-    filament_material: string | null;
-    filament_min_price_paid: number | null;
-    filament_max_price_paid: number | null;
-  }[];
+    .prepare(`SELECT grams, filament_id FROM print_filaments WHERE print_id = ?`)
+    .all(printId) as { grams: number | null; filament_id: number | null }[];
 
   const settings = database
     .prepare("SELECT default_profit_percent FROM app_settings WHERE id = 1")
     .get() as { default_profit_percent: number };
 
-  const materialMaxPriceRows = database
-    .prepare(
-      `SELECT material, MAX(COALESCE(max_price_paid, min_price_paid)) AS max_price
-       FROM filaments
-       WHERE material IS NOT NULL AND (max_price_paid IS NOT NULL OR min_price_paid IS NOT NULL)
-       GROUP BY material`
-    )
-    .all() as { material: string; max_price: number }[];
-  const materialMaxPrices = Object.fromEntries(
-    materialMaxPriceRows.map((row) => [row.material, row.max_price])
-  );
+  const filamentsById = filamentPricing?.filamentsById ?? new Map();
+  const materialMaxPrices = filamentPricing?.materialMaxPrices ?? {};
 
   const filamentCostTotal = totalFilamentCost(
-    printFilaments.map((filament) => ({
-      grams: filament.grams,
-      pricePerKg: filamentPricePerKg({
-        min_price_paid: filament.filament_min_price_paid,
-        max_price_paid: filament.filament_max_price_paid,
-      }),
-    }))
+    printFilaments.map((filament) => {
+      const details = filament.filament_id != null ? filamentsById.get(filament.filament_id) : undefined;
+      return {
+        grams: filament.grams,
+        pricePerKg: filamentPricePerKg({
+          min_price_paid: details?.min_price_paid ?? null,
+          max_price_paid: details?.max_price_paid ?? null,
+        }),
+      };
+    })
   );
 
   const worstCaseFilamentCostTotal = totalFilamentCost(
     printFilaments.map((filament) => {
+      const details = filament.filament_id != null ? filamentsById.get(filament.filament_id) : undefined;
       const ownPricePerKg = filamentPricePerKg({
-        min_price_paid: filament.filament_min_price_paid,
-        max_price_paid: filament.filament_max_price_paid,
+        min_price_paid: details?.min_price_paid ?? null,
+        max_price_paid: details?.max_price_paid ?? null,
       });
       return {
         grams: filament.grams,
         pricePerKg: mostExpensivePricePerKgOfType(
-          filament.filament_material,
+          details?.material ?? null,
           materialMaxPrices,
           ownPricePerKg
         ),

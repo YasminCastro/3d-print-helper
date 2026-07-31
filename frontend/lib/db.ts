@@ -15,31 +15,10 @@ function createConnection() {
   database.pragma("foreign_keys = ON");
 
   database.exec(`
-    CREATE TABLE IF NOT EXISTS filaments (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      availability TEXT,
-      last_purchase_date TEXT,
-      material TEXT,
-      brand_id INTEGER,
-      purchase_link TEXT,
-      sale_name TEXT,
-      min_price_paid REAL,
-      max_price_paid REAL,
-      nozzle_temp_min INTEGER,
-      nozzle_temp_max INTEGER,
-      bed_temp_min INTEGER,
-      bed_temp_max INTEGER,
-      purchase_batch TEXT,
-      rating INTEGER,
-      color TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-
     CREATE TABLE IF NOT EXISTS calibrations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       slicer TEXT NOT NULL,
-      filament_id INTEGER REFERENCES filaments(id) ON DELETE CASCADE,
+      filament_id INTEGER,
       status TEXT,
       calibration_date TEXT,
       bed_temp_first_layer REAL,
@@ -58,7 +37,7 @@ function createConnection() {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
       entry_date TEXT,
-      filament_id INTEGER REFERENCES filaments(id) ON DELETE SET NULL,
+      filament_id INTEGER,
       status TEXT,
       symptom TEXT,
       possible_causes TEXT,
@@ -110,7 +89,7 @@ function createConnection() {
     CREATE TABLE IF NOT EXISTS print_filaments (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       print_id INTEGER NOT NULL REFERENCES prints(id) ON DELETE CASCADE,
-      filament_id INTEGER REFERENCES filaments(id) ON DELETE SET NULL,
+      filament_id INTEGER,
       grams REAL,
       position INTEGER NOT NULL
     );
@@ -131,27 +110,6 @@ function createConnection() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
-
-  const filamentColumns = database
-    .prepare("PRAGMA table_info(filaments)")
-    .all() as { name: string }[];
-  const existingFilamentColumns = new Set(filamentColumns.map((column) => column.name));
-
-  if (!existingFilamentColumns.has("brand_id")) {
-    database.exec("ALTER TABLE filaments ADD COLUMN brand_id INTEGER");
-  }
-
-  if (!existingFilamentColumns.has("rating")) {
-    database.exec("ALTER TABLE filaments ADD COLUMN rating INTEGER");
-  }
-
-  if (!existingFilamentColumns.has("color")) {
-    database.exec("ALTER TABLE filaments ADD COLUMN color TEXT");
-  }
-
-  if (!existingFilamentColumns.has("availability")) {
-    database.exec("ALTER TABLE filaments ADD COLUMN availability TEXT");
-  }
 
   const calibrationColumns = database
     .prepare("PRAGMA table_info(calibrations)")

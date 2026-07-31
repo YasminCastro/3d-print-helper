@@ -10,6 +10,7 @@ import { db } from "@/lib/db";
 import { NEW_CATEGORY_VALUE } from "@/lib/schemas/print";
 import { recalculatePrintCalculations } from "@/lib/print-calculations";
 import { getPrinter } from "@/lib/actions/printers";
+import { getFilamentPricingData } from "@/lib/actions/filaments";
 
 const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "prints");
 
@@ -151,6 +152,7 @@ export async function createPrintAction(formData: FormData) {
   }
 
   const printer = printerId ? await getPrinter(printerId) : null;
+  const filamentPricing = await getFilamentPricingData();
 
   const transaction = db.transaction(() => {
     const insertResult = db
@@ -173,7 +175,7 @@ export async function createPrintAction(formData: FormData) {
 
     const printId = Number(insertResult.lastInsertRowid);
     insertFilaments(printId, filaments);
-    recalculatePrintCalculations(db, printId, printer);
+    recalculatePrintCalculations(db, printId, printer, filamentPricing);
   });
 
   transaction();
@@ -207,6 +209,7 @@ export async function updatePrintAction(id: number, formData: FormData) {
   }
 
   const printer = printerId ? await getPrinter(printerId) : null;
+  const filamentPricing = await getFilamentPricingData();
 
   const transaction = db.transaction(() => {
     db.prepare(
@@ -230,7 +233,7 @@ export async function updatePrintAction(id: number, formData: FormData) {
 
     db.prepare("DELETE FROM print_filaments WHERE print_id = ?").run(id);
     insertFilaments(id, filaments);
-    recalculatePrintCalculations(db, id, printer);
+    recalculatePrintCalculations(db, id, printer, filamentPricing);
   });
 
   transaction();

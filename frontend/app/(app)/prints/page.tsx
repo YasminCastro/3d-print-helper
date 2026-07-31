@@ -4,11 +4,12 @@ import { PrintFormDialog } from "@/components/print-form-dialog";
 import { PrintsPageContent } from "@/components/prints-page-content";
 import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
-import { getFilamentOptions } from "@/lib/actions/filaments";
+import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
+import { filamentDenormalizedFields } from "@/lib/filament-helpers";
 import type {
   Print,
   PrintCategory,
-  PrintFilamentWithDetails,
+  PrintFilament,
   PrintWithDetails,
 } from "@/lib/types/print";
 import type { AppSettings } from "@/lib/types/settings";
@@ -16,6 +17,9 @@ import type { AppSettings } from "@/lib/types/settings";
 export default async function PrintsPage() {
   const printers = await getPrinters();
   const printersById = new Map(printers.map((printer) => [printer.id, printer]));
+
+  const filaments = await getFilaments();
+  const filamentsById = new Map(filaments.map((filament) => [filament.id, filament]));
 
   const printsRaw = db
     .prepare(
@@ -33,19 +37,20 @@ export default async function PrintsPage() {
     ),
   }));
 
-  const printFilaments = db
+  const printFilamentsRaw = db
     .prepare(
-      `SELECT print_filaments.*, filaments.name AS filament_name, filaments.color AS filament_color,
-              filaments.material AS filament_material,
-              filaments.min_price_paid AS filament_min_price_paid,
-              filaments.max_price_paid AS filament_max_price_paid
-       FROM print_filaments
-       LEFT JOIN filaments ON print_filaments.filament_id = filaments.id
-       ORDER BY print_filaments.print_id ASC, print_filaments.position ASC`
+      "SELECT * FROM print_filaments ORDER BY print_id ASC, position ASC"
     )
-    .all() as PrintFilamentWithDetails[];
+    .all() as PrintFilament[];
 
-  const filamentsByPrint = new Map<number, PrintFilamentWithDetails[]>();
+  const printFilaments = printFilamentsRaw.map((printFilament) => ({
+    ...printFilament,
+    ...filamentDenormalizedFields(
+      printFilament.filament_id != null ? filamentsById.get(printFilament.filament_id) : null
+    ),
+  }));
+
+  const filamentsByPrint = new Map<number, typeof printFilaments>();
   for (const filament of printFilaments) {
     const list = filamentsByPrint.get(filament.print_id) ?? [];
     list.push(filament);

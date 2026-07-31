@@ -2,23 +2,31 @@ import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { JournalFormDialog } from "@/components/journal-form-dialog";
 import { JournalPageContent } from "@/components/journal-page-content";
-import { getFilamentOptions } from "@/lib/actions/filaments";
+import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
+import { filamentDenormalizedFields } from "@/lib/filament-helpers";
 import type {
   JournalAttempt,
+  JournalEntry,
   JournalEntryWithDetails,
-  JournalEntryWithFilament,
   JournalPhoto,
 } from "@/lib/types/journal";
 
 export default async function JournalPage() {
-  const entries = db
+  const filaments = await getFilaments();
+  const filamentsById = new Map(filaments.map((filament) => [filament.id, filament]));
+
+  const entriesRaw = db
     .prepare(
-      `SELECT journal_entries.*, filaments.name AS filament_name, filaments.color AS filament_color
-       FROM journal_entries
-       LEFT JOIN filaments ON journal_entries.filament_id = filaments.id
-       ORDER BY journal_entries.entry_date DESC, journal_entries.created_at DESC`
+      "SELECT * FROM journal_entries ORDER BY entry_date DESC, created_at DESC"
     )
-    .all() as JournalEntryWithFilament[];
+    .all() as JournalEntry[];
+
+  const entries = entriesRaw.map((entry) => ({
+    ...entry,
+    ...filamentDenormalizedFields(
+      entry.filament_id != null ? filamentsById.get(entry.filament_id) : null
+    ),
+  }));
 
   const attempts = db
     .prepare("SELECT * FROM journal_attempts ORDER BY entry_id ASC, position ASC")

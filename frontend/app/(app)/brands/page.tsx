@@ -1,37 +1,45 @@
-import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrandFormDialog } from "@/components/brand-form-dialog";
 import { BrandsPageContent } from "@/components/brands-page-content";
 import { brandAveragePrice, computeCostBenefit, groupAveragePrice } from "@/lib/cost-benefit";
 import { getBrands } from "@/lib/actions/brands";
+import { getFilaments } from "@/lib/actions/filaments";
 
 export default async function BrandsPage() {
-  const brands = [...(await getBrands())].sort((a, b) => a.name.localeCompare(b.name));
+  const [brandsRaw, filaments] = await Promise.all([getBrands(), getFilaments()]);
+  const brands = [...brandsRaw].sort((a, b) => a.name.localeCompare(b.name));
 
-  const filamentRatings = db
-    .prepare(
-      `SELECT brand_id, AVG(rating) AS avg_rating, COUNT(rating) AS rating_count
-       FROM filaments
-       WHERE brand_id IS NOT NULL AND rating IS NOT NULL
-       GROUP BY brand_id`
-    )
-    .all() as { brand_id: number; avg_rating: number; rating_count: number }[];
-  const ratingsByBrand = new Map(filamentRatings.map((row) => [row.brand_id, row]));
+  const ratingsByBrand = new Map<number, { avg_rating: number; rating_count: number }>();
+  const ratingSumsByBrand = new Map<number, { sum: number; count: number }>();
+  const priceRangeByBrand = new Map<number, { computed_min: number; computed_max: number }>();
 
-  const filamentPriceRanges = db
-    .prepare(
-      `SELECT brand_id, MIN(price) AS computed_min, MAX(price) AS computed_max
-       FROM (
-         SELECT brand_id, min_price_paid AS price FROM filaments
-         WHERE brand_id IS NOT NULL AND min_price_paid IS NOT NULL
-         UNION ALL
-         SELECT brand_id, max_price_paid AS price FROM filaments
-         WHERE brand_id IS NOT NULL AND max_price_paid IS NOT NULL
-       )
-       GROUP BY brand_id`
-    )
-    .all() as { brand_id: number; computed_min: number; computed_max: number }[];
-  const priceRangeByBrand = new Map(filamentPriceRanges.map((row) => [row.brand_id, row]));
+  for (const filament of filaments) {
+    if (filament.brand_id == null) continue;
+
+    if (filament.rating != null) {
+      const current = ratingSumsByBrand.get(filament.brand_id) ?? { sum: 0, count: 0 };
+      current.sum += filament.rating;
+      current.count += 1;
+      ratingSumsByBrand.set(filament.brand_id, current);
+    }
+
+    const prices = [filament.min_price_paid, filament.max_price_paid].filter(
+      (price): price is number => price != null
+    );
+    if (prices.length > 0) {
+      const current = priceRangeByBrand.get(filament.brand_id) ?? {
+        computed_min: Infinity,
+        computed_max: -Infinity,
+      };
+      current.computed_min = Math.min(current.computed_min, ...prices);
+      current.computed_max = Math.max(current.computed_max, ...prices);
+      priceRangeByBrand.set(filament.brand_id, current);
+    }
+  }
+
+  for (const [brandId, { sum, count }] of ratingSumsByBrand) {
+    ratingsByBrand.set(brandId, { avg_rating: sum / count, rating_count: count });
+  }
 
   const pricedBrands = brands.map((brand) => {
     const computed = priceRangeByBrand.get(brand.id);

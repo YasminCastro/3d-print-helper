@@ -5,6 +5,7 @@ import App from '@/app';
 import { UsersRepository } from '@repositories/users.repository';
 import { AuthRoute } from '@routes/auth.route';
 import { BrandsRoute } from '@routes/brands.route';
+import { FilamentsRoute } from '@routes/filaments.route';
 import { PrintersRoute } from '@routes/printers.route';
 import { UsersRoute } from '@routes/users.route';
 
@@ -17,6 +18,7 @@ const routes = [
   container.resolve(AuthRoute),
   container.resolve(PrintersRoute),
   container.resolve(BrandsRoute),
+  container.resolve(FilamentsRoute),
 ];
 
 // API prefix는 app.ts에서 기본값 세팅, 필요하면 인자로 전달

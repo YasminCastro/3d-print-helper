@@ -45,5 +45,31 @@ model FilamentBrand {
   notes         String?
   createdAt     DateTime @default(now()) @map("created_at")
 
+  filaments Filament[]
+
   @@map("filament_brands")
+}
+
+model Filament {
+  id               Int      @id @default(autoincrement())
+  name             String
+  availability     String?
+  lastPurchaseDate String?  @map("last_purchase_date")
+  material         String?
+  brandId          Int?     @map("brand_id")
+  brand            FilamentBrand? @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  purchaseLink     String?  @map("purchase_link")
+  saleName         String?  @map("sale_name")
+  minPricePaid     Float?   @map("min_price_paid")
+  maxPricePaid     Float?   @map("max_price_paid")
+  nozzleTempMin    Int?     @map("nozzle_temp_min")
+  nozzleTempMax    Int?     @map("nozzle_temp_max")
+  bedTempMin       Int?     @map("bed_temp_min")
+  bedTempMax       Int?     @map("bed_temp_max")
+  purchaseBatch    String?  @map("purchase_batch")
+  rating           Int?
+  color            String?
+  createdAt        DateTime @default(now()) @map("created_at")
+
+  @@map("filaments")
 }

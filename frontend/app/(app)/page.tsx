@@ -14,12 +14,12 @@ import { PrintCard } from "@/components/print-card";
 import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
 import { getBrands } from "@/lib/actions/brands";
-import { getFilamentOptions } from "@/lib/actions/filaments";
-import type { Filament } from "@/lib/types/filament";
+import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
+import { filamentDenormalizedFields } from "@/lib/filament-helpers";
 import type {
   Print,
   PrintCategory,
-  PrintFilamentWithDetails,
+  PrintFilament,
   PrintWithDetails,
 } from "@/lib/types/print";
 import type { AppSettings } from "@/lib/types/settings";
@@ -46,13 +46,16 @@ export default async function Home() {
   const printers = await getPrinters();
   const printersById = new Map(printers.map((printer) => [printer.id, printer]));
 
-  const alerts = db
-    .prepare(
-      `SELECT * FROM filaments
-       WHERE availability IN ('indisponivel', 'quase_acabando')
-       ORDER BY availability ASC, name ASC`,
-    )
-    .all() as Filament[];
+  const filaments = await getFilaments();
+  const filamentsById = new Map(filaments.map((filament) => [filament.id, filament]));
+
+  const alerts = [...filaments]
+    .filter((filament) => filament.availability === "indisponivel" || filament.availability === "quase_acabando")
+    .sort((a, b) =>
+      a.availability === b.availability
+        ? a.name.localeCompare(b.name)
+        : (a.availability ?? "").localeCompare(b.availability ?? "")
+    );
 
   const brands = await getBrands();
   const brandOptions = [...brands]
@@ -103,22 +106,24 @@ export default async function Home() {
   }));
 
   const recentPrintIds = recentPrints.map((print) => print.id);
-  const recentPrintFilaments = recentPrintIds.length
+  const recentPrintFilamentsRaw = recentPrintIds.length
     ? (db
         .prepare(
-          `SELECT print_filaments.*, filaments.name AS filament_name, filaments.color AS filament_color,
-                  filaments.material AS filament_material,
-                  filaments.min_price_paid AS filament_min_price_paid,
-                  filaments.max_price_paid AS filament_max_price_paid
-           FROM print_filaments
-           LEFT JOIN filaments ON print_filaments.filament_id = filaments.id
-           WHERE print_filaments.print_id IN (${recentPrintIds.map(() => "?").join(",")})
-           ORDER BY print_filaments.print_id ASC, print_filaments.position ASC`
+          `SELECT * FROM print_filaments
+           WHERE print_id IN (${recentPrintIds.map(() => "?").join(",")})
+           ORDER BY print_id ASC, position ASC`
         )
-        .all(...recentPrintIds) as PrintFilamentWithDetails[])
+        .all(...recentPrintIds) as PrintFilament[])
     : [];
 
-  const recentFilamentsByPrint = new Map<number, PrintFilamentWithDetails[]>();
+  const recentPrintFilaments = recentPrintFilamentsRaw.map((printFilament) => ({
+    ...printFilament,
+    ...filamentDenormalizedFields(
+      printFilament.filament_id != null ? filamentsById.get(printFilament.filament_id) : null
+    ),
+  }));
+
+  const recentFilamentsByPrint = new Map<number, typeof recentPrintFilaments>();
   for (const filament of recentPrintFilaments) {
     const list = recentFilamentsByPrint.get(filament.print_id) ?? [];
     list.push(filament);

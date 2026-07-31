@@ -2,12 +2,56 @@
 
 import { refresh } from "next/cache";
 
-import { db } from "@/lib/db";
+import { backendUrl } from "@/lib/backend-url";
 import { filamentFormSchema, type FilamentFormInput } from "@/lib/schemas/filament";
 import { getBrands } from "@/lib/actions/brands";
-import type { FilamentOption } from "@/lib/types/filament";
+import type { Filament, FilamentOption, FilamentWithBrand } from "@/lib/types/filament";
 
-function toRow(values: FilamentFormInput) {
+type ApiFilament = {
+  id: number;
+  name: string;
+  availability: string | null;
+  lastPurchaseDate: string | null;
+  material: string | null;
+  brandId: number | null;
+  purchaseLink: string | null;
+  saleName: string | null;
+  minPricePaid: number | null;
+  maxPricePaid: number | null;
+  nozzleTempMin: number | null;
+  nozzleTempMax: number | null;
+  bedTempMin: number | null;
+  bedTempMax: number | null;
+  purchaseBatch: string | null;
+  rating: number | null;
+  color: string | null;
+  createdAt: string;
+};
+
+function toDomain(api: ApiFilament): Filament {
+  return {
+    id: api.id,
+    name: api.name,
+    availability: api.availability,
+    last_purchase_date: api.lastPurchaseDate,
+    material: api.material,
+    brand_id: api.brandId,
+    purchase_link: api.purchaseLink,
+    sale_name: api.saleName,
+    min_price_paid: api.minPricePaid,
+    max_price_paid: api.maxPricePaid,
+    nozzle_temp_min: api.nozzleTempMin,
+    nozzle_temp_max: api.nozzleTempMax,
+    bed_temp_min: api.bedTempMin,
+    bed_temp_max: api.bedTempMax,
+    purchase_batch: api.purchaseBatch,
+    rating: api.rating,
+    color: api.color,
+    created_at: api.createdAt,
+  };
+}
+
+function toPayload(values: FilamentFormInput) {
   const parsed = filamentFormSchema.parse(values);
 
   return {
@@ -16,81 +60,122 @@ function toRow(values: FilamentFormInput) {
     lastPurchaseDate: parsed.lastPurchaseDate || null,
     material: parsed.material ?? null,
     brandId: parsed.brandId ? Number(parsed.brandId) : null,
-    purchaseLink: parsed.purchaseLink ?? null,
-    saleName: parsed.saleName ?? null,
+    purchaseLink: parsed.purchaseLink || null,
+    saleName: parsed.saleName || null,
     minPricePaid: parsed.minPricePaid ?? null,
     maxPricePaid: parsed.maxPricePaid ?? null,
     nozzleTempMin: parsed.nozzleTempMin ?? null,
     nozzleTempMax: parsed.nozzleTempMax ?? null,
     bedTempMin: parsed.bedTempMin ?? null,
     bedTempMax: parsed.bedTempMax ?? null,
-    purchaseBatch: parsed.purchaseBatch ?? null,
+    purchaseBatch: parsed.purchaseBatch || null,
     rating: parsed.rating ?? null,
-    color: parsed.color ?? null,
+    color: parsed.color || null,
   };
 }
 
-export async function createFilamentAction(values: FilamentFormInput) {
-  const row = toRow(values);
+export async function getFilaments(): Promise<Filament[]> {
+  const response = await fetch(backendUrl("/filaments"), { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("Não foi possível carregar os filamentos");
+  }
+  const body = await response.json();
+  return (body.data as ApiFilament[]).map(toDomain);
+}
 
-  db.prepare(
-    `INSERT INTO filaments (name, availability, last_purchase_date, material, brand_id, purchase_link, sale_name, min_price_paid, max_price_paid, nozzle_temp_min, nozzle_temp_max, bed_temp_min, bed_temp_max, purchase_batch, rating, color)
-     VALUES (@name, @availability, @lastPurchaseDate, @material, @brandId, @purchaseLink, @saleName, @minPricePaid, @maxPricePaid, @nozzleTempMin, @nozzleTempMax, @bedTempMin, @bedTempMax, @purchaseBatch, @rating, @color)`
-  ).run(row);
+export async function getFilament(id: number): Promise<Filament | null> {
+  const response = await fetch(backendUrl(`/filaments/${id}`), { cache: "no-store" });
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error("Não foi possível carregar o filamento");
+  }
+  const body = await response.json();
+  return toDomain(body.data);
+}
+
+export async function createFilamentAction(values: FilamentFormInput) {
+  const response = await fetch(backendUrl("/filaments"), {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(toPayload(values)),
+  });
+
+  if (!response.ok) {
+    throw new Error("Não foi possível criar o filamento");
+  }
 
   refresh();
 }
 
 export async function updateFilamentAction(id: number, values: FilamentFormInput) {
-  const row = toRow(values);
+  const response = await fetch(backendUrl(`/filaments/${id}`), {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(toPayload(values)),
+  });
 
-  db.prepare(
-    `UPDATE filaments
-     SET name = @name,
-         availability = @availability,
-         last_purchase_date = @lastPurchaseDate,
-         material = @material,
-         brand_id = @brandId,
-         purchase_link = @purchaseLink,
-         sale_name = @saleName,
-         min_price_paid = @minPricePaid,
-         max_price_paid = @maxPricePaid,
-         nozzle_temp_min = @nozzleTempMin,
-         nozzle_temp_max = @nozzleTempMax,
-         bed_temp_min = @bedTempMin,
-         bed_temp_max = @bedTempMax,
-         purchase_batch = @purchaseBatch,
-         rating = @rating,
-         color = @color
-     WHERE id = @id`
-  ).run({ ...row, id });
+  if (!response.ok) {
+    throw new Error("Não foi possível atualizar o filamento");
+  }
 
   refresh();
 }
 
 export async function deleteFilamentAction(id: number) {
-  db.prepare("DELETE FROM filaments WHERE id = ?").run(id);
+  const response = await fetch(backendUrl(`/filaments/${id}`), { method: "DELETE" });
+
+  if (!response.ok && response.status !== 404) {
+    throw new Error("Não foi possível excluir o filamento");
+  }
 
   refresh();
 }
 
-export async function getFilamentOptions(): Promise<FilamentOption[]> {
-  const brands = await getBrands();
+export async function getFilamentsWithBrand(): Promise<FilamentWithBrand[]> {
+  const [filaments, brands] = await Promise.all([getFilaments(), getBrands()]);
   const brandsById = new Map(brands.map((brand) => [brand.id, brand.name]));
 
-  const filaments = db
-    .prepare(
-      `SELECT id, name, color, material, brand_id
-       FROM filaments
-       ORDER BY name ASC`
-    )
-    .all() as { id: number; name: string; color: string | null; material: string | null; brand_id: number | null }[];
-
   return filaments.map((filament) => ({
+    ...filament,
+    brand_name: filament.brand_id != null ? (brandsById.get(filament.brand_id) ?? null) : null,
+  }));
+}
+
+export async function getFilamentOptions(): Promise<FilamentOption[]> {
+  const filamentsWithBrand = await getFilamentsWithBrand();
+
+  return filamentsWithBrand.map((filament) => ({
     id: filament.id,
     name: filament.name,
     color: filament.color,
     material: filament.material,
-    brand_name: filament.brand_id != null ? (brandsById.get(filament.brand_id) ?? null) : null,
+    brand_name: filament.brand_name,
   }));
+}
+
+export async function getFilamentPricingData() {
+  const filaments = await getFilaments();
+
+  const filamentsById = new Map(
+    filaments.map((filament) => [
+      filament.id,
+      {
+        material: filament.material,
+        min_price_paid: filament.min_price_paid,
+        max_price_paid: filament.max_price_paid,
+      },
+    ])
+  );
+
+  const materialMaxPrices: Record<string, number> = {};
+  for (const filament of filaments) {
+    if (!filament.material) continue;
+    const price = filament.max_price_paid ?? filament.min_price_paid;
+    if (price == null) continue;
+    if (materialMaxPrices[filament.material] == null || price > materialMaxPrices[filament.material]) {
+      materialMaxPrices[filament.material] = price;
+    }
+  }
+
+  return { filamentsById, materialMaxPrices };
 }
