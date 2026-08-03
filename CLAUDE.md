@@ -12,6 +12,12 @@ This is a monorepo with three independent projects (no shared tooling, no worksp
 
 Always `cd` into the relevant project directory before running commands; there is no root `package.json`.
 
+## Testing policy
+
+Do not manually test changes by running the app, dev servers, or ad-hoc shell/curl commands — the user tests everything locally themselves. Limit verification to:
+- TypeScript validation (e.g. `tsc`/`npm run build` type-checking) for both frontend and backend.
+- Writing/running Jest tests in `backend/` (this is the only project with a test suite configured).
+
 ## Frontend (`frontend/`)
 
 Architecture: Next.js Server Actions + `better-sqlite3`, no separate API layer.
