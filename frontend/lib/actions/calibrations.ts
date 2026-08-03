@@ -2,10 +2,49 @@
 
 import { refresh } from "next/cache";
 
-import { db } from "@/lib/db";
+import { backendFetch } from "@/lib/backend-fetch";
 import { calibrationFormSchema, type CalibrationFormInput } from "@/lib/schemas/calibration";
+import type { Calibration } from "@/lib/types/calibration";
 
-function toRow(values: CalibrationFormInput) {
+type ApiCalibration = {
+  id: number;
+  slicer: string;
+  filamentId: number | null;
+  status: string | null;
+  calibrationDate: string | null;
+  bedTempFirstLayer: number | null;
+  bedTempOtherLayers: number | null;
+  nozzleTempInitial: number | null;
+  nozzleTempFinal: number | null;
+  maxVolumetricSpeed: number | null;
+  pressureAdvance: number | null;
+  flowRatio: number | null;
+  retractionDistance: number | null;
+  notes: string | null;
+  createdAt: string;
+};
+
+function toDomain(api: ApiCalibration): Calibration {
+  return {
+    id: api.id,
+    slicer: api.slicer,
+    filament_id: api.filamentId,
+    status: api.status,
+    calibration_date: api.calibrationDate,
+    bed_temp_first_layer: api.bedTempFirstLayer,
+    bed_temp_other_layers: api.bedTempOtherLayers,
+    nozzle_temp_initial: api.nozzleTempInitial,
+    nozzle_temp_final: api.nozzleTempFinal,
+    max_volumetric_speed: api.maxVolumetricSpeed,
+    pressure_advance: api.pressureAdvance,
+    flow_ratio: api.flowRatio,
+    retraction_distance: api.retractionDistance,
+    notes: api.notes,
+    created_at: api.createdAt,
+  };
+}
+
+function toPayload(values: CalibrationFormInput) {
   const parsed = calibrationFormSchema.parse(values);
 
   return {
@@ -21,55 +60,63 @@ function toRow(values: CalibrationFormInput) {
     pressureAdvance: parsed.pressureAdvance ?? null,
     flowRatio: parsed.flowRatio ?? null,
     retractionDistance: parsed.retractionDistance ?? null,
-    notes: parsed.notes ?? null,
+    notes: parsed.notes || null,
   };
 }
 
-export async function createCalibrationAction(values: CalibrationFormInput) {
-  const row = toRow(values);
+export async function getCalibrations(): Promise<Calibration[]> {
+  const response = await backendFetch("/calibrations", { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("Não foi possível carregar as calibrações");
+  }
+  const body = await response.json();
+  return (body.data as ApiCalibration[]).map(toDomain);
+}
 
-  db.prepare(
-    `INSERT INTO calibrations (
-       slicer, filament_id, status, calibration_date,
-       bed_temp_first_layer, bed_temp_other_layers, nozzle_temp_initial, nozzle_temp_final,
-       max_volumetric_speed, pressure_advance, flow_ratio, retraction_distance, notes
-     )
-     VALUES (
-       @slicer, @filamentId, @status, @calibrationDate,
-       @bedTempFirstLayer, @bedTempOtherLayers, @nozzleTempInitial, @nozzleTempFinal,
-       @maxVolumetricSpeed, @pressureAdvance, @flowRatio, @retractionDistance, @notes
-     )`
-  ).run(row);
+export async function getCalibration(id: number): Promise<Calibration | null> {
+  const response = await backendFetch(`/calibrations/${id}`, { cache: "no-store" });
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error("Não foi possível carregar a calibração");
+  }
+  const body = await response.json();
+  return toDomain(body.data);
+}
+
+export async function createCalibrationAction(values: CalibrationFormInput) {
+  const response = await backendFetch("/calibrations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(toPayload(values)),
+  });
+
+  if (!response.ok) {
+    throw new Error("Não foi possível criar a calibração");
+  }
 
   refresh();
 }
 
 export async function updateCalibrationAction(id: number, values: CalibrationFormInput) {
-  const row = toRow(values);
+  const response = await backendFetch(`/calibrations/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(toPayload(values)),
+  });
 
-  db.prepare(
-    `UPDATE calibrations
-     SET slicer = @slicer,
-         filament_id = @filamentId,
-         status = @status,
-         calibration_date = @calibrationDate,
-         bed_temp_first_layer = @bedTempFirstLayer,
-         bed_temp_other_layers = @bedTempOtherLayers,
-         nozzle_temp_initial = @nozzleTempInitial,
-         nozzle_temp_final = @nozzleTempFinal,
-         max_volumetric_speed = @maxVolumetricSpeed,
-         pressure_advance = @pressureAdvance,
-         flow_ratio = @flowRatio,
-         retraction_distance = @retractionDistance,
-         notes = @notes
-     WHERE id = @id`
-  ).run({ ...row, id });
+  if (!response.ok) {
+    throw new Error("Não foi possível atualizar a calibração");
+  }
 
   refresh();
 }
 
 export async function deleteCalibrationAction(id: number) {
-  db.prepare("DELETE FROM calibrations WHERE id = ?").run(id);
+  const response = await backendFetch(`/calibrations/${id}`, { method: "DELETE" });
+
+  if (!response.ok && response.status !== 404) {
+    throw new Error("Não foi possível excluir a calibração");
+  }
 
   refresh();
 }

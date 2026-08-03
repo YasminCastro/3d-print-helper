@@ -1,25 +1,22 @@
-import { db } from "@/lib/db";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalibrationFormDialog } from "@/components/calibration-form-dialog";
 import { CalibrationsPageContent } from "@/components/calibrations-page-content";
 import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
-import type { Calibration } from "@/lib/types/calibration";
+import { getCalibrations } from "@/lib/actions/calibrations";
 
 export default async function CalibrationsPage() {
-  const filaments = await getFilaments();
+  const [filaments, calibrationsRaw] = await Promise.all([getFilaments(), getCalibrations()]);
   const filamentsById = new Map(filaments.map((filament) => [filament.id, filament]));
 
-  const calibrationsRaw = db
-    .prepare("SELECT * FROM calibrations ORDER BY created_at DESC")
-    .all() as Calibration[];
-
-  const calibrations = calibrationsRaw.map((calibration) => ({
-    ...calibration,
-    ...filamentDenormalizedFields(
-      calibration.filament_id != null ? filamentsById.get(calibration.filament_id) : null
-    ),
-  }));
+  const calibrations = [...calibrationsRaw]
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .map((calibration) => ({
+      ...calibration,
+      ...filamentDenormalizedFields(
+        calibration.filament_id != null ? filamentsById.get(calibration.filament_id) : null
+      ),
+    }));
 
   const filamentOptions = await getFilamentOptions();
 

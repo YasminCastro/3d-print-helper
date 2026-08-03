@@ -18,6 +18,7 @@ model User {
   printers Printer[]
   filamentBrands FilamentBrand[]
   filaments Filament[]
+  calibrations Calibration[]
 
   @@map("users")
 }
@@ -80,7 +81,32 @@ model Filament {
   createdAt        DateTime @default(now()) @map("created_at")
   userId           String   @map("user_id")
 
-  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calibrations     Calibration[]
 
   @@map("filaments")
+}
+
+model Calibration {
+  id                 Int      @id @default(autoincrement())
+  slicer             String
+  filamentId         Int?     @map("filament_id")
+  filament           Filament? @relation(fields: [filamentId], references: [id], onDelete: Cascade)
+  status             String?
+  calibrationDate    String?  @map("calibration_date")
+  bedTempFirstLayer  Float?   @map("bed_temp_first_layer")
+  bedTempOtherLayers Float?   @map("bed_temp_other_layers")
+  nozzleTempInitial  Float?   @map("nozzle_temp_initial")
+  nozzleTempFinal    Float?   @map("nozzle_temp_final")
+  maxVolumetricSpeed Float?   @map("max_volumetric_speed")
+  pressureAdvance    Float?   @map("pressure_advance")
+  flowRatio          Float?   @map("flow_ratio")
+  retractionDistance Float?   @map("retraction_distance")
+  notes              String?
+  createdAt          DateTime @default(now()) @map("created_at")
+  userId             String   @map("user_id")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("calibrations")
 }

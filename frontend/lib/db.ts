@@ -15,24 +15,6 @@ function createConnection() {
   database.pragma("foreign_keys = ON");
 
   database.exec(`
-    CREATE TABLE IF NOT EXISTS calibrations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      slicer TEXT NOT NULL,
-      filament_id INTEGER,
-      status TEXT,
-      calibration_date TEXT,
-      bed_temp_first_layer REAL,
-      bed_temp_other_layers REAL,
-      nozzle_temp_initial REAL,
-      nozzle_temp_final REAL,
-      max_volumetric_speed REAL,
-      pressure_advance REAL,
-      flow_ratio REAL,
-      retraction_distance REAL,
-      notes TEXT,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-
     CREATE TABLE IF NOT EXISTS journal_entries (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       title TEXT NOT NULL,
@@ -110,29 +92,6 @@ function createConnection() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
-
-  const calibrationColumns = database
-    .prepare("PRAGMA table_info(calibrations)")
-    .all() as { name: string }[];
-  const existingCalibrationColumns = new Set(calibrationColumns.map((column) => column.name));
-
-  const newCalibrationColumns: Record<string, string> = {
-    bed_temp_first_layer: "REAL",
-    bed_temp_other_layers: "REAL",
-    nozzle_temp_initial: "REAL",
-    nozzle_temp_final: "REAL",
-    max_volumetric_speed: "REAL",
-    pressure_advance: "REAL",
-    flow_ratio: "REAL",
-    retraction_distance: "REAL",
-    notes: "TEXT",
-  };
-
-  for (const [column, type] of Object.entries(newCalibrationColumns)) {
-    if (!existingCalibrationColumns.has(column)) {
-      database.exec(`ALTER TABLE calibrations ADD COLUMN ${column} ${type}`);
-    }
-  }
 
   const journalEntryColumns = database
     .prepare("PRAGMA table_info(journal_entries)")
