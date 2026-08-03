@@ -67,6 +67,9 @@ export async function loginAction(values: LoginFormInput): Promise<LoginResult> 
   }
 
   if (!response.ok) {
+    if (response.status === 401) {
+      return { success: false, error: "E-mail ou senha incorretos" };
+    }
     const body = await response.json().catch(() => null);
     const error = body?.error?.message ?? body?.message ?? "Não foi possível entrar";
     return { success: false, error };

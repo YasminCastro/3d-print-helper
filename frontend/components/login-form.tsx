@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -30,6 +30,7 @@ const defaultValues: LoginFormInput = {
 export function LoginForm() {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
+  const [loginError, setLoginError] = useState<string | null>(null);
 
   const form = useForm<LoginFormInput>({
     resolver: zodResolver(loginFormSchema),
@@ -37,11 +38,12 @@ export function LoginForm() {
   });
 
   function onSubmit(values: LoginFormInput) {
+    setLoginError(null);
     startTransition(async () => {
       const result = await loginAction(values);
 
       if (!result.success) {
-        toast.error(result.error);
+        setLoginError(result.error);
         return;
       }
 
@@ -82,7 +84,9 @@ export function LoginForm() {
                   type="email"
                   placeholder="voce@exemplo.com"
                   autoComplete="email"
-                  {...form.register("email")}
+                  {...form.register("email", {
+                    onChange: () => setLoginError(null),
+                  })}
                 />
                 <FieldError errors={[form.formState.errors.email]} />
               </FieldContent>
@@ -104,11 +108,19 @@ export function LoginForm() {
                   type="password"
                   placeholder="••••••••"
                   autoComplete="current-password"
-                  {...form.register("password")}
+                  {...form.register("password", {
+                    onChange: () => setLoginError(null),
+                  })}
                 />
                 <FieldError errors={[form.formState.errors.password]} />
               </FieldContent>
             </Field>
+
+            {loginError && (
+              <p className="text-sm text-destructive" role="alert">
+                {loginError}
+              </p>
+            )}
 
             <Button type="submit" className="mt-2 w-full" disabled={isPending}>
               {isPending ? "Entrando..." : "Entrar"}
