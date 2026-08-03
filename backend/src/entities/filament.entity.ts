@@ -17,6 +17,7 @@ export interface FilamentPersistenceData {
   rating?: number | null;
   color?: string | null;
   createdAt?: Date;
+  userId: string;
 }
 
 export interface FilamentCreateData {
@@ -36,6 +37,7 @@ export interface FilamentCreateData {
   purchaseBatch?: string | null;
   rating?: number | null;
   color?: string | null;
+  userId: string;
 }
 
 export type FilamentUpdateData = Partial<FilamentCreateData>;
@@ -60,6 +62,7 @@ export class Filament {
     private _rating: number | null,
     private _color: string | null,
     private readonly _createdAt: Date = new Date(),
+    private readonly _userId: string = '',
   ) {}
 
   static create(data: FilamentCreateData): Filament {
@@ -84,6 +87,8 @@ export class Filament {
       data.purchaseBatch ?? null,
       validatedRating,
       data.color ?? null,
+      new Date(),
+      data.userId,
     );
   }
 
@@ -107,6 +112,7 @@ export class Filament {
       data.rating ?? null,
       data.color ?? null,
       data.createdAt || new Date(),
+      data.userId,
     );
   }
 
@@ -211,6 +217,9 @@ export class Filament {
   get createdAt(): Date {
     return new Date(this._createdAt);
   }
+  get userId(): string {
+    return this._userId;
+  }
 
   toPersistence(): Omit<FilamentPersistenceData, 'id' | 'createdAt'> {
     return {
@@ -230,6 +239,7 @@ export class Filament {
       purchaseBatch: this._purchaseBatch,
       rating: this._rating,
       color: this._color,
+      userId: this._userId,
     };
   }
 

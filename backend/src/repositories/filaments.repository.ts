@@ -3,22 +3,22 @@ import { Filament } from '@entities/filament.entity';
 import { prisma } from '@config/prisma';
 
 export interface IFilamentsRepository {
-  findAll(): Promise<Filament[]>;
-  findById(id: number): Promise<Filament | undefined>;
+  findAll(userId: string): Promise<Filament[]>;
+  findById(id: number, userId: string): Promise<Filament | undefined>;
   save(filament: Filament): Promise<Filament>;
-  update(id: number, filament: Filament): Promise<Filament | undefined>;
-  delete(id: number): Promise<boolean>;
+  update(id: number, userId: string, filament: Filament): Promise<Filament | undefined>;
+  delete(id: number, userId: string): Promise<boolean>;
 }
 
 @singleton()
 export class FilamentsRepository implements IFilamentsRepository {
-  async findAll(): Promise<Filament[]> {
-    const rows = await prisma.filament.findMany({ orderBy: { id: 'asc' } });
+  async findAll(userId: string): Promise<Filament[]> {
+    const rows = await prisma.filament.findMany({ where: { userId }, orderBy: { id: 'asc' } });
     return rows.map((row) => Filament.fromPersistence(row));
   }
 
-  async findById(id: number): Promise<Filament | undefined> {
-    const row = await prisma.filament.findUnique({ where: { id } });
+  async findById(id: number, userId: string): Promise<Filament | undefined> {
+    const row = await prisma.filament.findFirst({ where: { id, userId } });
     return row ? Filament.fromPersistence(row) : undefined;
   }
 
@@ -27,8 +27,8 @@ export class FilamentsRepository implements IFilamentsRepository {
     return Filament.fromPersistence(row);
   }
 
-  async update(id: number, filament: Filament): Promise<Filament | undefined> {
-    const exists = await prisma.filament.findUnique({ where: { id } });
+  async update(id: number, userId: string, filament: Filament): Promise<Filament | undefined> {
+    const exists = await prisma.filament.findFirst({ where: { id, userId } });
     if (!exists) return undefined;
 
     const row = await prisma.filament.update({
@@ -38,8 +38,8 @@ export class FilamentsRepository implements IFilamentsRepository {
     return Filament.fromPersistence(row);
   }
 
-  async delete(id: number): Promise<boolean> {
-    const exists = await prisma.filament.findUnique({ where: { id } });
+  async delete(id: number, userId: string): Promise<boolean> {
+    const exists = await prisma.filament.findFirst({ where: { id, userId } });
     if (!exists) return false;
 
     await prisma.filament.delete({ where: { id } });

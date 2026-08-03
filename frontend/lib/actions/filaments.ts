@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendUrl } from "@/lib/backend-url";
+import { backendFetch } from "@/lib/backend-fetch";
 import { filamentFormSchema, type FilamentFormInput } from "@/lib/schemas/filament";
 import { getBrands } from "@/lib/actions/brands";
 import type { Filament, FilamentOption, FilamentWithBrand } from "@/lib/types/filament";
@@ -75,7 +75,7 @@ function toPayload(values: FilamentFormInput) {
 }
 
 export async function getFilaments(): Promise<Filament[]> {
-  const response = await fetch(backendUrl("/filaments"), { cache: "no-store" });
+  const response = await backendFetch("/filaments", { cache: "no-store" });
   if (!response.ok) {
     throw new Error("Não foi possível carregar os filamentos");
   }
@@ -84,7 +84,7 @@ export async function getFilaments(): Promise<Filament[]> {
 }
 
 export async function getFilament(id: number): Promise<Filament | null> {
-  const response = await fetch(backendUrl(`/filaments/${id}`), { cache: "no-store" });
+  const response = await backendFetch(`/filaments/${id}`, { cache: "no-store" });
   if (response.status === 404) return null;
   if (!response.ok) {
     throw new Error("Não foi possível carregar o filamento");
@@ -94,7 +94,7 @@ export async function getFilament(id: number): Promise<Filament | null> {
 }
 
 export async function createFilamentAction(values: FilamentFormInput) {
-  const response = await fetch(backendUrl("/filaments"), {
+  const response = await backendFetch("/filaments", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(toPayload(values)),
@@ -108,7 +108,7 @@ export async function createFilamentAction(values: FilamentFormInput) {
 }
 
 export async function updateFilamentAction(id: number, values: FilamentFormInput) {
-  const response = await fetch(backendUrl(`/filaments/${id}`), {
+  const response = await backendFetch(`/filaments/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(toPayload(values)),
@@ -122,7 +122,7 @@ export async function updateFilamentAction(id: number, values: FilamentFormInput
 }
 
 export async function deleteFilamentAction(id: number) {
-  const response = await fetch(backendUrl(`/filaments/${id}`), { method: "DELETE" });
+  const response = await backendFetch(`/filaments/${id}`, { method: "DELETE" });
 
   if (!response.ok && response.status !== 404) {
     throw new Error("Não foi possível excluir o filamento");
