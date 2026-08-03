@@ -12,12 +12,12 @@ import type { IPrintersRepository } from '@repositories/printers.repository';
 export class PrintersService {
   constructor(@inject(PrintersRepository) private printersRepository: IPrintersRepository) {}
 
-  async getAllPrinters(): Promise<Printer[]> {
-    return this.printersRepository.findAll();
+  async getAllPrinters(userId: string): Promise<Printer[]> {
+    return this.printersRepository.findAll(userId);
   }
 
-  async getPrinterById(id: number): Promise<Printer> {
-    const printer = await this.printersRepository.findById(id);
+  async getPrinterById(id: number, userId: string): Promise<Printer> {
+    const printer = await this.printersRepository.findById(id, userId);
     if (!printer) throw new HttpException(404, 'Printer not found');
     return printer;
   }
@@ -27,19 +27,19 @@ export class PrintersService {
     return this.printersRepository.save(printer);
   }
 
-  async updatePrinter(id: number, data: PrinterUpdateData): Promise<Printer> {
-    const existing = await this.printersRepository.findById(id);
+  async updatePrinter(id: number, userId: string, data: PrinterUpdateData): Promise<Printer> {
+    const existing = await this.printersRepository.findById(id, userId);
     if (!existing) throw new HttpException(404, 'Printer not found');
 
     existing.update(data);
 
-    const updated = await this.printersRepository.update(id, existing);
+    const updated = await this.printersRepository.update(id, userId, existing);
     if (!updated) throw new HttpException(404, 'Printer not found');
     return updated;
   }
 
-  async deletePrinter(id: number): Promise<void> {
-    const deleted = await this.printersRepository.delete(id);
+  async deletePrinter(id: number, userId: string): Promise<void> {
+    const deleted = await this.printersRepository.delete(id, userId);
     if (!deleted) throw new HttpException(404, 'Printer not found');
   }
 }

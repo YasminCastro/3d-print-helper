@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendUrl } from "@/lib/backend-url";
+import { backendFetch } from "@/lib/backend-fetch";
 import { printerFormSchema, type PrinterFormInput } from "@/lib/schemas/printer";
 import type { Printer } from "@/lib/types/printer";
 
@@ -21,7 +21,7 @@ function toPayload(values: PrinterFormInput) {
 }
 
 export async function getPrinters(): Promise<Printer[]> {
-  const response = await fetch(backendUrl("/printers"), { cache: "no-store" });
+  const response = await backendFetch("/printers", { cache: "no-store" });
   if (!response.ok) {
     throw new Error("Não foi possível carregar as impressoras");
   }
@@ -30,7 +30,7 @@ export async function getPrinters(): Promise<Printer[]> {
 }
 
 export async function getPrinter(id: number): Promise<Printer | null> {
-  const response = await fetch(backendUrl(`/printers/${id}`), { cache: "no-store" });
+  const response = await backendFetch(`/printers/${id}`, { cache: "no-store" });
   if (response.status === 404) return null;
   if (!response.ok) {
     throw new Error("Não foi possível carregar a impressora");
@@ -40,7 +40,7 @@ export async function getPrinter(id: number): Promise<Printer | null> {
 }
 
 export async function createPrinterAction(values: PrinterFormInput) {
-  const response = await fetch(backendUrl("/printers"), {
+  const response = await backendFetch("/printers", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(toPayload(values)),
@@ -54,7 +54,7 @@ export async function createPrinterAction(values: PrinterFormInput) {
 }
 
 export async function updatePrinterAction(id: number, values: PrinterFormInput) {
-  const response = await fetch(backendUrl(`/printers/${id}`), {
+  const response = await backendFetch(`/printers/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(toPayload(values)),
@@ -68,7 +68,7 @@ export async function updatePrinterAction(id: number, values: PrinterFormInput) 
 }
 
 export async function deletePrinterAction(id: number) {
-  const response = await fetch(backendUrl(`/printers/${id}`), { method: "DELETE" });
+  const response = await backendFetch(`/printers/${id}`, { method: "DELETE" });
 
   if (!response.ok && response.status !== 404) {
     throw new Error("Não foi possível excluir a impressora");

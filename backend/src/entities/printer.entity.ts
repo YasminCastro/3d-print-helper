@@ -9,6 +9,7 @@ export interface PrinterPersistenceData {
   lifespanHours?: number | null;
   energyCostPerKwh?: number | null;
   createdAt?: Date;
+  userId: string;
 }
 
 export interface PrinterCreateData {
@@ -20,6 +21,7 @@ export interface PrinterCreateData {
   purchasePrice?: number | null;
   lifespanHours?: number | null;
   energyCostPerKwh?: number | null;
+  userId: string;
 }
 
 export type PrinterUpdateData = Partial<PrinterCreateData>;
@@ -35,6 +37,7 @@ export class Printer {
     private _purchasePrice: number | null,
     private _lifespanHours: number | null,
     private _energyCostPerKwh: number | null,
+    private readonly _userId: string,
     private readonly _createdAt: Date = new Date(),
   ) {}
 
@@ -51,6 +54,7 @@ export class Printer {
       data.purchasePrice ?? null,
       data.lifespanHours ?? null,
       data.energyCostPerKwh ?? null,
+      data.userId,
     );
   }
 
@@ -65,6 +69,7 @@ export class Printer {
       data.purchasePrice ?? null,
       data.lifespanHours ?? null,
       data.energyCostPerKwh ?? null,
+      data.userId,
       data.createdAt || new Date(),
     );
   }
@@ -126,6 +131,9 @@ export class Printer {
   get energyCostPerKwh(): number | null {
     return this._energyCostPerKwh;
   }
+  get userId(): string {
+    return this._userId;
+  }
   get createdAt(): Date {
     return new Date(this._createdAt);
   }
@@ -140,6 +148,7 @@ export class Printer {
       purchasePrice: this._purchasePrice,
       lifespanHours: this._lifespanHours,
       energyCostPerKwh: this._energyCostPerKwh,
+      userId: this._userId,
     };
   }
 
