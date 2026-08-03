@@ -1,6 +1,5 @@
 export type JournalAttempt = {
-  id: number;
-  entry_id: number;
+  id?: number;
   position: number;
   attempt: string | null;
   worked: number | null;
@@ -20,17 +19,17 @@ export type JournalEntry = {
 
 export type JournalPhoto = {
   id: number;
-  entry_id: number;
   filename: string;
+  mime_type: string;
   created_at: string;
 };
 
-export type JournalEntryWithFilament = JournalEntry & {
-  filament_name: string | null;
-  filament_color: string | null;
-};
-
-export type JournalEntryWithDetails = JournalEntryWithFilament & {
+export type JournalEntryWithAttempts = JournalEntry & {
   attempts: JournalAttempt[];
   photos: JournalPhoto[];
+};
+
+export type JournalEntryWithDetails = JournalEntryWithAttempts & {
+  filament_name: string | null;
+  filament_color: string | null;
 };

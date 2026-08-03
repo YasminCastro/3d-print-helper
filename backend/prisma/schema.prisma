@@ -19,6 +19,7 @@ model User {
   filamentBrands FilamentBrand[]
   filaments Filament[]
   calibrations Calibration[]
+  journalEntries JournalEntry[]
 
   @@map("users")
 }
@@ -83,6 +84,7 @@ model Filament {
 
   user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   calibrations     Calibration[]
+  journalEntries   JournalEntry[]
 
   @@map("filaments")
 }
@@ -109,4 +111,47 @@ model Calibration {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("calibrations")
+}
+
+model JournalEntry {
+  id              Int      @id @default(autoincrement())
+  title           String
+  entryDate       String?  @map("entry_date")
+  filamentId      Int?     @map("filament_id")
+  filament        Filament? @relation(fields: [filamentId], references: [id], onDelete: SetNull)
+  status          String?
+  symptom         String?
+  possibleCauses  String?  @map("possible_causes")
+  notes           String?
+  createdAt       DateTime @default(now()) @map("created_at")
+  userId          String   @map("user_id")
+
+  user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attempts JournalAttempt[]
+  photos   JournalPhoto[]
+
+  @@map("journal_entries")
+}
+
+model JournalAttempt {
+  id       Int     @id @default(autoincrement())
+  entryId  Int     @map("entry_id")
+  entry    JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  position Int
+  attempt  String?
+  worked   Int?
+
+  @@map("journal_attempts")
+}
+
+model JournalPhoto {
+  id        Int      @id @default(autoincrement())
+  entryId   Int      @map("entry_id")
+  entry     JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  filename  String
+  mimeType  String   @map("mime_type")
+  data      Bytes
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("journal_photos")
 }

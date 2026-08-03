@@ -51,7 +51,7 @@ export function JournalCard({
         {entry.photos.length > 0 && (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={`/uploads/journal/${entry.photos[0].filename}`}
+            src={`/journal-photos/${entry.photos[0].id}`}
             alt=""
             className="h-28 w-full object-cover"
           />

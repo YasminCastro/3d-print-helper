@@ -51,13 +51,13 @@ export function JournalPhotos({
               className="group relative aspect-square overflow-hidden rounded-md border"
             >
               <a
-                href={`/uploads/journal/${photo.filename}`}
+                href={`/journal-photos/${photo.id}`}
                 target="_blank"
                 rel="noreferrer"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={`/uploads/journal/${photo.filename}`}
+                  src={`/journal-photos/${photo.id}`}
                   alt=""
                   className="size-full object-cover"
                 />
