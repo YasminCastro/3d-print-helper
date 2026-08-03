@@ -9,6 +9,7 @@ export interface BrandPersistenceData {
   purchased?: number | null;
   notes?: string | null;
   createdAt?: Date;
+  userId: string;
 }
 
 export interface BrandCreateData {
@@ -20,6 +21,7 @@ export interface BrandCreateData {
   bestColors?: string[] | null;
   purchased?: boolean | null;
   notes?: string | null;
+  userId: string;
 }
 
 export type BrandUpdateData = Partial<BrandCreateData>;
@@ -36,6 +38,7 @@ export class FilamentBrand {
     private _purchased: boolean,
     private _notes: string | null,
     private readonly _createdAt: Date = new Date(),
+    private readonly _userId: string = '',
   ) {}
 
   static create(data: BrandCreateData): FilamentBrand {
@@ -51,6 +54,8 @@ export class FilamentBrand {
       data.bestColors ?? [],
       data.purchased ?? false,
       data.notes ?? null,
+      new Date(),
+      data.userId,
     );
   }
 
@@ -66,6 +71,7 @@ export class FilamentBrand {
       data.purchased === 1,
       data.notes ?? null,
       data.createdAt || new Date(),
+      data.userId,
     );
   }
 
@@ -132,6 +138,9 @@ export class FilamentBrand {
   get createdAt(): Date {
     return new Date(this._createdAt);
   }
+  get userId(): string {
+    return this._userId;
+  }
 
   toPersistence(): Omit<BrandPersistenceData, 'id' | 'createdAt'> {
     return {
@@ -143,6 +152,7 @@ export class FilamentBrand {
       bestColors: this._bestColors.length ? this._bestColors.join(',') : null,
       purchased: this._purchased ? 1 : 0,
       notes: this._notes,
+      userId: this._userId,
     };
   }
 

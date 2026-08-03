@@ -16,6 +16,7 @@ model User {
   updatedAt DateTime @updatedAt
 
   printers Printer[]
+  filamentBrands FilamentBrand[]
 
   @@map("users")
 }
@@ -48,7 +49,9 @@ model FilamentBrand {
   purchased     Int?     @default(0)
   notes         String?
   createdAt     DateTime @default(now()) @map("created_at")
+  userId        String   @map("user_id")
 
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   filaments Filament[]
 
   @@map("filament_brands")

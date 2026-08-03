@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendUrl } from "@/lib/backend-url";
+import { backendFetch } from "@/lib/backend-fetch";
 import { brandFormSchema, type BrandFormInput } from "@/lib/schemas/brand";
 import type { FilamentBrand } from "@/lib/types/brand";
 
@@ -22,7 +22,7 @@ function toPayload(values: BrandFormInput) {
 }
 
 export async function getBrands(): Promise<FilamentBrand[]> {
-  const response = await fetch(backendUrl("/brands"), { cache: "no-store" });
+  const response = await backendFetch("/brands", { cache: "no-store" });
   if (!response.ok) {
     throw new Error("Não foi possível carregar as marcas");
   }
@@ -31,7 +31,7 @@ export async function getBrands(): Promise<FilamentBrand[]> {
 }
 
 export async function getBrand(id: number): Promise<FilamentBrand | null> {
-  const response = await fetch(backendUrl(`/brands/${id}`), { cache: "no-store" });
+  const response = await backendFetch(`/brands/${id}`, { cache: "no-store" });
   if (response.status === 404) return null;
   if (!response.ok) {
     throw new Error("Não foi possível carregar a marca");
@@ -41,7 +41,7 @@ export async function getBrand(id: number): Promise<FilamentBrand | null> {
 }
 
 export async function createBrandAction(values: BrandFormInput) {
-  const response = await fetch(backendUrl("/brands"), {
+  const response = await backendFetch("/brands", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(toPayload(values)),
@@ -55,7 +55,7 @@ export async function createBrandAction(values: BrandFormInput) {
 }
 
 export async function updateBrandAction(id: number, values: BrandFormInput) {
-  const response = await fetch(backendUrl(`/brands/${id}`), {
+  const response = await backendFetch(`/brands/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(toPayload(values)),
@@ -69,7 +69,7 @@ export async function updateBrandAction(id: number, values: BrandFormInput) {
 }
 
 export async function deleteBrandAction(id: number) {
-  const response = await fetch(backendUrl(`/brands/${id}`), { method: "DELETE" });
+  const response = await backendFetch(`/brands/${id}`, { method: "DELETE" });
 
   if (!response.ok && response.status !== 404) {
     throw new Error("Não foi possível excluir a marca");
