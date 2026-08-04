@@ -10,7 +10,6 @@ import {
   Gauge,
   NotebookText,
   Images,
-  Settings,
 } from "lucide-react";
 
 import {
@@ -35,7 +34,6 @@ const NAV_ITEMS = [
   { title: "Calibrações", url: "/calibrations", icon: Gauge },
   { title: "Diário", url: "/journal", icon: NotebookText },
   { title: "Impressões", url: "/prints", icon: Images },
-  { title: "Configurações", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar({ isLoggedIn }: { isLoggedIn: boolean }) {

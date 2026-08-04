@@ -44,14 +44,12 @@ export function PrintFormDialog({
   categoryOptions,
   filamentOptions,
   printerOptions,
-  defaultProfitPercent,
   lastPrinterId,
   lastProfitPercent,
 }: {
   categoryOptions: PrintCategory[];
   filamentOptions: FilamentOption[];
   printerOptions: { id: number; name: string }[];
-  defaultProfitPercent: number;
   lastPrinterId?: number | null;
   lastProfitPercent?: number | null;
 }) {
@@ -121,7 +119,6 @@ export function PrintFormDialog({
             categoryOptions={categoryOptions}
             filamentOptions={filamentOptions}
             printerOptions={printerOptions}
-            defaultProfitPercent={defaultProfitPercent}
           />
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={isPending}>

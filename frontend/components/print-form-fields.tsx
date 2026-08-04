@@ -82,7 +82,6 @@ export function PrintFormFields({
   categoryOptions,
   filamentOptions,
   printerOptions,
-  defaultProfitPercent,
 }: {
   form: UseFormReturn<PrintFormInput>;
   photoFile: File | null;
@@ -91,7 +90,6 @@ export function PrintFormFields({
   categoryOptions: PrintCategory[];
   filamentOptions: FilamentOption[];
   printerOptions: { id: number; name: string }[];
-  defaultProfitPercent: number;
 }) {
   const categoryId = form.watch("categoryId");
   const { fields, append, remove } = useFieldArray({
@@ -284,7 +282,7 @@ export function PrintFormFields({
               id="print-profit-percent"
               type="number"
               step="any"
-              placeholder={String(defaultProfitPercent)}
+              placeholder="100"
               {...form.register("profitPercent", { valueAsNumber: true })}
             />
             <FieldError errors={[form.formState.errors.profitPercent]} />

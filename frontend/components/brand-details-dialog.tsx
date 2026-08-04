@@ -3,13 +3,18 @@
 import { useEffect, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { PencilIcon, Trash2Icon } from "lucide-react";
+import { InfoIcon, PencilIcon, Trash2Icon } from "lucide-react";
 
 import { deleteBrandAction, updateBrandAction } from "@/lib/actions/brands";
 import { brandFormSchema, type BrandFormInput } from "@/lib/schemas/brand";
 import type { FilamentBrand } from "@/lib/types/brand";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -158,7 +163,14 @@ export function BrandDetailsDialog({
               <dd>
                 {filamentRating != null ? (
                   <div className="flex items-center gap-1.5">
-                    <StarRatingDisplay rating={Math.round(filamentRating)} />
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <StarRatingDisplay rating={Math.round(filamentRating)} />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Média das notas dos filamentos dessa marca
+                      </TooltipContent>
+                    </Tooltip>
                     <span className="text-xs text-muted-foreground">
                       {filamentRating.toFixed(1)} ({filamentRatingCount}{" "}
                       {filamentRatingCount === 1 ? "filamento" : "filamentos"})
@@ -167,9 +179,6 @@ export function BrandDetailsDialog({
                 ) : (
                   "—"
                 )}
-                <span className="ml-1 text-xs text-muted-foreground">
-                  (média das notas dos filamentos dessa marca)
-                </span>
               </dd>
 
               <dt className="text-muted-foreground">Já comprei</dt>
@@ -183,18 +192,26 @@ export function BrandDetailsDialog({
                 {formatPriceRange(priceMin, priceMax)}
                 {(brand.avgPriceMin == null || brand.avgPriceMax == null) &&
                   (priceMin != null || priceMax != null) && (
-                    <span className="ml-1 text-xs text-muted-foreground">
-                      (baseado nos filamentos cadastrados dessa marca)
-                    </span>
+                    <Tooltip>
+                      <TooltipTrigger className="ml-1 align-middle">
+                        <InfoIcon className="size-3.5 text-muted-foreground" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        Baseado nos filamentos cadastrados dessa marca
+                      </TooltipContent>
+                    </Tooltip>
                   )}
               </dd>
 
               <dt className="text-muted-foreground">Custo-benefício</dt>
               <dd>
                 {costBenefit ? costBenefitLabels[costBenefit] : "—"}
-                <span className="ml-1 text-xs text-muted-foreground">
-                  (calculado com base no preço médio)
-                </span>
+                <Tooltip>
+                  <TooltipTrigger className="ml-1 align-middle">
+                    <InfoIcon className="size-3.5 text-muted-foreground" />
+                  </TooltipTrigger>
+                  <TooltipContent>Calculado com base no preço médio</TooltipContent>
+                </Tooltip>
               </dd>
 
               {parseFilamentTypes(brand).length > 0 && (

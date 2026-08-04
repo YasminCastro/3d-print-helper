@@ -1,6 +1,5 @@
 import { AlertTriangle, XCircle } from "lucide-react";
 
-import { db } from "@/lib/db";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   availabilityLabels,
@@ -18,7 +17,6 @@ import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
 import { getPrintCategories, getPrints } from "@/lib/actions/prints";
 import type { PrintWithDetails } from "@/lib/types/print";
-import type { AppSettings } from "@/lib/types/settings";
 
 const alertIcons: Record<
   "indisponivel" | "quase_acabando",
@@ -70,10 +68,6 @@ export default async function Home() {
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((printer) => ({ id: printer.id, name: printer.name }));
 
-  const settings = db
-    .prepare("SELECT * FROM app_settings WHERE id = 1")
-    .get() as AppSettings;
-
   const printsByCreatedDesc = [...printsRaw].sort((a, b) =>
     b.created_at.localeCompare(a.created_at)
   );
@@ -116,7 +110,6 @@ export default async function Home() {
             categoryOptions={printCategoryOptions}
             filamentOptions={filamentOptions}
             printerOptions={printerOptions}
-            defaultProfitPercent={settings.default_profit_percent}
             lastPrinterId={lastPrint?.printer_id}
             lastProfitPercent={lastPrintProfit?.profit_percent}
           />

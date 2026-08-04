@@ -13,11 +13,6 @@ function createConnection() {
   database.pragma("foreign_keys = ON");
 
   database.exec(`
-    CREATE TABLE IF NOT EXISTS app_settings (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
-      default_profit_percent REAL NOT NULL DEFAULT 50
-    );
-
     CREATE TABLE IF NOT EXISTS print_profiles (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       printer_id INTEGER NOT NULL,
@@ -34,10 +29,6 @@ function createConnection() {
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
   `);
-
-  database.exec(
-    "INSERT OR IGNORE INTO app_settings (id, default_profit_percent) VALUES (1, 50)"
-  );
 
   return database;
 }

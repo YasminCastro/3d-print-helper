@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 
-import { db } from "@/lib/db";
 import { PrintDetailView } from "@/components/print-detail-view";
 import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
@@ -8,7 +7,6 @@ import { getFilamentOptions, getFilaments, getFilamentPricingData } from "@/lib/
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
 import { getPrint, getPrintCategories } from "@/lib/actions/prints";
 import type { PrintWithDetails } from "@/lib/types/print";
-import type { AppSettings } from "@/lib/types/settings";
 
 export default async function PrintDetailPage({
   params,
@@ -56,10 +54,6 @@ export default async function PrintDetailPage({
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((printer) => ({ id: printer.id, name: printer.name }));
 
-  const settings = db
-    .prepare("SELECT * FROM app_settings WHERE id = 1")
-    .get() as AppSettings;
-
   const { materialMaxPrices } = await getFilamentPricingData();
 
   return (
@@ -68,7 +62,6 @@ export default async function PrintDetailPage({
       categoryOptions={categoryOptions}
       filamentOptions={filamentOptions}
       printerOptions={printerOptions}
-      defaultProfitPercent={settings.default_profit_percent}
       materialMaxPrices={materialMaxPrices}
     />
   );

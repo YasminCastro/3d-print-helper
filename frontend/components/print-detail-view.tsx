@@ -100,14 +100,12 @@ export function PrintDetailView({
   categoryOptions,
   filamentOptions,
   printerOptions,
-  defaultProfitPercent,
   materialMaxPrices,
 }: {
   print: PrintWithDetails;
   categoryOptions: PrintCategory[];
   filamentOptions: FilamentOption[];
   printerOptions: { id: number; name: string }[];
-  defaultProfitPercent: number;
   materialMaxPrices: Record<string, number>;
 }) {
   const router = useRouter();
@@ -178,7 +176,7 @@ export function PrintDetailView({
     maintenanceCostPerHour: print.printer_maintenance_cost_per_hour,
   });
 
-  const effectiveProfitPercent = print.profit_percent ?? defaultProfitPercent;
+  const effectiveProfitPercent = print.profit_percent ?? 100;
 
   const saleValueTotal = saleValue({
     filamentCostTotal,
@@ -280,7 +278,6 @@ export function PrintDetailView({
                 categoryOptions={categoryOptions}
                 filamentOptions={filamentOptions}
                 printerOptions={printerOptions}
-                defaultProfitPercent={defaultProfitPercent}
               />
               <div className="mt-4 flex justify-end gap-2">
                 <Button
