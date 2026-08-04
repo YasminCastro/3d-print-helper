@@ -20,6 +20,8 @@ model User {
   filaments Filament[]
   calibrations Calibration[]
   journalEntries JournalEntry[]
+  printCategories PrintCategory[]
+  prints Print[]
 
   @@map("users")
 }
@@ -37,6 +39,7 @@ model Printer {
   createdAt              DateTime @default(now()) @map("created_at")
   userId                 String   @map("user_id")
   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prints                 Print[]
 
   @@map("printers")
 }
@@ -85,6 +88,7 @@ model Filament {
   user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
   calibrations     Calibration[]
   journalEntries   JournalEntry[]
+  printFilaments   PrintFilament[]
 
   @@map("filaments")
 }
@@ -154,4 +158,58 @@ model JournalPhoto {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("journal_photos")
+}
+
+model PrintCategory {
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  userId    String   @map("user_id")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prints Print[]
+
+  @@unique([name, userId])
+  @@map("print_categories")
+}
+
+model Print {
+  id                 Int      @id @default(autoincrement())
+  name               String
+  photoFilename      String?  @map("photo_filename")
+  photoMimeType      String?  @map("photo_mime_type")
+  photoData          Bytes?   @map("photo_data")
+  printDate          String?  @map("print_date")
+  durationMinutes    Int?     @map("duration_minutes")
+  status             String?
+  result             String?
+  categoryId         Int?     @map("category_id")
+  category           PrintCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  printerId          Int?     @map("printer_id")
+  printer            Printer? @relation(fields: [printerId], references: [id], onDelete: SetNull)
+  printLink          String?  @map("print_link")
+  profitPercent      Float?   @map("profit_percent")
+  filamentCost       Float?   @map("filament_cost")
+  printCost          Float?   @map("print_cost")
+  saleValue          Float?   @map("sale_value")
+  saleValueWorstCase Float?   @map("sale_value_worst_case")
+  createdAt          DateTime @default(now()) @map("created_at")
+  userId             String   @map("user_id")
+
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filaments PrintFilament[]
+
+  @@map("prints")
+}
+
+model PrintFilament {
+  id         Int      @id @default(autoincrement())
+  printId    Int      @map("print_id")
+  print      Print    @relation(fields: [printId], references: [id], onDelete: Cascade)
+  filamentId Int?     @map("filament_id")
+  filament   Filament? @relation(fields: [filamentId], references: [id], onDelete: SetNull)
+  grams      Float?
+  position   Int
+
+  @@map("print_filaments")
 }

@@ -6,65 +6,42 @@ import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
 import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
-import type {
-  Print,
-  PrintCategory,
-  PrintFilament,
-  PrintWithDetails,
-} from "@/lib/types/print";
+import { getPrintCategories, getPrints } from "@/lib/actions/prints";
+import type { PrintWithDetails } from "@/lib/types/print";
 import type { AppSettings } from "@/lib/types/settings";
 
 export default async function PrintsPage() {
-  const printers = await getPrinters();
+  const [printers, filaments, printsRaw, categoryOptions] = await Promise.all([
+    getPrinters(),
+    getFilaments(),
+    getPrints(),
+    getPrintCategories(),
+  ]);
+
   const printersById = new Map(printers.map((printer) => [printer.id, printer]));
-
-  const filaments = await getFilaments();
   const filamentsById = new Map(filaments.map((filament) => [filament.id, filament]));
+  const categoriesById = new Map(categoryOptions.map((category) => [category.id, category]));
 
-  const printsRaw = db
-    .prepare(
-      `SELECT prints.*, print_categories.name AS category_name
-       FROM prints
-       LEFT JOIN print_categories ON prints.category_id = print_categories.id
-       ORDER BY COALESCE(prints.print_date, prints.created_at) DESC`
-    )
-    .all() as (Print & { category_name: string | null })[];
-
-  const prints = printsRaw.map((print) => ({
-    ...print,
-    ...printerDenormalizedFields(
-      print.printer_id != null ? printersById.get(print.printer_id) : null
-    ),
-  }));
-
-  const printFilamentsRaw = db
-    .prepare(
-      "SELECT * FROM print_filaments ORDER BY print_id ASC, position ASC"
-    )
-    .all() as PrintFilament[];
-
-  const printFilaments = printFilamentsRaw.map((printFilament) => ({
-    ...printFilament,
-    ...filamentDenormalizedFields(
-      printFilament.filament_id != null ? filamentsById.get(printFilament.filament_id) : null
-    ),
-  }));
-
-  const filamentsByPrint = new Map<number, typeof printFilaments>();
-  for (const filament of printFilaments) {
-    const list = filamentsByPrint.get(filament.print_id) ?? [];
-    list.push(filament);
-    filamentsByPrint.set(filament.print_id, list);
-  }
-
-  const printsWithDetails: PrintWithDetails[] = prints.map((print) => ({
-    ...print,
-    filaments: filamentsByPrint.get(print.id) ?? [],
-  }));
-
-  const categoryOptions = db
-    .prepare("SELECT * FROM print_categories ORDER BY name ASC")
-    .all() as PrintCategory[];
+  const printsWithDetails: PrintWithDetails[] = [...printsRaw]
+    .sort((a, b) => {
+      const dateA = a.print_date ?? a.created_at;
+      const dateB = b.print_date ?? b.created_at;
+      return dateB.localeCompare(dateA);
+    })
+    .map((print) => ({
+      ...print,
+      category_name:
+        print.category_id != null ? (categoriesById.get(print.category_id)?.name ?? null) : null,
+      ...printerDenormalizedFields(
+        print.printer_id != null ? printersById.get(print.printer_id) : null
+      ),
+      filaments: print.filaments.map((filament) => ({
+        ...filament,
+        ...filamentDenormalizedFields(
+          filament.filament_id != null ? filamentsById.get(filament.filament_id) : null
+        ),
+      })),
+    }));
 
   const filamentOptions = await getFilamentOptions();
 
@@ -76,17 +53,11 @@ export default async function PrintsPage() {
     .prepare("SELECT * FROM app_settings WHERE id = 1")
     .get() as AppSettings;
 
-  const lastPrint = db
-    .prepare(
-      "SELECT printer_id FROM prints WHERE printer_id IS NOT NULL ORDER BY created_at DESC LIMIT 1"
-    )
-    .get() as { printer_id: number } | undefined;
-
-  const lastPrintProfit = db
-    .prepare(
-      "SELECT profit_percent FROM prints WHERE profit_percent IS NOT NULL ORDER BY created_at DESC LIMIT 1"
-    )
-    .get() as { profit_percent: number } | undefined;
+  const printsByCreatedDesc = [...printsRaw].sort((a, b) =>
+    b.created_at.localeCompare(a.created_at)
+  );
+  const lastPrint = printsByCreatedDesc.find((print) => print.printer_id != null);
+  const lastPrintProfit = printsByCreatedDesc.find((print) => print.profit_percent != null);
 
   return (
     <div className="flex flex-col gap-4">

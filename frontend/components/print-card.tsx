@@ -30,7 +30,7 @@ export function PrintCard({ print }: { print: PrintWithDetails }) {
         {print.photo_filename ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
-            src={`/uploads/prints/${print.photo_filename}`}
+            src={`/print-photos/${print.id}`}
             alt=""
             className="h-28 w-full object-cover"
           />
@@ -69,7 +69,7 @@ export function PrintCard({ print }: { print: PrintWithDetails }) {
               </span>
             )}
             {print.filaments.map((filament) => (
-              <span key={filament.id} className="flex items-center gap-2">
+              <span key={filament.position} className="flex items-center gap-2">
                 <span
                   className="size-2.5 shrink-0 rounded-full border"
                   style={{ backgroundColor: filament.filament_color ?? "#a1a1aa" }}

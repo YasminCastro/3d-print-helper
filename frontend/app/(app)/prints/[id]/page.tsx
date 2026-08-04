@@ -6,12 +6,8 @@ import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
 import { getFilamentOptions, getFilaments, getFilamentPricingData } from "@/lib/actions/filaments";
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
-import type {
-  Print,
-  PrintCategory,
-  PrintFilament,
-  PrintWithDetails,
-} from "@/lib/types/print";
+import { getPrint, getPrintCategories } from "@/lib/actions/prints";
+import type { PrintWithDetails } from "@/lib/types/print";
 import type { AppSettings } from "@/lib/types/settings";
 
 export default async function PrintDetailPage({
@@ -24,48 +20,35 @@ export default async function PrintDetailPage({
 
   if (Number.isNaN(printId)) notFound();
 
-  const printers = await getPrinters();
-  const printersById = new Map(printers.map((printer) => [printer.id, printer]));
-
-  const filaments = await getFilaments();
-  const filamentsById = new Map(filaments.map((filament) => [filament.id, filament]));
-
-  const printRaw = db
-    .prepare(
-      `SELECT prints.*, print_categories.name AS category_name
-       FROM prints
-       LEFT JOIN print_categories ON prints.category_id = print_categories.id
-       WHERE prints.id = ?`
-    )
-    .get(printId) as (Print & { category_name: string | null }) | undefined;
+  const [printers, filaments, printRaw, categoryOptions] = await Promise.all([
+    getPrinters(),
+    getFilaments(),
+    getPrint(printId),
+    getPrintCategories(),
+  ]);
 
   if (!printRaw) notFound();
 
-  const print = {
+  const printersById = new Map(printers.map((printer) => [printer.id, printer]));
+  const filamentsById = new Map(filaments.map((filament) => [filament.id, filament]));
+  const categoriesById = new Map(categoryOptions.map((category) => [category.id, category]));
+
+  const printWithDetails: PrintWithDetails = {
     ...printRaw,
+    category_name:
+      printRaw.category_id != null
+        ? (categoriesById.get(printRaw.category_id)?.name ?? null)
+        : null,
     ...printerDenormalizedFields(
       printRaw.printer_id != null ? printersById.get(printRaw.printer_id) : null
     ),
+    filaments: printRaw.filaments.map((filament) => ({
+      ...filament,
+      ...filamentDenormalizedFields(
+        filament.filament_id != null ? filamentsById.get(filament.filament_id) : null
+      ),
+    })),
   };
-
-  const printFilamentsRaw = db
-    .prepare(
-      "SELECT * FROM print_filaments WHERE print_id = ? ORDER BY position ASC"
-    )
-    .all(printId) as PrintFilament[];
-
-  const printFilaments = printFilamentsRaw.map((printFilament) => ({
-    ...printFilament,
-    ...filamentDenormalizedFields(
-      printFilament.filament_id != null ? filamentsById.get(printFilament.filament_id) : null
-    ),
-  }));
-
-  const printWithDetails: PrintWithDetails = { ...print, filaments: printFilaments };
-
-  const categoryOptions = db
-    .prepare("SELECT * FROM print_categories ORDER BY name ASC")
-    .all() as PrintCategory[];
 
   const filamentOptions = await getFilamentOptions();
 

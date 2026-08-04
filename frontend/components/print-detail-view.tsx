@@ -155,9 +155,7 @@ export function PrintDetailView({
     });
   }
 
-  const photoUrl = print.photo_filename
-    ? `/uploads/prints/${print.photo_filename}`
-    : null;
+  const photoUrl = print.photo_filename ? `/print-photos/${print.id}` : null;
 
   const status = print.status as (typeof printStatusOptions)[number] | null;
   const result = print.result as (typeof printResultOptions)[number] | null;
@@ -405,7 +403,7 @@ export function PrintDetailView({
                     <ul className="flex flex-col gap-1">
                       {print.filaments.map((filament) => (
                         <li
-                          key={filament.id}
+                          key={filament.position}
                           className="flex items-center justify-end gap-2"
                         >
                           {filament.filament_name ?? "—"}

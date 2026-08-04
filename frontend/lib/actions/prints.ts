@@ -1,30 +1,72 @@
 "use server";
 
-import fs from "node:fs";
-import path from "node:path";
-import { randomUUID } from "node:crypto";
-
 import { refresh } from "next/cache";
 
-import { db } from "@/lib/db";
+import { backendFetch } from "@/lib/backend-fetch";
 import { NEW_CATEGORY_VALUE } from "@/lib/schemas/print";
-import { recalculatePrintCalculations } from "@/lib/print-calculations";
-import { getPrinter } from "@/lib/actions/printers";
-import { getFilamentPricingData } from "@/lib/actions/filaments";
+import type { PrintCategory, PrintWithFilaments } from "@/lib/types/print";
 
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "prints");
+type ApiPrintFilament = {
+  filamentId: number | null;
+  grams: number | null;
+};
 
-async function savePhoto(file: File) {
-  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-  const filename = `${randomUUID()}${path.extname(file.name)}`;
-  const buffer = Buffer.from(await file.arrayBuffer());
-  fs.writeFileSync(path.join(UPLOAD_DIR, filename), buffer);
-  return filename;
+type ApiPrint = {
+  id: number;
+  name: string;
+  photoFilename: string | null;
+  photoMimeType: string | null;
+  printDate: string | null;
+  durationMinutes: number | null;
+  status: string | null;
+  result: string | null;
+  categoryId: number | null;
+  printerId: number | null;
+  printLink: string | null;
+  profitPercent: number | null;
+  filamentCost: number | null;
+  printCost: number | null;
+  saleValue: number | null;
+  saleValueWorstCase: number | null;
+  createdAt: string;
+  filaments: ApiPrintFilament[];
+};
+
+type ApiPrintCategory = {
+  id: number;
+  name: string;
+  createdAt: string;
+};
+
+function toDomainCategory(api: ApiPrintCategory): PrintCategory {
+  return { id: api.id, name: api.name, created_at: api.createdAt };
 }
 
-function removePhoto(filename: string | null) {
-  if (!filename) return;
-  fs.rm(path.join(UPLOAD_DIR, filename), { force: true }, () => {});
+function toDomain(api: ApiPrint): PrintWithFilaments {
+  return {
+    id: api.id,
+    name: api.name,
+    photo_filename: api.photoFilename,
+    photo_mime_type: api.photoMimeType,
+    print_date: api.printDate,
+    duration_minutes: api.durationMinutes,
+    status: api.status,
+    result: api.result,
+    category_id: api.categoryId,
+    printer_id: api.printerId,
+    print_link: api.printLink,
+    profit_percent: api.profitPercent,
+    filament_cost: api.filamentCost,
+    print_cost: api.printCost,
+    sale_value: api.saleValue,
+    sale_value_worst_case: api.saleValueWorstCase,
+    created_at: api.createdAt,
+    filaments: api.filaments.map((filament, index) => ({
+      filament_id: filament.filamentId,
+      grams: filament.grams,
+      position: index,
+    })),
+  };
 }
 
 function parseNumber(value: unknown) {
@@ -35,22 +77,23 @@ function parseNumber(value: unknown) {
   return Number.isNaN(num) ? null : num;
 }
 
-function resolveCategoryId(categoryId: string | null, newCategoryName: string | null) {
+async function resolveCategoryId(categoryId: string | null, newCategoryName: string | null) {
   if (categoryId === NEW_CATEGORY_VALUE) {
     const name = (newCategoryName ?? "").trim();
     if (!name) return null;
 
-    const existing = db
-      .prepare("SELECT id FROM print_categories WHERE name = ? COLLATE NOCASE")
-      .get(name) as { id: number } | undefined;
+    const response = await backendFetch("/print-categories", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name }),
+    });
 
-    if (existing) return existing.id;
+    if (!response.ok) {
+      throw new Error("Não foi possível criar a categoria");
+    }
 
-    const result = db
-      .prepare("INSERT INTO print_categories (name) VALUES (?)")
-      .run(name);
-
-    return Number(result.lastInsertRowid);
+    const body = await response.json();
+    return (body.data as ApiPrintCategory).id;
   }
 
   if (categoryId) return Number(categoryId);
@@ -76,26 +119,7 @@ function parseFilaments(formData: FormData) {
     .filter((entry) => entry.filamentId !== null || entry.grams !== null);
 }
 
-function insertFilaments(
-  printId: number,
-  filaments: { filamentId: number | null; grams: number | null }[]
-) {
-  const insert = db.prepare(
-    `INSERT INTO print_filaments (print_id, filament_id, grams, position)
-     VALUES (@printId, @filamentId, @grams, @position)`
-  );
-
-  filaments.forEach((filament, index) => {
-    insert.run({
-      printId,
-      filamentId: filament.filamentId,
-      grams: filament.grams,
-      position: index,
-    });
-  });
-}
-
-function parseFields(formData: FormData) {
+async function parseFields(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const printDate = String(formData.get("printDate") ?? "").trim() || null;
   const durationHours = parseNumber(formData.get("durationHours"));
@@ -113,7 +137,7 @@ function parseFields(formData: FormData) {
       ? null
       : (durationHours ?? 0) * 60 + (durationMinutes ?? 0);
 
-  const categoryId = resolveCategoryId(categoryIdRaw, newCategoryName);
+  const categoryId = await resolveCategoryId(categoryIdRaw, newCategoryName);
   const printerId = printerIdRaw ? Number(printerIdRaw) : null;
   const filaments = parseFilaments(formData);
 
@@ -131,124 +155,121 @@ function parseFields(formData: FormData) {
   };
 }
 
-export async function createPrintAction(formData: FormData) {
-  const {
-    name,
-    printDate,
-    durationTotalMinutes,
-    status,
-    result,
-    categoryId,
-    printerId,
-    printLink,
-    profitPercent,
-    filaments,
-  } = parseFields(formData);
-  const photo = formData.get("photo");
+function toPayload(fields: Awaited<ReturnType<typeof parseFields>>) {
+  return {
+    name: fields.name,
+    printDate: fields.printDate,
+    durationMinutes: fields.durationTotalMinutes,
+    status: fields.status,
+    result: fields.result,
+    categoryId: fields.categoryId,
+    printerId: fields.printerId,
+    printLink: fields.printLink,
+    profitPercent: fields.profitPercent,
+    filaments: fields.filaments.map((filament) => ({
+      filamentId: filament.filamentId,
+      grams: filament.grams,
+    })),
+  };
+}
 
-  let filename: string | null = null;
-  if (photo instanceof File && photo.size > 0) {
-    filename = await savePhoto(photo);
-  }
+async function uploadPhoto(printId: number, file: File) {
+  const buffer = Buffer.from(await file.arrayBuffer());
 
-  const printer = printerId ? await getPrinter(printerId) : null;
-  const filamentPricing = await getFilamentPricingData();
-
-  const transaction = db.transaction(() => {
-    const insertResult = db
-      .prepare(
-        `INSERT INTO prints (name, photo_filename, print_date, duration_minutes, status, result, category_id, printer_id, print_link, profit_percent)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
-      )
-      .run(
-        name,
-        filename,
-        printDate,
-        durationTotalMinutes,
-        status,
-        result,
-        categoryId,
-        printerId,
-        printLink,
-        profitPercent
-      );
-
-    const printId = Number(insertResult.lastInsertRowid);
-    insertFilaments(printId, filaments);
-    recalculatePrintCalculations(db, printId, printer, filamentPricing);
+  const response = await backendFetch(`/prints/${printId}/photo`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      filename: file.name,
+      mimeType: file.type || "application/octet-stream",
+      data: buffer.toString("base64"),
+    }),
   });
 
-  transaction();
+  if (!response.ok) {
+    throw new Error("Não foi possível enviar a foto");
+  }
+}
+
+export async function getPrints(): Promise<PrintWithFilaments[]> {
+  const response = await backendFetch("/prints", { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("Não foi possível carregar as impressões");
+  }
+  const body = await response.json();
+  return (body.data as ApiPrint[]).map(toDomain);
+}
+
+export async function getPrint(id: number): Promise<PrintWithFilaments | null> {
+  const response = await backendFetch(`/prints/${id}`, { cache: "no-store" });
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error("Não foi possível carregar a impressão");
+  }
+  const body = await response.json();
+  return toDomain(body.data);
+}
+
+export async function getPrintCategories(): Promise<PrintCategory[]> {
+  const response = await backendFetch("/print-categories", { cache: "no-store" });
+  if (!response.ok) {
+    throw new Error("Não foi possível carregar as categorias");
+  }
+  const body = await response.json();
+  return (body.data as ApiPrintCategory[]).map(toDomainCategory);
+}
+
+export async function createPrintAction(formData: FormData) {
+  const fields = await parseFields(formData);
+  const photo = formData.get("photo");
+
+  const response = await backendFetch("/prints", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(toPayload(fields)),
+  });
+
+  if (!response.ok) {
+    throw new Error("Não foi possível criar a impressão");
+  }
+
+  const body = await response.json();
+  const created = body.data as ApiPrint;
+
+  if (photo instanceof File && photo.size > 0) {
+    await uploadPhoto(created.id, photo);
+  }
 
   refresh();
 }
 
 export async function updatePrintAction(id: number, formData: FormData) {
-  const {
-    name,
-    printDate,
-    durationTotalMinutes,
-    status,
-    result,
-    categoryId,
-    printerId,
-    printLink,
-    profitPercent,
-    filaments,
-  } = parseFields(formData);
+  const fields = await parseFields(formData);
   const photo = formData.get("photo");
 
-  const current = db
-    .prepare("SELECT photo_filename FROM prints WHERE id = ?")
-    .get(id) as { photo_filename: string | null } | undefined;
-
-  let filename = current?.photo_filename ?? null;
-  if (photo instanceof File && photo.size > 0) {
-    removePhoto(filename);
-    filename = await savePhoto(photo);
-  }
-
-  const printer = printerId ? await getPrinter(printerId) : null;
-  const filamentPricing = await getFilamentPricingData();
-
-  const transaction = db.transaction(() => {
-    db.prepare(
-      `UPDATE prints
-       SET name = ?, photo_filename = ?, print_date = ?, duration_minutes = ?,
-           status = ?, result = ?, category_id = ?, printer_id = ?, print_link = ?, profit_percent = ?
-       WHERE id = ?`
-    ).run(
-      name,
-      filename,
-      printDate,
-      durationTotalMinutes,
-      status,
-      result,
-      categoryId,
-      printerId,
-      printLink,
-      profitPercent,
-      id
-    );
-
-    db.prepare("DELETE FROM print_filaments WHERE print_id = ?").run(id);
-    insertFilaments(id, filaments);
-    recalculatePrintCalculations(db, id, printer, filamentPricing);
+  const response = await backendFetch(`/prints/${id}`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(toPayload(fields)),
   });
 
-  transaction();
+  if (!response.ok) {
+    throw new Error("Não foi possível atualizar a impressão");
+  }
+
+  if (photo instanceof File && photo.size > 0) {
+    await uploadPhoto(id, photo);
+  }
 
   refresh();
 }
 
 export async function deletePrintAction(id: number) {
-  const current = db
-    .prepare("SELECT photo_filename FROM prints WHERE id = ?")
-    .get(id) as { photo_filename: string | null } | undefined;
+  const response = await backendFetch(`/prints/${id}`, { method: "DELETE" });
 
-  db.prepare("DELETE FROM prints WHERE id = ?").run(id);
-
-  if (current) removePhoto(current.photo_filename);
+  if (!response.ok && response.status !== 404) {
+    throw new Error("Não foi possível excluir a impressão");
+  }
 
   refresh();
 }

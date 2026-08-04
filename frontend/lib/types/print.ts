@@ -8,6 +8,7 @@ export type Print = {
   id: number;
   name: string;
   photo_filename: string | null;
+  photo_mime_type: string | null;
   print_date: string | null;
   duration_minutes: number | null;
   status: string | null;
@@ -24,8 +25,6 @@ export type Print = {
 };
 
 export type PrintFilament = {
-  id: number;
-  print_id: number;
   filament_id: number | null;
   grams: number | null;
   position: number;
@@ -37,6 +36,10 @@ export type PrintFilamentWithDetails = PrintFilament & {
   filament_material: string | null;
   filament_min_price_paid: number | null;
   filament_max_price_paid: number | null;
+};
+
+export type PrintWithFilaments = Print & {
+  filaments: PrintFilament[];
 };
 
 export type PrintWithCategory = Print & {

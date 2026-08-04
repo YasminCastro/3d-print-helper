@@ -9,6 +9,7 @@ import { CalibrationsRoute } from '@routes/calibrations.route';
 import { FilamentsRoute } from '@routes/filaments.route';
 import { JournalRoute } from '@routes/journal.route';
 import { PrintersRoute } from '@routes/printers.route';
+import { PrintsRoute } from '@routes/prints.route';
 import { UsersRoute } from '@routes/users.route';
 
 // DI 등록
@@ -23,6 +24,7 @@ const routes = [
   container.resolve(FilamentsRoute),
   container.resolve(CalibrationsRoute),
   container.resolve(JournalRoute),
+  container.resolve(PrintsRoute),
 ];
 
 // API prefix는 app.ts에서 기본값 세팅, 필요하면 인자로 전달
