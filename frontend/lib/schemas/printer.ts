@@ -13,6 +13,11 @@ export const printerFormSchema = z.object({
   purchasePrice: optionalNumberInput,
   lifespanHours: optionalNumberInput,
   energyCostPerKwh: optionalNumberInput,
+  color: z
+    .string()
+    .trim()
+    .refine((value) => value === "" || /^#[0-9a-fA-F]{6}$/.test(value), "Cor inválida")
+    .optional(),
 });
 
 export type PrinterFormInput = z.input<typeof printerFormSchema>;

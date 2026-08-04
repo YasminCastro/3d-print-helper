@@ -22,6 +22,12 @@ export const createPrinterSchema = z.object({
   purchasePrice: optionalNumber,
   lifespanHours: optionalNumber,
   energyCostPerKwh: optionalNumber,
+  color: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/, { message: 'Color must be a hex value like #3B82F6' })
+    .nullable()
+    .optional(),
 });
 
 export type CreatePrinterDto = z.infer<typeof createPrinterSchema>;

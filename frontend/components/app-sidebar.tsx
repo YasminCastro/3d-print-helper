@@ -57,7 +57,12 @@ export function AppSidebar({ isLoggedIn }: { isLoggedIn: boolean }) {
               {NAV_ITEMS.map((item) => (
                 <SidebarMenuItem key={item.url}>
                   <SidebarMenuButton
-                    isActive={pathname === item.url}
+                    isActive={
+                      item.url === "/"
+                        ? pathname === "/"
+                        : pathname === item.url ||
+                          pathname.startsWith(`${item.url}/`)
+                    }
                     tooltip={item.title}
                     render={<Link href={item.url} />}
                   >

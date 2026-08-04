@@ -40,6 +40,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PrinterFormFields } from "@/components/printer-form-fields";
 import { PrinterStatCard } from "@/components/printer-stat-card";
+import { accentFor, accentGradientFor, cn } from "@/lib/utils";
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -55,6 +56,7 @@ function toFormValues(printer: Printer): PrinterFormInput {
     purchasePrice: printer.purchasePrice ?? undefined,
     lifespanHours: printer.lifespanHours ?? undefined,
     energyCostPerKwh: printer.energyCostPerKwh ?? undefined,
+    color: printer.color ?? "",
   };
 }
 
@@ -170,14 +172,45 @@ export function PrinterDetailView({ printer }: { printer: Printer }) {
         </div>
       ) : (
         <>
-          <div className="flex items-center gap-4 rounded-xl bg-linear-to-br from-primary/15 via-primary/5 to-transparent p-5 ring-1 ring-foreground/10">
-            <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+          <div
+            className={cn(
+              "flex items-center gap-4 rounded-xl p-5 ring-1 ring-foreground/10",
+              !printer.color && accentGradientFor(printer.id)
+            )}
+            style={
+              printer.color
+                ? {
+                    background: `linear-gradient(to bottom right, ${printer.color}26, ${printer.color}0d, transparent)`,
+                  }
+                : undefined
+            }
+          >
+            <div
+              className={`flex size-14 shrink-0 items-center justify-center rounded-2xl ${printer.color ? "" : accentFor(printer.id)}`}
+              style={
+                printer.color
+                  ? { backgroundColor: `${printer.color}26`, color: printer.color }
+                  : undefined
+              }
+            >
               <PrinterIcon className="size-7" />
             </div>
             <div className="min-w-0">
               <h1 className="truncate text-xl font-semibold">{printer.name}</h1>
               {printer.brand && (
-                <Badge variant="secondary" className="mt-1">
+                <Badge
+                  variant="outline"
+                  className={`mt-1 ${printer.color ? "" : accentFor(printer.id)}`}
+                  style={
+                    printer.color
+                      ? {
+                          backgroundColor: `${printer.color}1a`,
+                          color: printer.color,
+                          borderColor: `${printer.color}40`,
+                        }
+                      : undefined
+                  }
+                >
                   <TagIcon className="size-3" />
                   {printer.brand}
                 </Badge>

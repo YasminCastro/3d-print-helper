@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
   ClockIcon,
+  PaintbrushIcon,
   PlugZapIcon,
   Printer as PrinterIcon,
   TagIcon,
@@ -12,6 +13,7 @@ import {
   ZapIcon,
 } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Field,
@@ -184,6 +186,44 @@ export function PrinterFormFields({
             Calculado como preço ÷ vida útil. Pode ser sobrescrito.
           </FieldDescription>
           <FieldError errors={[form.formState.errors.maintenanceCostPerHour]} />
+        </FieldContent>
+      </Field>
+
+      <Field data-invalid={!!form.formState.errors.color}>
+        <FieldLabel htmlFor="printer-color">
+          <FieldIcon icon={PaintbrushIcon} color="chart-5" />
+          Cor da impressora
+        </FieldLabel>
+        <FieldContent>
+          <div className="flex items-center gap-2">
+            <input
+              id="printer-color"
+              type="color"
+              className="h-9 w-12 shrink-0 cursor-pointer rounded-md border bg-transparent p-1"
+              value={form.watch("color") || "#6366f1"}
+              onChange={(event) => form.setValue("color", event.target.value)}
+            />
+            <Input
+              placeholder="#6366f1"
+              className="max-w-32"
+              {...form.register("color")}
+            />
+            {form.watch("color") && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => form.setValue("color", "")}
+              >
+                Limpar
+              </Button>
+            )}
+          </div>
+          <FieldDescription>
+            Usada para colorir o ícone da impressora. Se não for definida, uma cor aleatória é
+            usada.
+          </FieldDescription>
+          <FieldError errors={[form.formState.errors.color]} />
         </FieldContent>
       </Field>
     </FieldGroup>

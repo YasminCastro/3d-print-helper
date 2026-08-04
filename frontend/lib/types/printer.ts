@@ -8,5 +8,6 @@ export type Printer = {
   purchasePrice: number | null;
   lifespanHours: number | null;
   energyCostPerKwh: number | null;
+  color: string | null;
   createdAt: string;
 };

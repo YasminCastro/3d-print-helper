@@ -36,6 +36,7 @@ model Printer {
   purchasePrice          Float?   @map("purchase_price")
   lifespanHours          Int?     @map("lifespan_hours")
   energyCostPerKwh       Float?   @map("energy_cost_per_kwh")
+  color                  String?
   createdAt              DateTime @default(now()) @map("created_at")
   userId                 String   @map("user_id")
   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
