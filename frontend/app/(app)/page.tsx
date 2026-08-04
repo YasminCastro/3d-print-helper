@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   AlertTriangle,
   BoxIcon,
@@ -10,21 +11,20 @@ import {
 } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
-import { availabilityLabels } from "@/components/filament-form-fields";
+import { filamentTypeLabels } from "@/lib/filament-type-labels";
 import { FilamentFormDialog } from "@/components/filament-form-dialog";
 import { CalibrationFormDialog } from "@/components/calibration-form-dialog";
 import { JournalFormDialog } from "@/components/journal-form-dialog";
 import { PrintFormDialog } from "@/components/print-form-dialog";
 import { PrintCard } from "@/components/print-card";
 import { ShortcutTile } from "@/components/shortcut-tile";
-import { STAT_COLOR_CLASSES, type StatColor } from "@/components/printer-stat-card";
 import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
 import { getBrands } from "@/lib/actions/brands";
 import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
 import { getPrintCategories, getPrints } from "@/lib/actions/prints";
-import { cn } from "@/lib/utils";
+import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import type { PrintWithDetails } from "@/lib/types/print";
 
 const alertIcons: Record<
@@ -33,11 +33,6 @@ const alertIcons: Record<
 > = {
   indisponivel: XCircle,
   quase_acabando: AlertTriangle,
-};
-
-const alertStatColors: Record<"indisponivel" | "quase_acabando", StatColor> = {
-  indisponivel: "red",
-  quase_acabando: "yellow",
 };
 
 const alertBadgeClasses: Record<"indisponivel" | "quase_acabando", string> = {
@@ -63,6 +58,7 @@ export default async function Home() {
     );
 
   const brands = await getBrands();
+  const brandsById = new Map(brands.map((brand) => [brand.id, brand.name]));
   const brandOptions = [...brands]
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((brand) => ({ id: brand.id, name: brand.name }));
@@ -202,31 +198,32 @@ export default async function Home() {
             </span>
             Alertas de filamento
           </div>
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {alerts.map((filament) => {
               const availability = filament.availability as
                 | "indisponivel"
                 | "quase_acabando";
               const Icon = alertIcons[availability];
+              const material = filament.material as (typeof filamentTypeOptions)[number] | null;
+              const brandName =
+                filament.brand_id != null ? (brandsById.get(filament.brand_id) ?? null) : null;
 
               return (
-                <div
+                <Badge
                   key={filament.id}
-                  className="flex items-center gap-3 rounded-lg bg-muted/40 p-2.5"
+                  variant="outline"
+                  className={`cursor-pointer transition hover:opacity-80 ${alertBadgeClasses[availability]}`}
+                  render={<Link href={`/filaments/${filament.id}`} />}
                 >
-                  <span
-                    className={cn(
-                      "flex size-8 shrink-0 items-center justify-center rounded-lg",
-                      STAT_COLOR_CLASSES[alertStatColors[availability]]
-                    )}
-                  >
-                    <Icon className="size-4" />
-                  </span>
-                  <span className="flex-1 truncate text-sm">{filament.name}</span>
-                  <Badge variant="outline" className={alertBadgeClasses[availability]}>
-                    {availabilityLabels[availability]}
-                  </Badge>
-                </div>
+                  <Icon className="size-3" />
+                  <span className="font-medium">{filament.name}</span>
+                  {material && (
+                    <span className="opacity-70">
+                      · {filamentTypeLabels[material] ?? material}
+                    </span>
+                  )}
+                  {brandName && <span className="opacity-70">· {brandName}</span>}
+                </Badge>
               );
             })}
           </div>
