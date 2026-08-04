@@ -45,7 +45,7 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-const dateFormatter = new Intl.DateTimeFormat("pt-BR");
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 
 function toFormValues(filament: FilamentWithBrand): FilamentFormInput {
   return {

@@ -45,7 +45,7 @@ import {
 } from "@/components/journal-form-fields";
 import type { journalStatusOptions } from "@/lib/schemas/journal";
 
-const dateFormatter = new Intl.DateTimeFormat("pt-BR");
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 
 function toFormValues(entry: JournalEntryWithDetails): JournalFormInput {
   return {

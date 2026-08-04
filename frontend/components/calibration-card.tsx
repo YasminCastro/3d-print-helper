@@ -14,7 +14,7 @@ import type { calibrationStatusOptions, slicerOptions } from "@/lib/schemas/cali
 import type { CalibrationWithFilament } from "@/lib/types/calibration";
 import type { FilamentOption } from "@/lib/types/filament";
 
-const dateFormatter = new Intl.DateTimeFormat("pt-BR");
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 
 function formatDate(value: string | null) {
   if (!value) return null;

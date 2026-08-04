@@ -53,7 +53,7 @@ const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   currency: "BRL",
 });
 
-const dateFormatterDate = new Intl.DateTimeFormat("pt-BR");
+const dateFormatterDate = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 
 function toFormValues(print: PrintWithDetails): PrintFormInput {
   return {

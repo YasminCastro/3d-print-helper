@@ -47,7 +47,7 @@ import type {
   slicerOptions,
 } from "@/lib/schemas/calibration";
 
-const dateFormatter = new Intl.DateTimeFormat("pt-BR");
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 
 function toFormValues(
   calibration: CalibrationWithFilament,
