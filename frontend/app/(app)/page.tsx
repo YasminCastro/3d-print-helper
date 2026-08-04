@@ -1,21 +1,30 @@
-import { AlertTriangle, XCircle } from "lucide-react";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  availabilityLabels,
-  availabilityColors,
-} from "@/components/filament-form-fields";
+  AlertTriangle,
+  BoxIcon,
+  Gauge,
+  LayoutDashboardIcon,
+  Layers,
+  NotebookTextIcon,
+  XCircle,
+  ZapIcon,
+} from "lucide-react";
+
+import { Badge } from "@/components/ui/badge";
+import { availabilityLabels } from "@/components/filament-form-fields";
 import { FilamentFormDialog } from "@/components/filament-form-dialog";
 import { CalibrationFormDialog } from "@/components/calibration-form-dialog";
 import { JournalFormDialog } from "@/components/journal-form-dialog";
 import { PrintFormDialog } from "@/components/print-form-dialog";
 import { PrintCard } from "@/components/print-card";
+import { ShortcutTile } from "@/components/shortcut-tile";
+import { STAT_COLOR_CLASSES, type StatColor } from "@/components/printer-stat-card";
 import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
 import { getBrands } from "@/lib/actions/brands";
 import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
 import { getPrintCategories, getPrints } from "@/lib/actions/prints";
+import { cn } from "@/lib/utils";
 import type { PrintWithDetails } from "@/lib/types/print";
 
 const alertIcons: Record<
@@ -26,14 +35,16 @@ const alertIcons: Record<
   quase_acabando: AlertTriangle,
 };
 
-const alertRowStyles: Record<"indisponivel" | "quase_acabando", string> = {
-  indisponivel: "border-red-500 bg-red-50 dark:bg-red-950/30",
-  quase_acabando: "border-yellow-500 bg-yellow-50 dark:bg-yellow-950/30",
+const alertStatColors: Record<"indisponivel" | "quase_acabando", StatColor> = {
+  indisponivel: "red",
+  quase_acabando: "yellow",
 };
 
-const alertIconColors: Record<"indisponivel" | "quase_acabando", string> = {
-  indisponivel: "text-red-800 dark:text-red-500",
-  quase_acabando: "text-yellow-800 dark:text-yellow-500",
+const alertBadgeClasses: Record<"indisponivel" | "quase_acabando", string> = {
+  indisponivel:
+    "border-red-200 bg-red-100 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300",
+  quase_acabando:
+    "border-yellow-200 bg-yellow-100 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300",
 };
 
 export default async function Home() {
@@ -98,43 +109,100 @@ export default async function Home() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Atalhos</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <FilamentFormDialog brandOptions={brandOptions} />
-          <CalibrationFormDialog filamentOptions={filamentOptions} />
-          <JournalFormDialog filamentOptions={filamentOptions} />
+      <div className="flex items-center gap-4 rounded-xl bg-linear-to-br from-primary/15 via-primary/5 to-transparent p-5 ring-1 ring-foreground/10">
+        <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+          <LayoutDashboardIcon className="size-7" />
+        </div>
+        <div className="min-w-0">
+          <h1 className="text-xl font-semibold">Painel</h1>
+          <p className="text-sm text-muted-foreground">Visão geral da sua produção 3D</p>
+        </div>
+      </div>
+
+      <div className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+        <div className="flex items-center gap-2 text-sm font-medium">
+          <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-chart-2/15 text-chart-2">
+            <ZapIcon className="size-3.5" />
+          </span>
+          Atalhos
+        </div>
+        <div className="flex flex-wrap gap-3">
+          <FilamentFormDialog
+            brandOptions={brandOptions}
+            trigger={
+              <ShortcutTile
+                icon={Layers}
+                label="Novo Filamento"
+                description="Cadastrar filamento"
+                color="chart-1"
+              />
+            }
+          />
+          <CalibrationFormDialog
+            filamentOptions={filamentOptions}
+            trigger={
+              <ShortcutTile
+                icon={Gauge}
+                label="Nova Calibração"
+                description="Registrar calibração"
+                color="chart-2"
+              />
+            }
+          />
+          <JournalFormDialog
+            filamentOptions={filamentOptions}
+            trigger={
+              <ShortcutTile
+                icon={NotebookTextIcon}
+                label="Nova Entrada"
+                description="Anotar no diário"
+                color="chart-3"
+              />
+            }
+          />
           <PrintFormDialog
             categoryOptions={printCategoryOptions}
             filamentOptions={filamentOptions}
             printerOptions={printerOptions}
             lastPrinterId={lastPrint?.printer_id}
             lastProfitPercent={lastPrintProfit?.profit_percent}
+            trigger={
+              <ShortcutTile
+                icon={BoxIcon}
+                label="Nova Impressão"
+                description="Registrar impressão"
+                color="chart-4"
+              />
+            }
           />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {recentPrintsWithDetails.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Últimas impressões</CardTitle>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-chart-1/15 text-chart-1">
+              <BoxIcon className="size-3.5" />
+            </span>
+            Últimas impressões
+          </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {recentPrintsWithDetails.map((print) => (
               <PrintCard key={print.id} print={print} />
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
       {alerts.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Alertas de filamento</CardTitle>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-2">
+        <div className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+          <div className="flex items-center gap-2 text-sm font-medium">
+            <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-yellow-500/15 text-yellow-600 dark:text-yellow-400">
+              <AlertTriangle className="size-3.5" />
+            </span>
+            Alertas de filamento
+          </div>
+          <div className="flex flex-col gap-2">
             {alerts.map((filament) => {
               const availability = filament.availability as
                 | "indisponivel"
@@ -144,20 +212,25 @@ export default async function Home() {
               return (
                 <div
                   key={filament.id}
-                  className={`flex items-center gap-2 rounded-md border-l-4 p-2 text-sm ${alertRowStyles[availability]}`}
+                  className="flex items-center gap-3 rounded-lg bg-muted/40 p-2.5"
                 >
-                  <Icon
-                    className={`size-4 shrink-0 ${alertIconColors[availability]}`}
-                  />
-                  <span className="flex-1">{filament.name}</span>
-                  <span className={availabilityColors[availability]}>
-                    {availabilityLabels[availability]}
+                  <span
+                    className={cn(
+                      "flex size-8 shrink-0 items-center justify-center rounded-lg",
+                      STAT_COLOR_CLASSES[alertStatColors[availability]]
+                    )}
+                  >
+                    <Icon className="size-4" />
                   </span>
+                  <span className="flex-1 truncate text-sm">{filament.name}</span>
+                  <Badge variant="outline" className={alertBadgeClasses[availability]}>
+                    {availabilityLabels[availability]}
+                  </Badge>
                 </div>
               );
             })}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
     </div>
   );

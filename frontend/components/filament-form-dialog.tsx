@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -44,8 +45,10 @@ const defaultValues: FilamentFormInput = {
 
 export function FilamentFormDialog({
   brandOptions,
+  trigger,
 }: {
   brandOptions: { id: number; name: string }[];
+  trigger?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -71,9 +74,13 @@ export function FilamentFormDialog({
         if (!nextOpen) form.reset(defaultValues);
       }}
     >
-      <DialogTrigger render={<Button />}>
-        <PlusIcon />
-        Novo Filamento
+      <DialogTrigger render={trigger ? <button type="button" className="contents" /> : <Button />}>
+        {trigger ?? (
+          <>
+            <PlusIcon />
+            Novo Filamento
+          </>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>

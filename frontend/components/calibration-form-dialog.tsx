@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -40,8 +41,10 @@ const defaultValues: CalibrationFormInput = {
 
 export function CalibrationFormDialog({
   filamentOptions,
+  trigger,
 }: {
   filamentOptions: FilamentOption[];
+  trigger?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -67,9 +70,13 @@ export function CalibrationFormDialog({
         if (!nextOpen) form.reset(defaultValues);
       }}
     >
-      <DialogTrigger render={<Button />}>
-        <PlusIcon />
-        Nova Calibração
+      <DialogTrigger render={trigger ? <button type="button" className="contents" /> : <Button />}>
+        {trigger ?? (
+          <>
+            <PlusIcon />
+            Nova Calibração
+          </>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl">
         <DialogHeader>

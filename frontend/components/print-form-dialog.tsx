@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -46,12 +47,14 @@ export function PrintFormDialog({
   printerOptions,
   lastPrinterId,
   lastProfitPercent,
+  trigger,
 }: {
   categoryOptions: PrintCategory[];
   filamentOptions: FilamentOption[];
   printerOptions: { id: number; name: string }[];
   lastPrinterId?: number | null;
   lastProfitPercent?: number | null;
+  trigger?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -103,9 +106,13 @@ export function PrintFormDialog({
         }
       }}
     >
-      <DialogTrigger render={<Button />}>
-        <PlusIcon />
-        Nova Impressão
+      <DialogTrigger render={trigger ? <button type="button" className="contents" /> : <Button />}>
+        {trigger ?? (
+          <>
+            <PlusIcon />
+            Nova Impressão
+          </>
+        )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
