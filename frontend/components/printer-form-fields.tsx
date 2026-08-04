@@ -2,7 +2,18 @@
 
 import { useEffect, useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
+import type { LucideIcon } from "lucide-react";
+import {
+  ClockIcon,
+  PlugZapIcon,
+  Printer as PrinterIcon,
+  TagIcon,
+  WalletIcon,
+  WrenchIcon,
+  ZapIcon,
+} from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import {
   Field,
@@ -12,7 +23,21 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { STAT_COLOR_CLASSES, type StatColor } from "@/components/printer-stat-card";
 import type { PrinterFormInput } from "@/lib/schemas/printer";
+
+function FieldIcon({ icon: Icon, color }: { icon: LucideIcon; color: StatColor }) {
+  return (
+    <span
+      className={cn(
+        "flex size-6 shrink-0 items-center justify-center rounded-md",
+        STAT_COLOR_CLASSES[color]
+      )}
+    >
+      <Icon className="size-3.5" />
+    </span>
+  );
+}
 
 function calculateMaintenanceCost(price: number, lifespanHours: number) {
   return Math.round((price / lifespanHours) * 100) / 100;
@@ -52,7 +77,10 @@ export function PrinterFormFields({
   return (
     <FieldGroup>
       <Field data-invalid={!!form.formState.errors.name}>
-        <FieldLabel htmlFor="printer-name">Nome</FieldLabel>
+        <FieldLabel htmlFor="printer-name">
+          <FieldIcon icon={PrinterIcon} color="chart-1" />
+          Nome
+        </FieldLabel>
         <FieldContent>
           <Input
             id="printer-name"
@@ -64,7 +92,10 @@ export function PrinterFormFields({
       </Field>
 
       <Field data-invalid={!!form.formState.errors.brand}>
-        <FieldLabel htmlFor="printer-brand">Marca</FieldLabel>
+        <FieldLabel htmlFor="printer-brand">
+          <FieldIcon icon={TagIcon} color="chart-1" />
+          Marca
+        </FieldLabel>
         <FieldContent>
           <Input
             id="printer-brand"
@@ -77,7 +108,10 @@ export function PrinterFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.powerConsumptionW}>
-          <FieldLabel htmlFor="printer-power">Consumo (W)</FieldLabel>
+          <FieldLabel htmlFor="printer-power">
+            <FieldIcon icon={ZapIcon} color="chart-2" />
+            Consumo (W)
+          </FieldLabel>
           <FieldContent>
             <Input
               id="printer-power"
@@ -91,7 +125,10 @@ export function PrinterFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.lifespanHours}>
-          <FieldLabel htmlFor="printer-lifespan">Vida útil (h)</FieldLabel>
+          <FieldLabel htmlFor="printer-lifespan">
+            <FieldIcon icon={ClockIcon} color="chart-3" />
+            Vida útil (h)
+          </FieldLabel>
           <FieldContent>
             <Input
               id="printer-lifespan"
@@ -107,7 +144,10 @@ export function PrinterFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.purchasePrice}>
-          <FieldLabel htmlFor="printer-price">Preço pago (R$)</FieldLabel>
+          <FieldLabel htmlFor="printer-price">
+            <FieldIcon icon={WalletIcon} color="chart-4" />
+            Preço pago (R$)
+          </FieldLabel>
           <FieldContent>
             <Input
               id="printer-price"
@@ -121,7 +161,10 @@ export function PrinterFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.energyCostPerKwh}>
-          <FieldLabel htmlFor="printer-kwh-price">Preço do kWh (R$)</FieldLabel>
+          <FieldLabel htmlFor="printer-kwh-price">
+            <FieldIcon icon={PlugZapIcon} color="chart-5" />
+            Preço do kWh (R$)
+          </FieldLabel>
           <FieldContent>
             <Input
               id="printer-kwh-price"
@@ -136,7 +179,10 @@ export function PrinterFormFields({
       </div>
 
       <Field data-invalid={!!form.formState.errors.maintenanceCostPerHour}>
-        <FieldLabel htmlFor="printer-maintenance">Manutenção (R$/h)</FieldLabel>
+        <FieldLabel htmlFor="printer-maintenance">
+          <FieldIcon icon={WrenchIcon} color="chart-1" />
+          Manutenção (R$/h)
+        </FieldLabel>
         <FieldContent>
           <Input
             id="printer-maintenance"

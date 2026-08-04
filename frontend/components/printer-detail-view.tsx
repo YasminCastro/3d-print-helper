@@ -5,7 +5,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeftIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  ClockIcon,
+  PencilIcon,
+  PlugZapIcon,
+  Printer as PrinterIcon,
+  TagIcon,
+  Trash2Icon,
+  WalletIcon,
+  WrenchIcon,
+  ZapIcon,
+} from "lucide-react";
 
 import {
   deletePrinterAction,
@@ -15,6 +26,7 @@ import { printerFormSchema, type PrinterFormInput } from "@/lib/schemas/printer"
 import type { Printer } from "@/lib/types/printer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,8 +38,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Separator } from "@/components/ui/separator";
 import { PrinterFormFields } from "@/components/printer-form-fields";
+import { PrinterStatCard } from "@/components/printer-stat-card";
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -121,74 +133,110 @@ export function PrinterDetailView({ printer }: { printer: Printer }) {
         )}
       </div>
 
-      <Separator />
-
       {isEditing ? (
-        <Card>
-          <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <PrinterFormFields form={form} />
-              <div className="mt-4 flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsEditing(false);
-                    form.reset(toFormValues(printer));
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "Salvando..." : "Salvar"}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4 rounded-xl bg-linear-to-br from-primary/15 via-primary/5 to-transparent p-5 ring-1 ring-foreground/10">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+              <PencilIcon className="size-6" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl font-semibold">Editar impressora</h1>
+              <p className="text-sm text-muted-foreground">{printer.name}</p>
+            </div>
+          </div>
+
+          <Card>
+            <CardContent>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <PrinterFormFields form={form} />
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false);
+                      form.reset(toFormValues(printer));
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={isPending}>
+                    {isPending ? "Salvando..." : "Salvar"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         <>
-          <h1 className="text-xl font-semibold">{printer.name}</h1>
+          <div className="flex items-center gap-4 rounded-xl bg-linear-to-br from-primary/15 via-primary/5 to-transparent p-5 ring-1 ring-foreground/10">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+              <PrinterIcon className="size-7" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="truncate text-xl font-semibold">{printer.name}</h1>
+              {printer.brand && (
+                <Badge variant="secondary" className="mt-1">
+                  <TagIcon className="size-3" />
+                  {printer.brand}
+                </Badge>
+              )}
+            </div>
+          </div>
 
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-            <dt className="text-muted-foreground">Marca</dt>
-            <dd>{printer.brand ?? "—"}</dd>
-
-            <dt className="text-muted-foreground">Consumo</dt>
-            <dd>
-              {printer.powerConsumptionW != null
-                ? `${printer.powerConsumptionW} W`
-                : "—"}
-            </dd>
-
-            <dt className="text-muted-foreground">Vida útil</dt>
-            <dd>
-              {printer.lifespanHours != null
-                ? `${printer.lifespanHours} h`
-                : "—"}
-            </dd>
-
-            <dt className="text-muted-foreground">Preço pago</dt>
-            <dd>
-              {printer.purchasePrice != null
-                ? currencyFormatter.format(printer.purchasePrice)
-                : "—"}
-            </dd>
-
-            <dt className="text-muted-foreground">Preço do kWh</dt>
-            <dd>
-              {printer.energyCostPerKwh != null
-                ? currencyFormatter.format(printer.energyCostPerKwh)
-                : "—"}
-            </dd>
-
-            <dt className="text-muted-foreground">Manutenção</dt>
-            <dd>
-              {printer.maintenanceCostPerHour != null
-                ? `${currencyFormatter.format(printer.maintenanceCostPerHour)}/h`
-                : "—"}
-            </dd>
-          </dl>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <PrinterStatCard
+              icon={ZapIcon}
+              label="Consumo"
+              value={
+                printer.powerConsumptionW != null
+                  ? `${printer.powerConsumptionW} W`
+                  : "—"
+              }
+              color="chart-2"
+            />
+            <PrinterStatCard
+              icon={ClockIcon}
+              label="Vida útil"
+              value={
+                printer.lifespanHours != null
+                  ? `${printer.lifespanHours} h`
+                  : "—"
+              }
+              color="chart-3"
+            />
+            <PrinterStatCard
+              icon={WalletIcon}
+              label="Preço pago"
+              value={
+                printer.purchasePrice != null
+                  ? currencyFormatter.format(printer.purchasePrice)
+                  : "—"
+              }
+              color="chart-4"
+            />
+            <PrinterStatCard
+              icon={PlugZapIcon}
+              label="Preço do kWh"
+              value={
+                printer.energyCostPerKwh != null
+                  ? currencyFormatter.format(printer.energyCostPerKwh)
+                  : "—"
+              }
+              color="chart-5"
+            />
+            <PrinterStatCard
+              icon={WrenchIcon}
+              label="Manutenção"
+              value={
+                printer.maintenanceCostPerHour != null
+                  ? `${currencyFormatter.format(printer.maintenanceCostPerHour)}/h`
+                  : "—"
+              }
+              color="chart-1"
+            />
+          </div>
         </>
       )}
     </div>
