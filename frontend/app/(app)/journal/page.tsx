@@ -41,10 +41,7 @@ export default async function JournalPage() {
           </CardHeader>
         </Card>
       ) : (
-        <JournalPageContent
-          entries={entriesWithAttempts}
-          filamentOptions={filamentOptions}
-        />
+        <JournalPageContent entries={entriesWithAttempts} />
       )}
     </div>
   );

@@ -16,6 +16,7 @@ export type Filament = {
   purchase_batch: string | null;
   rating: number | null;
   color: string | null;
+  color2: string | null;
   created_at: string;
 };
 
@@ -25,6 +26,7 @@ export type FilamentOption = {
   id: number;
   name: string;
   color: string | null;
+  color2: string | null;
   material: string | null;
   brand_name: string | null;
 };

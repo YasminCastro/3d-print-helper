@@ -1,7 +1,19 @@
 "use client";
 
 import { useFieldArray, type UseFormReturn } from "react-hook-form";
-import { PlusIcon, ThumbsDownIcon, ThumbsUpIcon, Trash2Icon } from "lucide-react";
+import {
+  CalendarIcon,
+  CircleCheckIcon,
+  LayersIcon,
+  LightbulbIcon,
+  NotebookTextIcon,
+  PlusIcon,
+  StethoscopeIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+  Trash2Icon,
+  TypeIcon,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +40,7 @@ import {
 import type { FilamentOption } from "@/lib/types/filament";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
+import { FieldIcon } from "@/components/field-icon";
 
 function filamentOptionLabel(filament: FilamentOption) {
   const parts = [filament.name];
@@ -74,7 +87,10 @@ export function JournalFormFields({
   return (
     <FieldGroup>
       <Field data-invalid={!!form.formState.errors.title}>
-        <FieldLabel htmlFor="journal-title">Título</FieldLabel>
+        <FieldLabel htmlFor="journal-title">
+          <FieldIcon icon={TypeIcon} color="chart-1" />
+          Título
+        </FieldLabel>
         <FieldContent>
           <Input
             id="journal-title"
@@ -87,7 +103,10 @@ export function JournalFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.entryDate}>
-          <FieldLabel htmlFor="journal-date">Data</FieldLabel>
+          <FieldLabel htmlFor="journal-date">
+            <FieldIcon icon={CalendarIcon} color="chart-3" />
+            Data
+          </FieldLabel>
           <FieldContent>
             <Input
               id="journal-date"
@@ -99,7 +118,10 @@ export function JournalFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.status}>
-          <FieldLabel htmlFor="journal-status">Status</FieldLabel>
+          <FieldLabel htmlFor="journal-status">
+            <FieldIcon icon={CircleCheckIcon} color="chart-2" />
+            Status
+          </FieldLabel>
           <FieldContent>
             <Select
               items={journalStatusOptions.map((option) => ({
@@ -129,6 +151,7 @@ export function JournalFormFields({
 
       <Field data-invalid={!!form.formState.errors.filamentId}>
         <FieldLabel htmlFor="journal-filament">
+          <FieldIcon icon={LayersIcon} color="chart-1" />
           Filamento (opcional)
         </FieldLabel>
         <FieldContent>
@@ -162,7 +185,10 @@ export function JournalFormFields({
       </Field>
 
       <Field data-invalid={!!form.formState.errors.symptom}>
-        <FieldLabel htmlFor="journal-symptom">Sintoma</FieldLabel>
+        <FieldLabel htmlFor="journal-symptom">
+          <FieldIcon icon={StethoscopeIcon} color="chart-4" />
+          Sintoma
+        </FieldLabel>
         <FieldContent>
           <Textarea
             id="journal-symptom"
@@ -174,7 +200,10 @@ export function JournalFormFields({
       </Field>
 
       <Field data-invalid={!!form.formState.errors.possibleCauses}>
-        <FieldLabel htmlFor="journal-possible-causes">Possíveis causas</FieldLabel>
+        <FieldLabel htmlFor="journal-possible-causes">
+          <FieldIcon icon={LightbulbIcon} color="chart-5" />
+          Possíveis causas
+        </FieldLabel>
         <FieldContent>
           <Textarea
             id="journal-possible-causes"
@@ -252,7 +281,10 @@ export function JournalFormFields({
       </div>
 
       <Field data-invalid={!!form.formState.errors.notes}>
-        <FieldLabel htmlFor="journal-notes">Notas</FieldLabel>
+        <FieldLabel htmlFor="journal-notes">
+          <FieldIcon icon={NotebookTextIcon} color="chart-1" />
+          Notas
+        </FieldLabel>
         <FieldContent>
           <Textarea
             id="journal-notes"

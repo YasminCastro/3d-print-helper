@@ -1,7 +1,21 @@
 "use client";
 
 import { useFieldArray, type UseFormReturn } from "react-hook-form";
-import { PlusIcon, Trash2Icon } from "lucide-react";
+import {
+  CalendarIcon,
+  CircleCheckIcon,
+  ClockIcon,
+  ImageIcon,
+  LayersIcon,
+  LinkIcon,
+  PercentIcon,
+  Printer as PrinterIcon,
+  PlusIcon,
+  TagIcon,
+  ThumbsUpIcon,
+  Trash2Icon,
+  TypeIcon,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -25,6 +39,7 @@ import { categoryDotColorClass } from "@/lib/category-colors";
 import type { FilamentOption } from "@/lib/types/filament";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
+import { FieldIcon } from "@/components/field-icon";
 
 function filamentOptionLabel(filament: FilamentOption) {
   const parts = [filament.name];
@@ -101,7 +116,10 @@ export function PrintFormFields({
     <FieldGroup>
       <div className="grid grid-cols-[2fr_1fr] gap-4">
         <Field data-invalid={!!form.formState.errors.name}>
-          <FieldLabel htmlFor="print-name">Nome</FieldLabel>
+          <FieldLabel htmlFor="print-name">
+            <FieldIcon icon={TypeIcon} color="chart-1" />
+            Nome
+          </FieldLabel>
           <FieldContent>
             <Input
               id="print-name"
@@ -113,7 +131,10 @@ export function PrintFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.result}>
-          <FieldLabel htmlFor="print-result">Resultado</FieldLabel>
+          <FieldLabel htmlFor="print-result">
+            <FieldIcon icon={ThumbsUpIcon} color="chart-3" />
+            Resultado
+          </FieldLabel>
           <FieldContent>
             <Select
               items={printResultOptions.map((option) => ({
@@ -148,7 +169,10 @@ export function PrintFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.printDate}>
-          <FieldLabel htmlFor="print-date">Data da impressão</FieldLabel>
+          <FieldLabel htmlFor="print-date">
+            <FieldIcon icon={CalendarIcon} color="chart-3" />
+            Data da impressão
+          </FieldLabel>
           <FieldContent>
             <div className="flex items-center gap-2">
               <Input id="print-date" type="date" {...form.register("printDate")} />
@@ -167,7 +191,10 @@ export function PrintFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.status}>
-          <FieldLabel htmlFor="print-status">Status</FieldLabel>
+          <FieldLabel htmlFor="print-status">
+            <FieldIcon icon={CircleCheckIcon} color="chart-2" />
+            Status
+          </FieldLabel>
           <FieldContent>
             <Select
               items={printStatusOptions.map((option) => ({
@@ -201,7 +228,10 @@ export function PrintFormFields({
       </div>
 
       <Field data-invalid={!!form.formState.errors.categoryId}>
-        <FieldLabel htmlFor="print-category">Categoria</FieldLabel>
+        <FieldLabel htmlFor="print-category">
+          <FieldIcon icon={TagIcon} color="chart-2" />
+          Categoria
+        </FieldLabel>
         <FieldContent>
           <Select
             items={[
@@ -250,7 +280,10 @@ export function PrintFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.printerId}>
-          <FieldLabel htmlFor="print-printer">Impressora</FieldLabel>
+          <FieldLabel htmlFor="print-printer">
+            <FieldIcon icon={PrinterIcon} color="chart-2" />
+            Impressora
+          </FieldLabel>
           <FieldContent>
             <Select
               items={printerOptions.map((printer) => ({
@@ -276,7 +309,10 @@ export function PrintFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.profitPercent}>
-          <FieldLabel htmlFor="print-profit-percent">Lucro (%)</FieldLabel>
+          <FieldLabel htmlFor="print-profit-percent">
+            <FieldIcon icon={PercentIcon} color="chart-4" />
+            Lucro (%)
+          </FieldLabel>
           <FieldContent>
             <Input
               id="print-profit-percent"
@@ -291,7 +327,10 @@ export function PrintFormFields({
       </div>
 
       <Field>
-        <FieldLabel>Filamentos</FieldLabel>
+        <FieldLabel>
+          <FieldIcon icon={LayersIcon} color="chart-1" />
+          Filamentos
+        </FieldLabel>
         <FieldContent>
           <div className="flex flex-col gap-2">
             {fields.map((field, index) => (
@@ -363,7 +402,10 @@ export function PrintFormFields({
           !!form.formState.errors.durationMinutes
         }
       >
-        <FieldLabel htmlFor="print-duration-hours">Tempo de impressão</FieldLabel>
+        <FieldLabel htmlFor="print-duration-hours">
+          <FieldIcon icon={ClockIcon} color="chart-3" />
+          Tempo de impressão
+        </FieldLabel>
         <FieldContent>
           <div className="flex items-center gap-2">
             <Input
@@ -398,7 +440,10 @@ export function PrintFormFields({
       </Field>
 
       <Field data-invalid={!!form.formState.errors.printLink}>
-        <FieldLabel htmlFor="print-link">Link da impressão</FieldLabel>
+        <FieldLabel htmlFor="print-link">
+          <FieldIcon icon={LinkIcon} color="chart-2" />
+          Link da impressão
+        </FieldLabel>
         <FieldContent>
           <Input
             id="print-link"
@@ -411,7 +456,10 @@ export function PrintFormFields({
       </Field>
 
       <Field>
-        <FieldLabel>Foto</FieldLabel>
+        <FieldLabel>
+          <FieldIcon icon={ImageIcon} color="chart-5" />
+          Foto
+        </FieldLabel>
         <FieldContent>
           <PrintPhotoPicker
             file={photoFile}

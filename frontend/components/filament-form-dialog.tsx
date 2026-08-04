@@ -39,6 +39,7 @@ const defaultValues: FilamentFormInput = {
   purchaseBatch: "",
   rating: undefined,
   color: "",
+  color2: "",
 };
 
 export function FilamentFormDialog({

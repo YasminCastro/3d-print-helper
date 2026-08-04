@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -8,6 +9,10 @@ export const STAT_COLOR_CLASSES = {
   "chart-3": "bg-chart-3/15 text-chart-3",
   "chart-4": "bg-chart-4/15 text-chart-4",
   "chart-5": "bg-chart-5/15 text-chart-5",
+  green: "bg-green-500/15 text-green-600 dark:text-green-400",
+  red: "bg-red-500/15 text-red-600 dark:text-red-400",
+  yellow: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
+  lime: "bg-lime-500/15 text-lime-600 dark:text-lime-400",
 } as const;
 
 export type StatColor = keyof typeof STAT_COLOR_CLASSES;
@@ -21,7 +26,7 @@ export function PrinterStatCard({
 }: {
   icon: LucideIcon;
   label: string;
-  value: string;
+  value: ReactNode;
   color: StatColor;
   className?: string;
 }) {
@@ -42,7 +47,7 @@ export function PrinterStatCard({
       </div>
       <div className="min-w-0">
         <p className="text-xs text-muted-foreground">{label}</p>
-        <p className="truncate text-base font-semibold">{value}</p>
+        <div className="truncate text-base font-semibold">{value}</div>
       </div>
     </div>
   );

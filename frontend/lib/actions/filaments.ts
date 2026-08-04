@@ -25,6 +25,7 @@ type ApiFilament = {
   purchaseBatch: string | null;
   rating: number | null;
   color: string | null;
+  color2: string | null;
   createdAt: string;
 };
 
@@ -47,6 +48,7 @@ function toDomain(api: ApiFilament): Filament {
     purchase_batch: api.purchaseBatch,
     rating: api.rating,
     color: api.color,
+    color2: api.color2,
     created_at: api.createdAt,
   };
 }
@@ -71,6 +73,7 @@ function toPayload(values: FilamentFormInput) {
     purchaseBatch: parsed.purchaseBatch || null,
     rating: parsed.rating ?? null,
     color: parsed.color || null,
+    color2: parsed.color2 || null,
   };
 }
 
@@ -148,6 +151,7 @@ export async function getFilamentOptions(): Promise<FilamentOption[]> {
     id: filament.id,
     name: filament.name,
     color: filament.color,
+    color2: filament.color2,
     material: filament.material,
     brand_name: filament.brand_name,
   }));

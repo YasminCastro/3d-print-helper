@@ -1,6 +1,17 @@
 "use client";
 
 import type { UseFormReturn } from "react-hook-form";
+import {
+  ActivityIcon,
+  CalendarIcon,
+  CircleCheckIcon,
+  DropletIcon,
+  Gauge,
+  Layers,
+  MoveHorizontalIcon,
+  NotebookTextIcon,
+  ThermometerIcon,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +38,7 @@ import {
 import type { FilamentOption } from "@/lib/types/filament";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
+import { FieldIcon } from "@/components/field-icon";
 
 function filamentOptionLabel(filament: FilamentOption) {
   const parts = [filament.name];
@@ -73,7 +85,10 @@ export function CalibrationFormFields({
   return (
     <FieldGroup>
       <Field data-invalid={!!form.formState.errors.slicer}>
-        <FieldLabel htmlFor="calibration-slicer">Fatiador</FieldLabel>
+        <FieldLabel htmlFor="calibration-slicer">
+          <FieldIcon icon={Gauge} color="chart-2" />
+          Fatiador
+        </FieldLabel>
         <FieldContent>
           <Select
             items={slicerOptions.map((option) => ({
@@ -101,7 +116,10 @@ export function CalibrationFormFields({
       </Field>
 
       <Field data-invalid={!!form.formState.errors.filamentId}>
-        <FieldLabel htmlFor="calibration-filament">Filamento</FieldLabel>
+        <FieldLabel htmlFor="calibration-filament">
+          <FieldIcon icon={Layers} color="chart-1" />
+          Filamento
+        </FieldLabel>
         <FieldContent>
           <Select
             items={filamentOptions.map((filament) => ({
@@ -134,7 +152,10 @@ export function CalibrationFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.status}>
-          <FieldLabel htmlFor="calibration-status">Status</FieldLabel>
+          <FieldLabel htmlFor="calibration-status">
+            <FieldIcon icon={CircleCheckIcon} color="chart-3" />
+            Status
+          </FieldLabel>
           <FieldContent>
             <Select
               items={calibrationStatusOptions.map((option) => ({
@@ -162,7 +183,10 @@ export function CalibrationFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.calibrationDate}>
-          <FieldLabel htmlFor="calibration-date">Data de calibração</FieldLabel>
+          <FieldLabel htmlFor="calibration-date">
+            <FieldIcon icon={CalendarIcon} color="chart-3" />
+            Data de calibração
+          </FieldLabel>
           <FieldContent>
             <Input
               id="calibration-date"
@@ -181,6 +205,7 @@ export function CalibrationFormFields({
           <div className="grid grid-cols-2 gap-4">
             <Field data-invalid={!!form.formState.errors.bedTempFirstLayer}>
               <FieldLabel htmlFor="calibration-bed-first">
+                <FieldIcon icon={ThermometerIcon} color="chart-3" />
                 Temperatura mesa 1ª camada (°C)
               </FieldLabel>
               <FieldContent>
@@ -201,6 +226,7 @@ export function CalibrationFormFields({
 
             <Field data-invalid={!!form.formState.errors.bedTempOtherLayers}>
               <FieldLabel htmlFor="calibration-bed-other">
+                <FieldIcon icon={ThermometerIcon} color="chart-3" />
                 Temperatura mesa demais camadas (°C)
               </FieldLabel>
               <FieldContent>
@@ -223,6 +249,7 @@ export function CalibrationFormFields({
           <div className="grid grid-cols-2 gap-4">
             <Field data-invalid={!!form.formState.errors.nozzleTempInitial}>
               <FieldLabel htmlFor="calibration-nozzle-initial">
+                <FieldIcon icon={ThermometerIcon} color="chart-5" />
                 Temperatura bico inicial (°C)
               </FieldLabel>
               <FieldContent>
@@ -243,6 +270,7 @@ export function CalibrationFormFields({
 
             <Field data-invalid={!!form.formState.errors.nozzleTempFinal}>
               <FieldLabel htmlFor="calibration-nozzle-final">
+                <FieldIcon icon={ThermometerIcon} color="chart-5" />
                 Temperatura bico final (°C)
               </FieldLabel>
               <FieldContent>
@@ -261,6 +289,7 @@ export function CalibrationFormFields({
           <div className="grid grid-cols-2 gap-4">
             <Field data-invalid={!!form.formState.errors.maxVolumetricSpeed}>
               <FieldLabel htmlFor="calibration-max-volumetric-speed">
+                <FieldIcon icon={ActivityIcon} color="chart-2" />
                 Max Volumetric Speed (mm³/s)
               </FieldLabel>
               <FieldContent>
@@ -281,6 +310,7 @@ export function CalibrationFormFields({
 
             <Field data-invalid={!!form.formState.errors.pressureAdvance}>
               <FieldLabel htmlFor="calibration-pressure-advance">
+                <FieldIcon icon={ActivityIcon} color="chart-2" />
                 Pressure Advance
               </FieldLabel>
               <FieldContent>
@@ -298,7 +328,10 @@ export function CalibrationFormFields({
 
           <div className="grid grid-cols-2 gap-4">
             <Field data-invalid={!!form.formState.errors.flowRatio}>
-              <FieldLabel htmlFor="calibration-flow-ratio">Fluxo</FieldLabel>
+              <FieldLabel htmlFor="calibration-flow-ratio">
+                <FieldIcon icon={DropletIcon} color="chart-4" />
+                Fluxo
+              </FieldLabel>
               <FieldContent>
                 <Input
                   id="calibration-flow-ratio"
@@ -313,6 +346,7 @@ export function CalibrationFormFields({
 
             <Field data-invalid={!!form.formState.errors.retractionDistance}>
               <FieldLabel htmlFor="calibration-retraction-distance">
+                <FieldIcon icon={MoveHorizontalIcon} color="chart-1" />
                 Retração de distância (mm)
               </FieldLabel>
               <FieldContent>
@@ -333,7 +367,10 @@ export function CalibrationFormFields({
           </div>
 
           <Field data-invalid={!!form.formState.errors.notes}>
-            <FieldLabel htmlFor="calibration-notes">Notas</FieldLabel>
+            <FieldLabel htmlFor="calibration-notes">
+              <FieldIcon icon={NotebookTextIcon} color="chart-1" />
+              Notas
+            </FieldLabel>
             <FieldContent>
               <Textarea
                 id="calibration-notes"

@@ -5,8 +5,25 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeftIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  ActivityIcon,
+  AlertTriangle,
+  ArrowLeftIcon,
+  CalendarIcon,
+  CheckCircle2,
+  DropletIcon,
+  Gauge,
+  Layers,
+  MoveHorizontalIcon,
+  NotebookTextIcon,
+  PencilIcon,
+  SlidersHorizontalIcon,
+  ThermometerIcon,
+  Trash2Icon,
+  XCircle,
+} from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import {
   deleteCalibrationAction,
   updateCalibrationAction,
@@ -30,10 +47,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Separator } from "@/components/ui/separator";
 import {
   CalibrationFormFields,
-  calibrationStatusColors,
   calibrationStatusLabels,
   slicerLabels,
 } from "@/components/calibration-form-fields";
@@ -41,6 +56,19 @@ import type {
   calibrationStatusOptions,
   slicerOptions,
 } from "@/lib/schemas/calibration";
+import { PrinterStatCard, type StatColor } from "@/components/printer-stat-card";
+
+const statusIcons: Record<(typeof calibrationStatusOptions)[number], typeof CheckCircle2> = {
+  calibrado: CheckCircle2,
+  nao_calibrado: XCircle,
+  em_processo: AlertTriangle,
+};
+
+const statusStatColors: Record<(typeof calibrationStatusOptions)[number], StatColor> = {
+  calibrado: "green",
+  nao_calibrado: "red",
+  em_processo: "yellow",
+};
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 
@@ -158,141 +186,219 @@ export function CalibrationDetailView({
         )}
       </div>
 
-      <Separator />
-
       {isEditing ? (
-        <Card>
-          <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <CalibrationFormFields
-                form={form}
-                filamentOptions={filamentOptions}
-              />
-              <div className="mt-4 flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsEditing(false);
-                    form.reset(toFormValues(calibration));
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "Salvando..." : "Salvar"}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center gap-4 rounded-xl bg-linear-to-br from-primary/15 via-primary/5 to-transparent p-5 ring-1 ring-foreground/10">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+              <PencilIcon className="size-6" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-xl font-semibold">Editar calibração</h1>
+              <p className="text-sm text-muted-foreground">
+                {calibration.filament_name ?? "Calibração"}
+              </p>
+            </div>
+          </div>
+
+          <Card>
+            <CardContent>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <CalibrationFormFields
+                  form={form}
+                  filamentOptions={filamentOptions}
+                />
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false);
+                      form.reset(toFormValues(calibration));
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={isPending}>
+                    {isPending ? "Salvando..." : "Salvar"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       ) : (
         <>
-          <h1 className="text-xl font-semibold">
-            {calibration.filament_name ?? "Calibração"}
-          </h1>
-
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
-            <dt className="text-muted-foreground">Fatiador</dt>
-            <dd>{slicerLabels[slicer]}</dd>
-
-            <dt className="text-muted-foreground">Filamento</dt>
-            <dd className="flex items-center gap-2">
-              {calibration.filament_color && (
-                <span
-                  className="size-4 shrink-0 rounded-full border"
-                  style={{ backgroundColor: calibration.filament_color }}
-                />
-              )}
-              {calibration.filament_name ?? "—"}
-            </dd>
-
-            <div className="col-span-2 grid grid-cols-2 gap-x-4 gap-y-1">
-              <dt className="text-muted-foreground">Status</dt>
-              <dt className="text-muted-foreground">Data de calibração</dt>
-              <dd
-                className={
-                  status ? calibrationStatusColors[status] : undefined
-                }
-              >
-                {status ? calibrationStatusLabels[status] : "—"}
-              </dd>
-              <dd>{formatDate(calibration.calibration_date)}</dd>
-            </div>
-
-            {slicer === "orca" && (
-              <>
-                <div className="col-span-2 flex items-center gap-2 py-1">
-                  <Separator className="flex-1" />
-                  <span className="text-xs text-muted-foreground">
-                    Configurações do Orca Slicer
-                  </span>
-                  <Separator className="flex-1" />
-                </div>
-
-                <dt className="text-muted-foreground">
-                  Temp. mesa 1ª camada
-                </dt>
-                <dd>
-                  {calibration.bed_temp_first_layer != null
-                    ? `${calibration.bed_temp_first_layer}°C`
-                    : "—"}
-                </dd>
-
-                <dt className="text-muted-foreground">
-                  Temp. mesa demais camadas
-                </dt>
-                <dd>
-                  {calibration.bed_temp_other_layers != null
-                    ? `${calibration.bed_temp_other_layers}°C`
-                    : "—"}
-                </dd>
-
-                <dt className="text-muted-foreground">Temp. bico inicial</dt>
-                <dd>
-                  {calibration.nozzle_temp_initial != null
-                    ? `${calibration.nozzle_temp_initial}°C`
-                    : "—"}
-                </dd>
-
-                <dt className="text-muted-foreground">Temp. bico final</dt>
-                <dd>
-                  {calibration.nozzle_temp_final != null
-                    ? `${calibration.nozzle_temp_final}°C`
-                    : "—"}
-                </dd>
-
-                <dt className="text-muted-foreground">
-                  Max Volumetric Speed
-                </dt>
-                <dd>
-                  {calibration.max_volumetric_speed != null
-                    ? `${calibration.max_volumetric_speed} mm³/s`
-                    : "—"}
-                </dd>
-
-                <dt className="text-muted-foreground">Pressure Advance</dt>
-                <dd>{calibration.pressure_advance ?? "—"}</dd>
-
-                <dt className="text-muted-foreground">Fluxo</dt>
-                <dd>{calibration.flow_ratio ?? "—"}</dd>
-
-                <dt className="text-muted-foreground">
-                  Retração de distância
-                </dt>
-                <dd>
-                  {calibration.retraction_distance != null
-                    ? `${calibration.retraction_distance} mm`
-                    : "—"}
-                </dd>
-
-                <dt className="text-muted-foreground">Notas</dt>
-                <dd className="whitespace-pre-wrap">
-                  {calibration.notes ?? "—"}
-                </dd>
-              </>
+          <div
+            className={cn(
+              "flex items-center gap-4 rounded-xl p-5 ring-1 ring-foreground/10",
+              !calibration.filament_color &&
+                "bg-linear-to-br from-primary/15 via-primary/5 to-transparent"
             )}
-          </dl>
+            style={
+              calibration.filament_color
+                ? {
+                    background: `linear-gradient(to bottom right, ${calibration.filament_color}26, ${calibration.filament_color}0d, transparent)`,
+                  }
+                : undefined
+            }
+          >
+            <div
+              className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary"
+              style={
+                calibration.filament_color
+                  ? {
+                      backgroundColor: `${calibration.filament_color}26`,
+                      color: calibration.filament_color,
+                    }
+                  : undefined
+              }
+            >
+              <Gauge className="size-7" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="truncate text-xl font-semibold">
+                {calibration.filament_name ?? "Calibração"}
+              </h1>
+              <p className="text-sm text-muted-foreground">{slicerLabels[slicer]}</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <PrinterStatCard
+              icon={Gauge}
+              label="Fatiador"
+              color="chart-2"
+              value={slicerLabels[slicer]}
+            />
+            <PrinterStatCard
+              icon={Layers}
+              label="Filamento"
+              color="chart-1"
+              value={
+                <span className="flex items-center gap-2">
+                  {calibration.filament_color && (
+                    <span
+                      className="size-4 shrink-0 rounded-full border"
+                      style={{ backgroundColor: calibration.filament_color }}
+                    />
+                  )}
+                  {calibration.filament_name ?? "—"}
+                </span>
+              }
+            />
+            <PrinterStatCard
+              icon={status ? statusIcons[status] : CheckCircle2}
+              label="Status"
+              color={status ? statusStatColors[status] : "chart-3"}
+              value={status ? calibrationStatusLabels[status] : "—"}
+            />
+            <PrinterStatCard
+              icon={CalendarIcon}
+              label="Data de calibração"
+              color="chart-3"
+              value={formatDate(calibration.calibration_date)}
+            />
+          </div>
+
+          {slicer === "orca" && (
+            <div className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-chart-3/15 text-chart-3">
+                  <SlidersHorizontalIcon className="size-3.5" />
+                </span>
+                Configurações do Orca Slicer
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <PrinterStatCard
+                  icon={ThermometerIcon}
+                  label="Temp. mesa 1ª camada"
+                  color="chart-3"
+                  value={
+                    calibration.bed_temp_first_layer != null
+                      ? `${calibration.bed_temp_first_layer}°C`
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
+                  icon={ThermometerIcon}
+                  label="Temp. mesa demais camadas"
+                  color="chart-3"
+                  value={
+                    calibration.bed_temp_other_layers != null
+                      ? `${calibration.bed_temp_other_layers}°C`
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
+                  icon={ThermometerIcon}
+                  label="Temp. bico inicial"
+                  color="chart-5"
+                  value={
+                    calibration.nozzle_temp_initial != null
+                      ? `${calibration.nozzle_temp_initial}°C`
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
+                  icon={ThermometerIcon}
+                  label="Temp. bico final"
+                  color="chart-5"
+                  value={
+                    calibration.nozzle_temp_final != null
+                      ? `${calibration.nozzle_temp_final}°C`
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
+                  icon={ActivityIcon}
+                  label="Max Volumetric Speed"
+                  color="chart-2"
+                  value={
+                    calibration.max_volumetric_speed != null
+                      ? `${calibration.max_volumetric_speed} mm³/s`
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
+                  icon={ActivityIcon}
+                  label="Pressure Advance"
+                  color="chart-2"
+                  value={calibration.pressure_advance ?? "—"}
+                />
+                <PrinterStatCard
+                  icon={DropletIcon}
+                  label="Fluxo"
+                  color="chart-4"
+                  value={calibration.flow_ratio ?? "—"}
+                />
+                <PrinterStatCard
+                  icon={MoveHorizontalIcon}
+                  label="Retração de distância"
+                  color="chart-1"
+                  value={
+                    calibration.retraction_distance != null
+                      ? `${calibration.retraction_distance} mm`
+                      : "—"
+                  }
+                />
+              </div>
+            </div>
+          )}
+
+          {calibration.notes && (
+            <div className="flex flex-col gap-2 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-chart-1/15 text-chart-1">
+                  <NotebookTextIcon className="size-3.5" />
+                </span>
+                Notas
+              </div>
+              <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                {calibration.notes}
+              </p>
+            </div>
+          )}
         </>
       )}
     </div>

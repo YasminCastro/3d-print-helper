@@ -5,17 +5,35 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeftIcon, PencilIcon, Trash2Icon } from "lucide-react";
+import {
+  ArrowLeftIcon,
+  BoxIcon,
+  CheckCircle2,
+  ClockIcon,
+  CoinsIcon,
+  HourglassIcon,
+  Layers,
+  LinkIcon,
+  PencilIcon,
+  Printer as PrinterIcon,
+  ReceiptIcon,
+  TagIcon,
+  ThumbsDownIcon,
+  ThumbsUpIcon,
+  Trash2Icon,
+  TrendingDownIcon,
+  WalletIcon,
+} from "lucide-react";
 
 import { deletePrintAction, updatePrintAction } from "@/lib/actions/prints";
 import { printFormSchema, type PrintFormInput } from "@/lib/schemas/print";
 import type { PrintCategory, PrintWithDetails } from "@/lib/types/print";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import { categoryColorClass } from "@/lib/category-colors";
+import { filamentBannerStyle, filamentIconStyle } from "@/lib/filament-accent";
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -30,9 +48,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import {
   PrintFormFields,
-  printResultColors,
   printResultLabels,
-  printStatusColors,
   printStatusLabels,
 } from "@/components/print-form-fields";
 import type {
@@ -47,6 +63,31 @@ import {
   saleValue,
   totalFilamentCost,
 } from "@/lib/print-calculations";
+import { PrinterStatCard, type StatColor } from "@/components/printer-stat-card";
+
+const statusIcons: Record<(typeof printStatusOptions)[number], typeof CheckCircle2> = {
+  fila: HourglassIcon,
+  pronto: CheckCircle2,
+};
+
+const statusStatColors: Record<(typeof printStatusOptions)[number], StatColor> = {
+  fila: "yellow",
+  pronto: "green",
+};
+
+const resultIcons: Record<(typeof printResultOptions)[number], typeof ThumbsUpIcon> = {
+  ruim: ThumbsDownIcon,
+  razoavel: ThumbsDownIcon,
+  bom: ThumbsUpIcon,
+  perfeito: ThumbsUpIcon,
+};
+
+const resultStatColors: Record<(typeof printResultOptions)[number], StatColor> = {
+  ruim: "red",
+  razoavel: "yellow",
+  bom: "lime",
+  perfeito: "green",
+};
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
   style: "currency",
@@ -155,6 +196,10 @@ export function PrintDetailView({
 
   const photoUrl = print.photo_filename ? `/print-photos/${print.id}` : null;
 
+  const filamentColors = print.filaments.map((f) => f.filament_color);
+  const bannerStyle = filamentBannerStyle(filamentColors);
+  const iconStyle = filamentIconStyle(filamentColors);
+
   const status = print.status as (typeof printStatusOptions)[number] | null;
   const result = print.result as (typeof printResultOptions)[number] | null;
 
@@ -261,190 +306,219 @@ export function PrintDetailView({
         )}
       </div>
 
-      <Separator />
-
       {isEditing ? (
-        <Card className="overflow-y-auto">
-          <CardHeader>
-            <CardTitle className="text-lg">Editar Impressão</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={form.handleSubmit(onSubmit)}>
-              <PrintFormFields
-                form={form}
-                photoFile={photoFile}
-                onPhotoFileChange={setPhotoFile}
-                existingPhotoUrl={photoUrl}
-                categoryOptions={categoryOptions}
-                filamentOptions={filamentOptions}
-                printerOptions={printerOptions}
-              />
-              <div className="mt-4 flex justify-end gap-2">
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setIsEditing(false);
-                    setPhotoFile(null);
-                    form.reset(toFormValues(print));
-                  }}
-                >
-                  Cancelar
-                </Button>
-                <Button type="submit" disabled={isPending}>
-                  {isPending ? "Salvando..." : "Salvar"}
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-1 divide-y md:grid-cols-2 md:divide-x md:divide-y-0">
-          <div className="flex min-h-0 flex-col gap-4 overflow-y-auto pb-4 md:pr-6 md:pb-0">
-            <div>
-              <h1 className="text-xl font-semibold">{print.name}</h1>
-              <p className="text-sm text-muted-foreground">
-                Impresso em{" "}
-                {print.print_date
-                  ? dateFormatterDate.format(new Date(print.print_date))
-                  : "—"}
-              </p>
+        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+          <div className="flex items-center gap-4 rounded-xl bg-linear-to-br from-primary/15 via-primary/5 to-transparent p-5 ring-1 ring-foreground/10">
+            <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
+              <PencilIcon className="size-6" />
             </div>
+            <div className="min-w-0">
+              <h1 className="text-xl font-semibold">Editar impressão</h1>
+              <p className="text-sm text-muted-foreground">{print.name}</p>
+            </div>
+          </div>
 
-            <Separator />
+          <Card>
+            <CardContent>
+              <form onSubmit={form.handleSubmit(onSubmit)}>
+                <PrintFormFields
+                  form={form}
+                  photoFile={photoFile}
+                  onPhotoFileChange={setPhotoFile}
+                  existingPhotoUrl={photoUrl}
+                  categoryOptions={categoryOptions}
+                  filamentOptions={filamentOptions}
+                  printerOptions={printerOptions}
+                />
+                <div className="mt-4 flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setIsEditing(false);
+                      setPhotoFile(null);
+                      form.reset(toFormValues(print));
+                    }}
+                  >
+                    Cancelar
+                  </Button>
+                  <Button type="submit" disabled={isPending}>
+                    {isPending ? "Salvando..." : "Salvar"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-4 md:grid-cols-2">
+          <div className="flex min-h-0 flex-col gap-4 overflow-y-auto pb-4 md:pb-0">
+            <div
+              className={cn(
+                "flex items-center gap-4 rounded-xl p-5 ring-1 ring-foreground/10",
+                !bannerStyle && "bg-linear-to-br from-primary/15 via-primary/5 to-transparent"
+              )}
+              style={bannerStyle}
+            >
+              <div
+                className={cn(
+                  "flex size-14 shrink-0 items-center justify-center rounded-2xl",
+                  !iconStyle && "bg-primary/15 text-primary"
+                )}
+                style={iconStyle}
+              >
+                <BoxIcon className="size-7" />
+              </div>
+              <div className="min-w-0">
+                <h1 className="truncate text-xl font-semibold">{print.name}</h1>
+                <p className="text-sm text-muted-foreground">
+                  Impresso em{" "}
+                  {print.print_date
+                    ? dateFormatterDate.format(new Date(print.print_date))
+                    : "—"}
+                </p>
+              </div>
+            </div>
 
             <div>
               <h2 className="mb-2 text-sm font-medium text-foreground uppercase">
                 Cálculos de valores
               </h2>
-              <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 text-sm">
-                <dt className="text-muted-foreground">
-                  Valor de venda ({effectiveProfitPercent}% lucro)
-                </dt>
-                <dd className="text-right font-medium">
-                  {currencyFormatter.format(saleValueTotal)}
-                </dd>
-
-                <dt className="text-muted-foreground">
-                  Valor de venda (pior cenário)
-                </dt>
-                <dd className="text-right font-medium">
-                  {currencyFormatter.format(saleValueWorstCase)}
-                </dd>
-
-                <dt className="text-muted-foreground">Preço de custo</dt>
-                <dd className="text-right font-medium">
-                  {currencyFormatter.format(printCostTotal)}
-                </dd>
-
-                <dt className="text-muted-foreground">Preço do filamento</dt>
-                <dd className="text-right font-medium">
-                  {currencyFormatter.format(filamentCostTotal)}
-                </dd>
-              </dl>
+              <div className="grid grid-cols-2 gap-3">
+                <PrinterStatCard
+                  icon={WalletIcon}
+                  label={`Venda (${effectiveProfitPercent}% lucro)`}
+                  color="chart-4"
+                  value={currencyFormatter.format(saleValueTotal)}
+                />
+                <PrinterStatCard
+                  icon={TrendingDownIcon}
+                  label="Venda (pior cenário)"
+                  color="chart-5"
+                  value={currencyFormatter.format(saleValueWorstCase)}
+                />
+                <PrinterStatCard
+                  icon={ReceiptIcon}
+                  label="Preço de custo"
+                  color="chart-2"
+                  value={currencyFormatter.format(printCostTotal)}
+                />
+                <PrinterStatCard
+                  icon={CoinsIcon}
+                  label="Preço do filamento"
+                  color="chart-1"
+                  value={currencyFormatter.format(filamentCostTotal)}
+                />
+              </div>
             </div>
 
             <div>
               <h2 className="mb-2 text-sm font-medium text-foreground uppercase">
                 Informações da impressão
               </h2>
-              <dl className="grid grid-cols-[1fr_auto] gap-x-3 gap-y-2 text-sm">
-                <dt className="text-muted-foreground">Tempo de impressão</dt>
-                <dd className="text-right">
-                  {formatDuration(print.duration_minutes) ?? "—"}
-                </dd>
-
-                <dt className="text-muted-foreground">Status</dt>
-                <dd
-                  className={cn(
-                    "text-right",
-                    status ? printStatusColors[status] : undefined,
-                  )}
-                >
-                  {status ? printStatusLabels[status] : "—"}
-                </dd>
-
-                <dt className="text-muted-foreground">Resultado</dt>
-                <dd
-                  className={cn(
-                    "text-right",
-                    result ? printResultColors[result] : undefined,
-                  )}
-                >
-                  {result ? printResultLabels[result] : "—"}
-                </dd>
-
-                <dt className="text-muted-foreground">Categoria</dt>
-                <dd className="text-right">
-                  {print.category_name ? (
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "border-transparent",
-                        categoryColorClass(print.category_name)
-                      )}
-                    >
-                      {print.category_name}
-                    </Badge>
-                  ) : (
-                    "—"
-                  )}
-                </dd>
-
-                <dt className="text-muted-foreground">Impressora</dt>
-                <dd className="text-right">{print.printer_name ?? "—"}</dd>
-
-                <dt className="text-muted-foreground">Filamentos</dt>
-                <dd className="text-right">
-                  {print.filaments.length > 0 ? (
-                    <ul className="flex flex-col gap-1">
-                      {print.filaments.map((filament) => (
-                        <li
-                          key={filament.position}
-                          className="flex items-center justify-end gap-2"
-                        >
-                          {filament.filament_name ?? "—"}
-                          {filament.grams != null && (
-                            <span className="text-muted-foreground">
-                              ({filament.grams} g)
-                            </span>
-                          )}
-                          {filament.filament_color && (
-                            <span
-                              className="size-3.5 shrink-0 rounded-full border"
-                              style={{
-                                backgroundColor: filament.filament_color,
-                              }}
-                            />
-                          )}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    "—"
-                  )}
-                </dd>
-
-                <dt className="text-muted-foreground">Link</dt>
-                <dd className="text-right">
-                  {print.print_link ? (
-                    <a
-                      href={print.print_link}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-primary underline underline-offset-2"
-                    >
-                      {formatLinkLabel(print.print_link)}
-                    </a>
-                  ) : (
-                    "—"
-                  )}
-                </dd>
-              </dl>
+              <div className="grid grid-cols-2 gap-3">
+                <PrinterStatCard
+                  icon={ClockIcon}
+                  label="Tempo de impressão"
+                  color="chart-3"
+                  value={formatDuration(print.duration_minutes) ?? "—"}
+                />
+                <PrinterStatCard
+                  icon={status ? statusIcons[status] : HourglassIcon}
+                  label="Status"
+                  color={status ? statusStatColors[status] : "chart-3"}
+                  value={status ? printStatusLabels[status] : "—"}
+                />
+                <PrinterStatCard
+                  icon={result ? resultIcons[result] : ThumbsUpIcon}
+                  label="Resultado"
+                  color={result ? resultStatColors[result] : "chart-3"}
+                  value={result ? printResultLabels[result] : "—"}
+                />
+                <PrinterStatCard
+                  icon={TagIcon}
+                  label="Categoria"
+                  color="chart-2"
+                  value={
+                    print.category_name ? (
+                      <Badge
+                        variant="outline"
+                        className={cn(
+                          "border-transparent",
+                          categoryColorClass(print.category_name)
+                        )}
+                      >
+                        {print.category_name}
+                      </Badge>
+                    ) : (
+                      "—"
+                    )
+                  }
+                />
+                <PrinterStatCard
+                  icon={PrinterIcon}
+                  label="Impressora"
+                  color="chart-2"
+                  value={print.printer_name ?? "—"}
+                />
+                <PrinterStatCard
+                  icon={LinkIcon}
+                  label="Link"
+                  color="chart-2"
+                  value={
+                    print.print_link ? (
+                      <a
+                        href={print.print_link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary underline underline-offset-2"
+                      >
+                        {formatLinkLabel(print.print_link)}
+                      </a>
+                    ) : (
+                      "—"
+                    )
+                  }
+                />
+              </div>
             </div>
+
+            {print.filaments.length > 0 && (
+              <div className="flex flex-col gap-2 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-chart-1/15 text-chart-1">
+                    <Layers className="size-3.5" />
+                  </span>
+                  Filamentos
+                </div>
+                <ul className="flex flex-col gap-1.5">
+                  {print.filaments.map((filament) => (
+                    <li
+                      key={filament.position}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      {filament.filament_color && (
+                        <span
+                          className="size-3.5 shrink-0 rounded-full border"
+                          style={{
+                            backgroundColor: filament.filament_color,
+                          }}
+                        />
+                      )}
+                      {filament.filament_name ?? "—"}
+                      {filament.grams != null && (
+                        <span className="text-muted-foreground">
+                          ({filament.grams} g)
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
-          <div className="flex min-h-0 pt-4 md:pt-0 md:pl-6">
+          <div className="flex min-h-0 pt-4 md:pt-0">
             {photoUrl && (
               <button
                 type="button"
@@ -455,7 +529,7 @@ export function PrintDetailView({
                 <img
                   src={photoUrl}
                   alt=""
-                  className="size-full object-contain"
+                  className="size-full rounded-xl object-contain"
                 />
               </button>
             )}

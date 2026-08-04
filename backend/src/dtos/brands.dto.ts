@@ -34,6 +34,12 @@ export const createBrandSchema = z.object({
   avgPriceMax: optionalNumber,
   filamentTypes: z.array(z.enum(filamentTypeOptions)).nullable().optional(),
   bestColors: z.array(z.string().trim().min(1)).nullable().optional(),
+  color: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/, { message: 'Color must be a hex value like #3B82F6' })
+    .nullable()
+    .optional(),
   purchased: z.boolean().nullable().optional(),
   notes: z.string().trim().nullable().optional(),
 });

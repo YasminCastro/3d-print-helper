@@ -8,6 +8,7 @@ export type FilamentBrand = {
   avgPriceMax: number | null;
   filamentTypes: (typeof filamentTypeOptions)[number][];
   bestColors: string[];
+  color: string | null;
   purchased: boolean;
   notes: string | null;
   createdAt: string;

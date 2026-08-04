@@ -26,6 +26,7 @@ const defaultValues: BrandFormInput = {
   avgPriceMax: undefined,
   filamentTypes: [],
   bestColors: [],
+  color: "",
   purchased: false,
   notes: "",
 };

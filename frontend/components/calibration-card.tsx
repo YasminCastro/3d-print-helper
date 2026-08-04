@@ -1,14 +1,36 @@
 import Link from "next/link";
 import { Gauge } from "lucide-react";
 
+import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
-  calibrationStatusColors,
   calibrationStatusLabels,
   slicerLabels,
 } from "@/components/calibration-form-fields";
 import type { calibrationStatusOptions, slicerOptions } from "@/lib/schemas/calibration";
 import type { CalibrationWithFilament } from "@/lib/types/calibration";
+
+const STATUS_BADGE_CLASSES: Record<(typeof calibrationStatusOptions)[number], string> = {
+  calibrado:
+    "border-green-200 bg-green-100 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300",
+  nao_calibrado:
+    "border-red-200 bg-red-100 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300",
+  em_processo:
+    "border-yellow-200 bg-yellow-100 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300",
+};
+
+const ACCENT_CLASSES = [
+  "bg-chart-1/15 text-chart-1",
+  "bg-chart-2/15 text-chart-2",
+  "bg-chart-3/15 text-chart-3",
+  "bg-chart-4/15 text-chart-4",
+  "bg-chart-5/15 text-chart-5",
+];
+
+function accentFor(id: number) {
+  return ACCENT_CLASSES[id % ACCENT_CLASSES.length];
+}
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 
@@ -26,32 +48,42 @@ export function CalibrationCard({ calibration }: { calibration: CalibrationWithF
 
   return (
     <Link href={`/calibrations/${calibration.id}`} className="block h-full">
-      <Card className="flex h-full flex-col cursor-pointer transition hover:ring-primary/40">
-        <CardHeader className="flex-row items-center gap-2 space-y-0">
-          <CardTitle className="flex items-center gap-1.5 text-base">
-            <span
-              className="size-4 shrink-0 rounded-full border"
-              style={{ backgroundColor: calibration.filament_color ?? "#a1a1aa" }}
-            />
-            {calibration.filament_name ?? "—"}
-          </CardTitle>
+      <Card className="flex h-full flex-col cursor-pointer gap-3 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/40">
+        <CardHeader className="flex-row items-center gap-3 space-y-0">
+          <div
+            className={cn(
+              "flex size-10 shrink-0 items-center justify-center rounded-xl",
+              !calibration.filament_color && accentFor(calibration.id)
+            )}
+            style={
+              calibration.filament_color
+                ? {
+                    backgroundColor: `${calibration.filament_color}26`,
+                    color: calibration.filament_color,
+                  }
+                : undefined
+            }
+          >
+            <Gauge className="size-5" />
+          </div>
+          <div className="min-w-0">
+            <CardTitle className="truncate text-base">
+              {calibration.filament_name ?? "—"}
+            </CardTitle>
+            <p className="truncate text-xs text-muted-foreground">{slicerLabels[slicer]}</p>
+          </div>
         </CardHeader>
-        <CardContent className="flex flex-col gap-2 text-sm text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <Gauge className="size-4 shrink-0" />
-            {slicerLabels[slicer]}
-          </span>
-          {(status || date) && (
-            <span className="flex items-center gap-2">
-              {status && (
-                <span className={calibrationStatusColors[status]}>
-                  {calibrationStatusLabels[status]}
-                </span>
-              )}
-              {date && <span>{date}</span>}
-            </span>
-          )}
-        </CardContent>
+
+        {(status || date) && (
+          <CardContent className="mt-auto flex flex-wrap items-center gap-1.5">
+            {status && (
+              <Badge variant="outline" className={STATUS_BADGE_CLASSES[status]}>
+                {calibrationStatusLabels[status]}
+              </Badge>
+            )}
+            {date && <Badge variant="secondary">{date}</Badge>}
+          </CardContent>
+        )}
       </Card>
     </Link>
   );

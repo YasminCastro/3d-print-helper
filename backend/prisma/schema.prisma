@@ -52,6 +52,7 @@ model FilamentBrand {
   avgPriceMax   Float?   @map("avg_price_max")
   filamentTypes String?  @map("filament_types")
   bestColors    String?  @map("best_colors")
+  color         String?
   purchased     Int?     @default(0)
   notes         String?
   createdAt     DateTime @default(now()) @map("created_at")
@@ -82,6 +83,7 @@ model Filament {
   purchaseBatch    String?  @map("purchase_batch")
   rating           Int?
   color            String?
+  color2           String?
   createdAt        DateTime @default(now()) @map("created_at")
   userId           String   @map("user_id")
 

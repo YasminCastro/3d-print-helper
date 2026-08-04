@@ -10,6 +10,25 @@ export interface IFilamentsRepository {
   delete(id: number, userId: string): Promise<boolean>;
 }
 
+function toCreateData(filament: Filament) {
+  const { brandId, userId, ...rest } = filament.toPersistence();
+
+  return {
+    ...rest,
+    ...(brandId != null ? { brand: { connect: { id: brandId } } } : {}),
+    user: { connect: { id: userId } },
+  };
+}
+
+function toUpdateData(filament: Filament) {
+  const { brandId, userId: _userId, ...rest } = filament.toPersistence();
+
+  return {
+    ...rest,
+    brand: brandId != null ? { connect: { id: brandId } } : { disconnect: true },
+  };
+}
+
 @singleton()
 export class FilamentsRepository implements IFilamentsRepository {
   async findAll(userId: string): Promise<Filament[]> {
@@ -23,7 +42,7 @@ export class FilamentsRepository implements IFilamentsRepository {
   }
 
   async save(filament: Filament): Promise<Filament> {
-    const row = await prisma.filament.create({ data: filament.toPersistence() });
+    const row = await prisma.filament.create({ data: toCreateData(filament) });
     return Filament.fromPersistence(row);
   }
 
@@ -33,7 +52,7 @@ export class FilamentsRepository implements IFilamentsRepository {
 
     const row = await prisma.filament.update({
       where: { id },
-      data: filament.toPersistence(),
+      data: toUpdateData(filament),
     });
     return Filament.fromPersistence(row);
   }

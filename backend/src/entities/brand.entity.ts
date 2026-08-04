@@ -6,6 +6,7 @@ export interface BrandPersistenceData {
   avgPriceMax?: number | null;
   filamentTypes?: string | null;
   bestColors?: string | null;
+  color?: string | null;
   purchased?: number | null;
   notes?: string | null;
   createdAt?: Date;
@@ -19,6 +20,7 @@ export interface BrandCreateData {
   avgPriceMax?: number | null;
   filamentTypes?: string[] | null;
   bestColors?: string[] | null;
+  color?: string | null;
   purchased?: boolean | null;
   notes?: string | null;
   userId: string;
@@ -35,6 +37,7 @@ export class FilamentBrand {
     private _avgPriceMax: number | null,
     private _filamentTypes: string[],
     private _bestColors: string[],
+    private _color: string | null,
     private _purchased: boolean,
     private _notes: string | null,
     private readonly _createdAt: Date = new Date(),
@@ -52,6 +55,7 @@ export class FilamentBrand {
       data.avgPriceMax ?? null,
       data.filamentTypes ?? [],
       data.bestColors ?? [],
+      data.color ?? null,
       data.purchased ?? false,
       data.notes ?? null,
       new Date(),
@@ -68,6 +72,7 @@ export class FilamentBrand {
       data.avgPriceMax ?? null,
       FilamentBrand.splitCsv(data.filamentTypes),
       FilamentBrand.splitCsv(data.bestColors),
+      data.color ?? null,
       data.purchased === 1,
       data.notes ?? null,
       data.createdAt || new Date(),
@@ -104,6 +109,7 @@ export class FilamentBrand {
     if (data.avgPriceMax !== undefined) this._avgPriceMax = data.avgPriceMax;
     if (data.filamentTypes !== undefined) this._filamentTypes = data.filamentTypes ?? [];
     if (data.bestColors !== undefined) this._bestColors = data.bestColors ?? [];
+    if (data.color !== undefined) this._color = data.color;
     if (data.purchased !== undefined) this._purchased = data.purchased ?? false;
     if (data.notes !== undefined) this._notes = data.notes;
   }
@@ -129,6 +135,9 @@ export class FilamentBrand {
   get bestColors(): string[] {
     return [...this._bestColors];
   }
+  get color(): string | null {
+    return this._color;
+  }
   get purchased(): boolean {
     return this._purchased;
   }
@@ -150,6 +159,7 @@ export class FilamentBrand {
       avgPriceMax: this._avgPriceMax,
       filamentTypes: this._filamentTypes.length ? this._filamentTypes.join(',') : null,
       bestColors: this._bestColors.length ? this._bestColors.join(',') : null,
+      color: this._color,
       purchased: this._purchased ? 1 : 0,
       notes: this._notes,
       userId: this._userId,
@@ -164,6 +174,7 @@ export class FilamentBrand {
     avgPriceMax: number | null;
     filamentTypes: string[];
     bestColors: string[];
+    color: string | null;
     purchased: boolean;
     notes: string | null;
     createdAt: Date;
@@ -176,6 +187,7 @@ export class FilamentBrand {
       avgPriceMax: this._avgPriceMax,
       filamentTypes: this._filamentTypes,
       bestColors: this._bestColors,
+      color: this._color,
       purchased: this._purchased,
       notes: this._notes,
       createdAt: this._createdAt,

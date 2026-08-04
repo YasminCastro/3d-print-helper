@@ -16,6 +16,7 @@ export interface FilamentPersistenceData {
   purchaseBatch?: string | null;
   rating?: number | null;
   color?: string | null;
+  color2?: string | null;
   createdAt?: Date;
   userId: string;
 }
@@ -37,6 +38,7 @@ export interface FilamentCreateData {
   purchaseBatch?: string | null;
   rating?: number | null;
   color?: string | null;
+  color2?: string | null;
   userId: string;
 }
 
@@ -61,6 +63,7 @@ export class Filament {
     private _purchaseBatch: string | null,
     private _rating: number | null,
     private _color: string | null,
+    private _color2: string | null,
     private readonly _createdAt: Date = new Date(),
     private readonly _userId: string = '',
   ) {}
@@ -87,6 +90,7 @@ export class Filament {
       data.purchaseBatch ?? null,
       validatedRating,
       data.color ?? null,
+      data.color2 ?? null,
       new Date(),
       data.userId,
     );
@@ -111,6 +115,7 @@ export class Filament {
       data.purchaseBatch ?? null,
       data.rating ?? null,
       data.color ?? null,
+      data.color2 ?? null,
       data.createdAt || new Date(),
       data.userId,
     );
@@ -161,6 +166,7 @@ export class Filament {
     if (data.purchaseBatch !== undefined) this._purchaseBatch = data.purchaseBatch;
     if (data.rating !== undefined) this._rating = Filament.validateRating(data.rating);
     if (data.color !== undefined) this._color = data.color;
+    if (data.color2 !== undefined) this._color2 = data.color2;
   }
 
   get id(): number {
@@ -214,6 +220,9 @@ export class Filament {
   get color(): string | null {
     return this._color;
   }
+  get color2(): string | null {
+    return this._color2;
+  }
   get createdAt(): Date {
     return new Date(this._createdAt);
   }
@@ -239,6 +248,7 @@ export class Filament {
       purchaseBatch: this._purchaseBatch,
       rating: this._rating,
       color: this._color,
+      color2: this._color2,
       userId: this._userId,
     };
   }
@@ -261,6 +271,7 @@ export class Filament {
     purchaseBatch: string | null;
     rating: number | null;
     color: string | null;
+    color2: string | null;
     createdAt: Date;
   } {
     return {
@@ -281,6 +292,7 @@ export class Filament {
       purchaseBatch: this._purchaseBatch,
       rating: this._rating,
       color: this._color,
+      color2: this._color2,
       createdAt: this._createdAt,
     };
   }

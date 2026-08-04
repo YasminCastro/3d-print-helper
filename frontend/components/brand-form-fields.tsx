@@ -2,7 +2,17 @@
 
 import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import { XIcon } from "lucide-react";
+import {
+  CheckCircle2Icon,
+  LayersIcon,
+  NotebookTextIcon,
+  PackageIcon,
+  PaletteIcon,
+  PaintbrushIcon,
+  StoreIcon,
+  WalletIcon,
+  XIcon,
+} from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -17,6 +27,7 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
+import { FieldIcon } from "@/components/field-icon";
 import {
   costBenefitOptions,
   filamentTypeOptions,
@@ -35,13 +46,9 @@ export const filamentTypeLabels: Record<(typeof filamentTypeOptions)[number], st
   pla_matte: "PLA Matte",
   pla_silk: "PLA Silk",
   pla_duo_color: "PLA Duo Color",
-  pla_tri_color: "PLA Tri Color",
   petg: "PETG",
   abs: "ABS",
-  asa: "ASA",
   tpu: "TPU",
-  nylon: "Nylon",
-  pva: "PVA",
 };
 
 export const filamentTypeColors: Record<(typeof filamentTypeOptions)[number], string> = {
@@ -52,15 +59,9 @@ export const filamentTypeColors: Record<(typeof filamentTypeOptions)[number], st
     "border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300",
   pla_duo_color:
     "border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300",
-  pla_tri_color:
-    "border-blue-200 bg-blue-100 text-blue-700 dark:border-blue-900 dark:bg-blue-950 dark:text-blue-300",
   petg: "border-teal-200 bg-teal-100 text-teal-700 dark:border-teal-900 dark:bg-teal-950 dark:text-teal-300",
   abs: "border-orange-200 bg-orange-100 text-orange-700 dark:border-orange-900 dark:bg-orange-950 dark:text-orange-300",
-  asa: "border-amber-200 bg-amber-100 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300",
   tpu: "border-emerald-200 bg-emerald-100 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300",
-  nylon:
-    "border-cyan-200 bg-cyan-100 text-cyan-700 dark:border-cyan-900 dark:bg-cyan-950 dark:text-cyan-300",
-  pva: "border-lime-200 bg-lime-100 text-lime-700 dark:border-lime-900 dark:bg-lime-950 dark:text-lime-300",
 };
 
 export function BrandFormFields({
@@ -71,7 +72,10 @@ export function BrandFormFields({
   return (
     <FieldGroup>
       <Field data-invalid={!!form.formState.errors.name}>
-        <FieldLabel htmlFor="brand-name">Nome</FieldLabel>
+        <FieldLabel htmlFor="brand-name">
+          <FieldIcon icon={PackageIcon} color="chart-1" />
+          Nome
+        </FieldLabel>
         <FieldContent>
           <Input id="brand-name" placeholder="Ex: Voolt3D" {...form.register("name")} />
           <FieldError errors={[form.formState.errors.name]} />
@@ -79,7 +83,10 @@ export function BrandFormFields({
       </Field>
 
       <Field data-invalid={!!form.formState.errors.whereToBuy}>
-        <FieldLabel htmlFor="brand-where">Onde compra</FieldLabel>
+        <FieldLabel htmlFor="brand-where">
+          <FieldIcon icon={StoreIcon} color="chart-2" />
+          Onde compra
+        </FieldLabel>
         <FieldContent>
           <Input
             id="brand-where"
@@ -98,14 +105,55 @@ export function BrandFormFields({
               checked={form.watch("purchased") ?? false}
               onCheckedChange={(checked) => form.setValue("purchased", checked === true)}
             />
+            <FieldIcon icon={CheckCircle2Icon} color="chart-3" />
             Já comprei dessa marca
           </label>
         </FieldContent>
       </Field>
 
+      <Field data-invalid={!!form.formState.errors.color}>
+        <FieldLabel htmlFor="brand-color">
+          <FieldIcon icon={PaintbrushIcon} color="chart-5" />
+          Cor da marca
+        </FieldLabel>
+        <FieldContent>
+          <div className="flex items-center gap-2">
+            <input
+              id="brand-color"
+              type="color"
+              className="h-9 w-12 shrink-0 cursor-pointer rounded-md border bg-transparent p-1"
+              value={form.watch("color") || "#6366f1"}
+              onChange={(event) => form.setValue("color", event.target.value)}
+            />
+            <Input
+              placeholder="#6366f1"
+              className="max-w-32"
+              {...form.register("color")}
+            />
+            {form.watch("color") && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => form.setValue("color", "")}
+              >
+                Limpar
+              </Button>
+            )}
+          </div>
+          <FieldDescription>
+            Usada para colorir o ícone da marca. Se não for definida, uma cor aleatória é usada.
+          </FieldDescription>
+          <FieldError errors={[form.formState.errors.color]} />
+        </FieldContent>
+      </Field>
+
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.avgPriceMin}>
-          <FieldLabel htmlFor="brand-price-min">Preço mínimo (R$)</FieldLabel>
+          <FieldLabel htmlFor="brand-price-min">
+            <FieldIcon icon={WalletIcon} color="chart-4" />
+            Preço mínimo (R$)
+          </FieldLabel>
           <FieldContent>
             <Input
               id="brand-price-min"
@@ -122,7 +170,10 @@ export function BrandFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.avgPriceMax}>
-          <FieldLabel htmlFor="brand-price-max">Preço máximo (R$)</FieldLabel>
+          <FieldLabel htmlFor="brand-price-max">
+            <FieldIcon icon={WalletIcon} color="chart-4" />
+            Preço máximo (R$)
+          </FieldLabel>
           <FieldContent>
             <Input
               id="brand-price-max"
@@ -140,37 +191,51 @@ export function BrandFormFields({
       </div>
 
       <Field data-invalid={!!form.formState.errors.filamentTypes}>
-        <FieldLabel>Tipos de filamento</FieldLabel>
+        <FieldLabel>
+          <FieldIcon icon={LayersIcon} color="chart-3" />
+          Tipos de filamento
+        </FieldLabel>
         <FieldContent>
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {filamentTypeOptions.map((option) => {
+            {(() => {
               const selected = form.watch("filamentTypes") ?? [];
-              const checked = selected.includes(option);
-
-              return (
-                <label
-                  key={option}
-                  htmlFor={`brand-filament-type-${option}`}
-                  className="group flex items-center gap-2 text-sm"
-                >
-                  <Checkbox
-                    id={`brand-filament-type-${option}`}
-                    checked={checked}
-                    onCheckedChange={(nextChecked) => {
-                      const current = form.getValues("filamentTypes") ?? [];
-                      form.setValue(
-                        "filamentTypes",
-                        nextChecked
-                          ? [...current, option]
-                          : current.filter((value) => value !== option)
-                      );
-                    }}
-                  />
-                  {filamentTypeLabels[option]}
-                </label>
+              const legacyOptions = selected.filter(
+                (value) => !(filamentTypeOptions as readonly string[]).includes(value)
               );
-            })}
+              const allOptions = [...filamentTypeOptions, ...legacyOptions];
+
+              return allOptions.map((option) => {
+                const checked = selected.includes(option);
+
+                return (
+                  <label
+                    key={option}
+                    htmlFor={`brand-filament-type-${option}`}
+                    className="group flex items-center gap-2 text-sm"
+                  >
+                    <Checkbox
+                      id={`brand-filament-type-${option}`}
+                      checked={checked}
+                      onCheckedChange={(nextChecked) => {
+                        const current = form.getValues("filamentTypes") ?? [];
+                        form.setValue(
+                          "filamentTypes",
+                          nextChecked
+                            ? [...current, option]
+                            : current.filter((value) => value !== option)
+                        );
+                      }}
+                    />
+                    {filamentTypeLabels[option as (typeof filamentTypeOptions)[number]] ?? option}
+                  </label>
+                );
+              });
+            })()}
           </div>
+          <FieldDescription>
+            Tipos que já estavam marcados mas não fazem mais parte da lista padrão também
+            aparecem aqui — desmarque-os para removê-los da marca.
+          </FieldDescription>
           <FieldError errors={[form.formState.errors.filamentTypes]} />
         </FieldContent>
       </Field>
@@ -178,7 +243,10 @@ export function BrandFormFields({
       <BestColorsField form={form} />
 
       <Field data-invalid={!!form.formState.errors.notes}>
-        <FieldLabel htmlFor="brand-notes">Notas</FieldLabel>
+        <FieldLabel htmlFor="brand-notes">
+          <FieldIcon icon={NotebookTextIcon} color="chart-1" />
+          Notas
+        </FieldLabel>
         <FieldContent>
           <Textarea
             id="brand-notes"
@@ -208,7 +276,10 @@ function BestColorsField({ form }: { form: UseFormReturn<BrandFormInput> }) {
 
   return (
     <Field data-invalid={!!form.formState.errors.bestColors}>
-      <FieldLabel htmlFor="brand-best-colors">Melhores cores</FieldLabel>
+      <FieldLabel htmlFor="brand-best-colors">
+        <FieldIcon icon={PaletteIcon} color="chart-5" />
+        Melhores cores
+      </FieldLabel>
       <FieldContent>
         <div className="flex gap-2">
           <Input

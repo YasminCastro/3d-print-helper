@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
-import type { LucideIcon } from "lucide-react";
 import {
   ClockIcon,
   PlugZapIcon,
@@ -13,7 +12,6 @@ import {
   ZapIcon,
 } from "lucide-react";
 
-import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import {
   Field,
@@ -23,21 +21,8 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import { STAT_COLOR_CLASSES, type StatColor } from "@/components/printer-stat-card";
+import { FieldIcon } from "@/components/field-icon";
 import type { PrinterFormInput } from "@/lib/schemas/printer";
-
-function FieldIcon({ icon: Icon, color }: { icon: LucideIcon; color: StatColor }) {
-  return (
-    <span
-      className={cn(
-        "flex size-6 shrink-0 items-center justify-center rounded-md",
-        STAT_COLOR_CLASSES[color]
-      )}
-    >
-      <Icon className="size-3.5" />
-    </span>
-  );
-}
 
 function calculateMaintenanceCost(price: number, lifespanHours: number) {
   return Math.round((price / lifespanHours) * 100) / 100;

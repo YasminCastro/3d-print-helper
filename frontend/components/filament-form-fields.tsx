@@ -1,7 +1,19 @@
 "use client";
 
 import type { UseFormReturn } from "react-hook-form";
-import { StarIcon } from "lucide-react";
+import {
+  Building2Icon,
+  CalendarIcon,
+  CircleCheckIcon,
+  HashIcon,
+  LayersIcon,
+  LinkIcon,
+  PaletteIcon,
+  StarIcon,
+  TagIcon,
+  ThermometerIcon,
+  WalletIcon,
+} from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
@@ -21,6 +33,7 @@ import {
   FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field";
+import { FieldIcon } from "@/components/field-icon";
 import { availabilityOptions, type FilamentFormInput } from "@/lib/schemas/filament";
 import { filamentTypeOptions } from "@/lib/schemas/brand";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
@@ -44,13 +57,18 @@ export function FilamentFormFields({
   form: UseFormReturn<FilamentFormInput>;
   brandOptions: { id: number; name: string }[];
 }) {
+  const isDuoColor = form.watch("material") === "pla_duo_color";
+
   return (
     <FieldGroup>
       <div className="flex items-center justify-between gap-4">
         <StarRatingField form={form} />
 
         <Field className="w-fit" data-invalid={!!form.formState.errors.availability}>
-          <FieldLabel htmlFor="filament-availability">Disponibilidade</FieldLabel>
+          <FieldLabel htmlFor="filament-availability">
+            <FieldIcon icon={CircleCheckIcon} color="chart-2" />
+            Disponibilidade
+          </FieldLabel>
           <FieldContent>
             <Select
               items={availabilityOptions.map((option) => ({
@@ -80,7 +98,10 @@ export function FilamentFormFields({
 
       <div className="grid grid-cols-[1fr_auto] gap-4">
         <Field data-invalid={!!form.formState.errors.name}>
-          <FieldLabel htmlFor="filament-name">Nome do filamento</FieldLabel>
+          <FieldLabel htmlFor="filament-name">
+            <FieldIcon icon={LayersIcon} color="chart-1" />
+            Nome do filamento
+          </FieldLabel>
           <FieldContent>
             <Input
               id="filament-name"
@@ -91,17 +112,32 @@ export function FilamentFormFields({
           </FieldContent>
         </Field>
 
-        <Field data-invalid={!!form.formState.errors.color}>
-          <FieldLabel htmlFor="filament-color">Cor</FieldLabel>
+        <Field data-invalid={!!form.formState.errors.color || !!form.formState.errors.color2}>
+          <FieldLabel htmlFor="filament-color">
+            <FieldIcon icon={PaletteIcon} color="chart-1" />
+            {isDuoColor ? "Cores" : "Cor"}
+          </FieldLabel>
           <FieldContent>
-            <input
-              id="filament-color"
-              type="color"
-              className="h-9 w-14 cursor-pointer rounded-md border border-input bg-transparent p-1"
-              value={form.watch("color") || "#a1a1aa"}
-              onChange={(event) => form.setValue("color", event.target.value)}
-            />
-            <FieldError errors={[form.formState.errors.color]} />
+            <div className="flex items-center gap-2">
+              <input
+                id="filament-color"
+                type="color"
+                className="h-9 w-14 cursor-pointer rounded-md border border-input bg-transparent p-1"
+                value={form.watch("color") || "#a1a1aa"}
+                onChange={(event) => form.setValue("color", event.target.value)}
+              />
+              {isDuoColor && (
+                <input
+                  id="filament-color2"
+                  type="color"
+                  aria-label="Segunda cor"
+                  className="h-9 w-14 cursor-pointer rounded-md border border-input bg-transparent p-1"
+                  value={form.watch("color2") || "#a1a1aa"}
+                  onChange={(event) => form.setValue("color2", event.target.value)}
+                />
+              )}
+            </div>
+            <FieldError errors={[form.formState.errors.color, form.formState.errors.color2]} />
           </FieldContent>
         </Field>
       </div>
@@ -109,6 +145,7 @@ export function FilamentFormFields({
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.lastPurchaseDate}>
           <FieldLabel htmlFor="filament-last-purchase-date">
+            <FieldIcon icon={CalendarIcon} color="chart-3" />
             Data da última compra
           </FieldLabel>
           <FieldContent>
@@ -122,7 +159,10 @@ export function FilamentFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.material}>
-          <FieldLabel htmlFor="filament-material">Material</FieldLabel>
+          <FieldLabel htmlFor="filament-material">
+            <FieldIcon icon={LayersIcon} color="chart-1" />
+            Material
+          </FieldLabel>
           <FieldContent>
             <Select
               items={filamentTypeOptions.map((option) => ({
@@ -155,7 +195,10 @@ export function FilamentFormFields({
 
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.brandId}>
-          <FieldLabel htmlFor="filament-brand">Marca</FieldLabel>
+          <FieldLabel htmlFor="filament-brand">
+            <FieldIcon icon={Building2Icon} color="chart-2" />
+            Marca
+          </FieldLabel>
           <FieldContent>
             <Select
               items={brandOptions.map((brand) => ({
@@ -181,7 +224,10 @@ export function FilamentFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.saleName}>
-          <FieldLabel htmlFor="filament-sale-name">Nome de venda</FieldLabel>
+          <FieldLabel htmlFor="filament-sale-name">
+            <FieldIcon icon={TagIcon} color="chart-1" />
+            Nome de venda
+          </FieldLabel>
           <FieldContent>
             <Input
               id="filament-sale-name"
@@ -194,7 +240,10 @@ export function FilamentFormFields({
       </div>
 
       <Field data-invalid={!!form.formState.errors.purchaseLink}>
-        <FieldLabel htmlFor="filament-purchase-link">Link de compra</FieldLabel>
+        <FieldLabel htmlFor="filament-purchase-link">
+          <FieldIcon icon={LinkIcon} color="chart-2" />
+          Link de compra
+        </FieldLabel>
         <FieldContent>
           <Input
             id="filament-purchase-link"
@@ -209,6 +258,7 @@ export function FilamentFormFields({
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.minPricePaid}>
           <FieldLabel htmlFor="filament-price-min">
+            <FieldIcon icon={WalletIcon} color="chart-4" />
             Preço mínimo pago (R$)
           </FieldLabel>
           <FieldContent>
@@ -225,6 +275,7 @@ export function FilamentFormFields({
 
         <Field data-invalid={!!form.formState.errors.maxPricePaid}>
           <FieldLabel htmlFor="filament-price-max">
+            <FieldIcon icon={WalletIcon} color="chart-4" />
             Preço máximo pago (R$)
           </FieldLabel>
           <FieldContent>
@@ -243,7 +294,10 @@ export function FilamentFormFields({
       <FieldSeparator>Recomendações do fabricante</FieldSeparator>
 
       <Field>
-        <FieldLabel>Bico (°C)</FieldLabel>
+        <FieldLabel>
+          <FieldIcon icon={ThermometerIcon} color="chart-3" />
+          Bico (°C)
+        </FieldLabel>
         <FieldContent>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -279,7 +333,10 @@ export function FilamentFormFields({
       </Field>
 
       <Field>
-        <FieldLabel>Mesa (°C)</FieldLabel>
+        <FieldLabel>
+          <FieldIcon icon={ThermometerIcon} color="chart-5" />
+          Mesa (°C)
+        </FieldLabel>
         <FieldContent>
           <div className="grid grid-cols-2 gap-4">
             <div>
@@ -316,6 +373,7 @@ export function FilamentFormFields({
 
       <Field data-invalid={!!form.formState.errors.purchaseBatch}>
         <FieldLabel htmlFor="filament-purchase-batch">
+          <FieldIcon icon={HashIcon} color="chart-5" />
           Lote de compra
         </FieldLabel>
         <FieldContent>
@@ -336,7 +394,10 @@ function StarRatingField({ form }: { form: UseFormReturn<FilamentFormInput> }) {
 
   return (
     <Field data-invalid={!!form.formState.errors.rating}>
-      <FieldLabel>Nota</FieldLabel>
+      <FieldLabel>
+        <FieldIcon icon={StarIcon} color="chart-1" />
+        Nota
+      </FieldLabel>
       <FieldContent>
         <div className="flex items-center gap-1">
           {([1, 2, 3, 4, 5] as const).map((star) => (

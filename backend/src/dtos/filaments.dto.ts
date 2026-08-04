@@ -33,6 +33,7 @@ export const createFilamentSchema = z.object({
   purchaseBatch: optionalText,
   rating: z.number().int().min(1).max(5).nullable().optional(),
   color: optionalText,
+  color2: optionalText,
 });
 
 export type CreateFilamentDto = z.infer<typeof createFilamentSchema>;

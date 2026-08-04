@@ -16,6 +16,7 @@ function toPayload(values: BrandFormInput) {
     avgPriceMax: parsed.avgPriceMax ?? null,
     filamentTypes: parsed.filamentTypes ?? [],
     bestColors: parsed.bestColors ?? [],
+    color: parsed.color || null,
     purchased: parsed.purchased ?? false,
     notes: parsed.notes || null,
   };

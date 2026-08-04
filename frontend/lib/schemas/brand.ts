@@ -12,13 +12,9 @@ export const filamentTypeOptions = [
   "pla_matte",
   "pla_silk",
   "pla_duo_color",
-  "pla_tri_color",
   "petg",
   "abs",
-  "asa",
   "tpu",
-  "nylon",
-  "pva",
 ] as const;
 
 export const brandFormSchema = z.object({
@@ -28,6 +24,11 @@ export const brandFormSchema = z.object({
   avgPriceMax: optionalNumberInput,
   filamentTypes: z.array(z.enum(filamentTypeOptions)).optional(),
   bestColors: z.array(z.string().trim().min(1)).optional(),
+  color: z
+    .string()
+    .trim()
+    .refine((value) => value === "" || /^#[0-9a-fA-F]{6}$/.test(value), "Cor inválida")
+    .optional(),
   purchased: z.boolean().optional(),
   notes: z.string().trim().optional(),
 });
