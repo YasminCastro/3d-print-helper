@@ -29,7 +29,7 @@ export default async function FilamentsPage() {
           </CardHeader>
         </Card>
       ) : (
-        <FilamentsPageContent filaments={sortedFilaments} brandOptions={brandOptions} />
+        <FilamentsPageContent filaments={sortedFilaments} />
       )}
     </div>
   );

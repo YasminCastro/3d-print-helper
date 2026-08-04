@@ -1,12 +1,9 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
 import { Layers, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FilamentDetailsDialog } from "@/components/filament-details-dialog";
 import { StarRatingDisplay } from "@/components/star-rating-display";
 import { availabilityColors, availabilityLabels } from "@/components/filament-form-fields";
 import { filamentTypeColors, filamentTypeLabels } from "@/components/brand-form-fields";
@@ -33,32 +30,16 @@ function formatPriceRange(filament: FilamentWithBrand) {
   return currencyFormatter.format(filament.min_price_paid ?? filament.max_price_paid!);
 }
 
-export function FilamentCard({
-  filament,
-  brandOptions,
-}: {
-  filament: FilamentWithBrand;
-  brandOptions: { id: number; name: string }[];
-}) {
-  const [open, setOpen] = useState(false);
+export function FilamentCard({ filament }: { filament: FilamentWithBrand }) {
   const priceRange = formatPriceRange(filament);
   const material = filament.material as (typeof filamentTypeOptions)[number] | null;
   const availability = filament.availability as (typeof availabilityOptions)[number] | null;
   const AvailabilityIcon = availability ? availabilityIcons[availability] : null;
 
   return (
-    <>
+    <Link href={`/filaments/${filament.id}`} className="block h-full">
       <Card
-        role="button"
-        tabIndex={0}
-        onClick={() => setOpen(true)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            setOpen(true);
-          }
-        }}
-        className="cursor-pointer transition hover:ring-primary/40"
+        className="flex h-full flex-col cursor-pointer transition hover:ring-primary/40"
       >
         <CardHeader className="flex-row items-center gap-2 space-y-0">
           <CardTitle className="flex items-center gap-1.5 text-base">
@@ -95,12 +76,6 @@ export function FilamentCard({
           </CardContent>
         )}
       </Card>
-      <FilamentDetailsDialog
-        filament={filament}
-        brandOptions={brandOptions}
-        open={open}
-        onOpenChange={setOpen}
-      />
-    </>
+    </Link>
   );
 }

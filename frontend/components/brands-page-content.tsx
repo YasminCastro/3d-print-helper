@@ -12,16 +12,7 @@ import { BrandCard } from "@/components/brand-card";
 import { costBenefitLabels, filamentTypeLabels } from "@/components/brand-form-fields";
 import { brandAveragePrice } from "@/lib/cost-benefit";
 import { costBenefitOptions, filamentTypeOptions } from "@/lib/schemas/brand";
-import type { FilamentBrand } from "@/lib/types/brand";
-
-export type BrandListItem = {
-  brand: FilamentBrand;
-  costBenefit: (typeof costBenefitOptions)[number] | null;
-  priceMin: number | null;
-  priceMax: number | null;
-  filamentRating: number | null;
-  filamentRatingCount: number;
-};
+import type { BrandListItem } from "@/lib/brand-helpers";
 
 function toggleInSet(set: Set<string>, value: string) {
   const next = new Set(set);

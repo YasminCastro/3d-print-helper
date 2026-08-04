@@ -31,10 +31,8 @@ function filamentAveragePrice(filament: FilamentWithBrand) {
 
 export function FilamentsPageContent({
   filaments,
-  brandOptions,
 }: {
   filaments: FilamentWithBrand[];
-  brandOptions: { id: number; name: string }[];
 }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -245,7 +243,7 @@ export function FilamentsPageContent({
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((filament) => (
-            <FilamentCard key={filament.id} filament={filament} brandOptions={brandOptions} />
+            <FilamentCard key={filament.id} filament={filament} />
           ))}
         </div>
       )}

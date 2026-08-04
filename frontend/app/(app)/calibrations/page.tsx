@@ -36,7 +36,7 @@ export default async function CalibrationsPage() {
           </CardHeader>
         </Card>
       ) : (
-        <CalibrationsPageContent calibrations={calibrations} filamentOptions={filamentOptions} />
+        <CalibrationsPageContent calibrations={calibrations} />
       )}
     </div>
   );

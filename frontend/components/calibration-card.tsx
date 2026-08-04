@@ -1,10 +1,7 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
 import { Gauge } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalibrationDetailsDialog } from "@/components/calibration-details-dialog";
 import {
   calibrationStatusColors,
   calibrationStatusLabels,
@@ -12,7 +9,6 @@ import {
 } from "@/components/calibration-form-fields";
 import type { calibrationStatusOptions, slicerOptions } from "@/lib/schemas/calibration";
 import type { CalibrationWithFilament } from "@/lib/types/calibration";
-import type { FilamentOption } from "@/lib/types/filament";
 
 const dateFormatter = new Intl.DateTimeFormat("pt-BR", { timeZone: "UTC" });
 
@@ -23,32 +19,14 @@ function formatDate(value: string | null) {
   return dateFormatter.format(date);
 }
 
-export function CalibrationCard({
-  calibration,
-  filamentOptions,
-}: {
-  calibration: CalibrationWithFilament;
-  filamentOptions: FilamentOption[];
-}) {
-  const [open, setOpen] = useState(false);
+export function CalibrationCard({ calibration }: { calibration: CalibrationWithFilament }) {
   const slicer = calibration.slicer as (typeof slicerOptions)[number];
   const status = calibration.status as (typeof calibrationStatusOptions)[number] | null;
   const date = formatDate(calibration.calibration_date);
 
   return (
-    <>
-      <Card
-        role="button"
-        tabIndex={0}
-        onClick={() => setOpen(true)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            setOpen(true);
-          }
-        }}
-        className="cursor-pointer transition hover:ring-primary/40"
-      >
+    <Link href={`/calibrations/${calibration.id}`} className="block h-full">
+      <Card className="flex h-full flex-col cursor-pointer transition hover:ring-primary/40">
         <CardHeader className="flex-row items-center gap-2 space-y-0">
           <CardTitle className="flex items-center gap-1.5 text-base">
             <span
@@ -75,12 +53,6 @@ export function CalibrationCard({
           )}
         </CardContent>
       </Card>
-      <CalibrationDetailsDialog
-        calibration={calibration}
-        filamentOptions={filamentOptions}
-        open={open}
-        onOpenChange={setOpen}
-      />
-    </>
+    </Link>
   );
 }

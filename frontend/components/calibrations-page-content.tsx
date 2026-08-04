@@ -15,7 +15,6 @@ import {
 } from "@/components/calibration-form-fields";
 import { calibrationStatusOptions, slicerOptions } from "@/lib/schemas/calibration";
 import type { CalibrationWithFilament } from "@/lib/types/calibration";
-import type { FilamentOption } from "@/lib/types/filament";
 
 function toggleInSet(set: Set<string>, value: string) {
   const next = new Set(set);
@@ -26,10 +25,8 @@ function toggleInSet(set: Set<string>, value: string) {
 
 export function CalibrationsPageContent({
   calibrations,
-  filamentOptions,
 }: {
   calibrations: CalibrationWithFilament[];
-  filamentOptions: FilamentOption[];
 }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -132,11 +129,7 @@ export function CalibrationsPageContent({
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((calibration) => (
-            <CalibrationCard
-              key={calibration.id}
-              calibration={calibration}
-              filamentOptions={filamentOptions}
-            />
+            <CalibrationCard key={calibration.id} calibration={calibration} />
           ))}
         </div>
       )}

@@ -1,18 +1,15 @@
-"use client";
-
-import { useState } from "react";
+import Link from "next/link";
 import { Package, CheckCircle2 } from "lucide-react";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { BrandDetailsDialog } from "@/components/brand-details-dialog";
 import { StarRatingDisplay } from "@/components/star-rating-display";
 import {
   costBenefitLabels,
   filamentTypeColors,
   filamentTypeLabels,
 } from "@/components/brand-form-fields";
-import type { costBenefitOptions, filamentTypeOptions } from "@/lib/schemas/brand";
+import type { costBenefitOptions } from "@/lib/schemas/brand";
 import type { FilamentBrand } from "@/lib/types/brand";
 
 const currencyFormatter = new Intl.NumberFormat("pt-BR", {
@@ -43,7 +40,6 @@ export function BrandCard({
   filamentRating: number | null;
   filamentRatingCount: number;
 }) {
-  const [open, setOpen] = useState(false);
   const priceRange = formatPriceRange(priceMin, priceMax);
   const filamentTypes = [...brand.filamentTypes].sort((a, b) =>
     filamentTypeLabels[a].localeCompare(filamentTypeLabels[b])
@@ -51,19 +47,8 @@ export function BrandCard({
   const bestColors = [...brand.bestColors].sort((a, b) => a.localeCompare(b));
 
   return (
-    <>
-      <Card
-        role="button"
-        tabIndex={0}
-        onClick={() => setOpen(true)}
-        onKeyDown={(event) => {
-          if (event.key === "Enter" || event.key === " ") {
-            event.preventDefault();
-            setOpen(true);
-          }
-        }}
-        className="cursor-pointer transition hover:ring-primary/40"
-      >
+    <Link href={`/brands/${brand.id}`} className="block h-full">
+      <Card className="flex h-full flex-col cursor-pointer transition hover:ring-primary/40">
         <CardHeader className="flex-row items-center gap-2 space-y-0">
           <CardTitle className="flex items-center gap-1.5 text-base">
             <Package className="size-4 shrink-0 text-primary" />
@@ -121,16 +106,6 @@ export function BrandCard({
           </CardContent>
         )}
       </Card>
-      <BrandDetailsDialog
-        brand={brand}
-        costBenefit={costBenefit}
-        priceMin={priceMin}
-        priceMax={priceMax}
-        filamentRating={filamentRating}
-        filamentRatingCount={filamentRatingCount}
-        open={open}
-        onOpenChange={setOpen}
-      />
-    </>
+    </Link>
   );
 }
