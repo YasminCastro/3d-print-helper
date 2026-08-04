@@ -13,6 +13,7 @@ export const STAT_COLOR_CLASSES = {
   red: "bg-red-500/15 text-red-600 dark:text-red-400",
   yellow: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
   lime: "bg-lime-500/15 text-lime-600 dark:text-lime-400",
+  gray: "bg-muted text-muted-foreground",
 } as const;
 
 export type StatColor = keyof typeof STAT_COLOR_CLASSES;

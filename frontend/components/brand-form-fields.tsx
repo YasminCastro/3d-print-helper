@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
   CheckCircle2Icon,
+  InfoIcon,
   LayersIcon,
   NotebookTextIcon,
   PackageIcon,
@@ -20,6 +21,11 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   Field,
   FieldContent,
   FieldDescription,
@@ -33,11 +39,17 @@ import {
   filamentTypeOptions,
   type BrandFormInput,
 } from "@/lib/schemas/brand";
-import { filamentTypeColors, filamentTypeLabels } from "@/lib/filament-type-labels";
+import {
+  filamentTypeColors,
+  filamentTypeLabels,
+} from "@/lib/filament-type-labels";
 
 export { filamentTypeColors, filamentTypeLabels };
 
-export const costBenefitLabels: Record<(typeof costBenefitOptions)[number], string> = {
+export const costBenefitLabels: Record<
+  (typeof costBenefitOptions)[number],
+  string
+> = {
   baixo: "Baixo",
   moderado: "Moderado",
   bom: "Bom",
@@ -51,88 +63,103 @@ export function BrandFormFields({
 }) {
   return (
     <FieldGroup>
-      <Field data-invalid={!!form.formState.errors.name}>
-        <FieldLabel htmlFor="brand-name">
-          <FieldIcon icon={PackageIcon} color="chart-1" />
-          Nome
-        </FieldLabel>
-        <FieldContent>
-          <Input id="brand-name" placeholder="Ex: Voolt3D" {...form.register("name")} />
-          <FieldError errors={[form.formState.errors.name]} />
-        </FieldContent>
-      </Field>
-
-      <Field data-invalid={!!form.formState.errors.whereToBuy}>
-        <FieldLabel htmlFor="brand-where">
-          <FieldIcon icon={StoreIcon} color="chart-2" />
-          Onde compra
-        </FieldLabel>
-        <FieldContent>
-          <Input
-            id="brand-where"
-            placeholder="Ex: Mercado Livre, site próprio"
-            {...form.register("whereToBuy")}
-          />
-          <FieldError errors={[form.formState.errors.whereToBuy]} />
-        </FieldContent>
-      </Field>
-
-      <Field>
-        <FieldContent>
-          <label htmlFor="brand-purchased" className="flex items-center gap-2 text-sm">
-            <Checkbox
-              id="brand-purchased"
-              checked={form.watch("purchased") ?? false}
-              onCheckedChange={(checked) => form.setValue("purchased", checked === true)}
-            />
-            <FieldIcon icon={CheckCircle2Icon} color="chart-3" />
-            Já comprei dessa marca
-          </label>
-        </FieldContent>
-      </Field>
-
-      <Field data-invalid={!!form.formState.errors.color}>
-        <FieldLabel htmlFor="brand-color">
-          <FieldIcon icon={PaintbrushIcon} color="chart-5" />
-          Cor da marca
-        </FieldLabel>
-        <FieldContent>
-          <div className="flex items-center gap-2">
-            <input
-              id="brand-color"
-              type="color"
-              className="h-9 w-12 shrink-0 cursor-pointer rounded-md border bg-transparent p-1"
-              value={form.watch("color") || "#6366f1"}
-              onChange={(event) => form.setValue("color", event.target.value)}
-            />
+      <div className="flex gap-4">
+        <Field className="flex-2" data-invalid={!!form.formState.errors.name}>
+          <FieldLabel htmlFor="brand-name">
+            <FieldIcon icon={PackageIcon} color="chart-1" />
+            Nome
+          </FieldLabel>
+          <FieldContent>
             <Input
-              placeholder="#6366f1"
-              className="max-w-32"
-              {...form.register("color")}
+              id="brand-name"
+              placeholder="Ex: Voolt3D"
+              {...form.register("name")}
             />
-            {form.watch("color") && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => form.setValue("color", "")}
-              >
-                Limpar
-              </Button>
-            )}
-          </div>
-          <FieldDescription>
-            Usada para colorir o ícone da marca. Se não for definida, uma cor aleatória é usada.
-          </FieldDescription>
-          <FieldError errors={[form.formState.errors.color]} />
-        </FieldContent>
-      </Field>
+            <FieldError errors={[form.formState.errors.name]} />
+          </FieldContent>
+        </Field>
+
+        <Field className="flex-1" data-invalid={!!form.formState.errors.color}>
+          <FieldLabel htmlFor="brand-color">
+            <FieldIcon icon={PaintbrushIcon} color="chart-5" />
+            Cor da marca
+          </FieldLabel>
+          <FieldContent>
+            <div className="flex items-center gap-2">
+              <input
+                id="brand-color"
+                type="color"
+                className="h-9 w-12 shrink-0 cursor-pointer rounded-md border bg-transparent p-1"
+                value={form.watch("color") || "#6366f1"}
+                onChange={(event) => form.setValue("color", event.target.value)}
+              />
+              <Input placeholder="#6366f1" {...form.register("color")} />
+            </div>
+            <FieldError errors={[form.formState.errors.color]} />
+          </FieldContent>
+        </Field>
+      </div>
+
+      <div className="flex gap-4">
+        <Field
+          className="flex-2"
+          data-invalid={!!form.formState.errors.whereToBuy}
+        >
+          <FieldLabel htmlFor="brand-where">
+            <FieldIcon icon={StoreIcon} color="chart-2" />
+            Onde compra
+          </FieldLabel>
+          <FieldContent>
+            <Input
+              id="brand-where"
+              placeholder="Ex: Mercado Livre, site próprio"
+              {...form.register("whereToBuy")}
+            />
+            <FieldError errors={[form.formState.errors.whereToBuy]} />
+          </FieldContent>
+        </Field>
+
+        <Field className="flex-1">
+          <FieldLabel aria-hidden className="invisible">
+            Espaçador
+          </FieldLabel>
+          <FieldContent>
+            <label
+              htmlFor="brand-purchased"
+              className="flex h-9 items-center gap-2 text-sm"
+            >
+              <Checkbox
+                id="brand-purchased"
+                className="border-2 border-muted-foreground"
+                checked={form.watch("purchased") ?? false}
+                onCheckedChange={(checked) =>
+                  form.setValue("purchased", checked === true)
+                }
+              />
+              <FieldIcon
+                icon={CheckCircle2Icon}
+                color={form.watch("purchased") ? "green" : "gray"}
+              />
+              Já comprei
+            </label>
+          </FieldContent>
+        </Field>
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.avgPriceMin}>
           <FieldLabel htmlFor="brand-price-min">
             <FieldIcon icon={WalletIcon} color="chart-4" />
             Preço mínimo (R$)
+            <Tooltip>
+              <TooltipTrigger
+                render={<InfoIcon className="size-3.5 text-muted-foreground" />}
+              />
+              <TooltipContent>
+                Deixe em branco para usar o menor preço já pago entre os
+                filamentos dessa marca.
+              </TooltipContent>
+            </Tooltip>
           </FieldLabel>
           <FieldContent>
             <Input
@@ -142,9 +169,6 @@ export function BrandFormFields({
               placeholder="Ex: 99"
               {...form.register("avgPriceMin", { valueAsNumber: true })}
             />
-            <FieldDescription>
-              Deixe em branco para usar o menor preço já pago entre os filamentos dessa marca.
-            </FieldDescription>
             <FieldError errors={[form.formState.errors.avgPriceMin]} />
           </FieldContent>
         </Field>
@@ -153,6 +177,15 @@ export function BrandFormFields({
           <FieldLabel htmlFor="brand-price-max">
             <FieldIcon icon={WalletIcon} color="chart-4" />
             Preço máximo (R$)
+            <Tooltip>
+              <TooltipTrigger
+                render={<InfoIcon className="size-3.5 text-muted-foreground" />}
+              />
+              <TooltipContent>
+                Deixe em branco para usar o maior preço já pago entre os
+                filamentos dessa marca.
+              </TooltipContent>
+            </Tooltip>
           </FieldLabel>
           <FieldContent>
             <Input
@@ -162,9 +195,6 @@ export function BrandFormFields({
               placeholder="Ex: 170"
               {...form.register("avgPriceMax", { valueAsNumber: true })}
             />
-            <FieldDescription>
-              Deixe em branco para usar o maior preço já pago entre os filamentos dessa marca.
-            </FieldDescription>
             <FieldError errors={[form.formState.errors.avgPriceMax]} />
           </FieldContent>
         </Field>
@@ -180,7 +210,8 @@ export function BrandFormFields({
             {(() => {
               const selected = form.watch("filamentTypes") ?? [];
               const legacyOptions = selected.filter(
-                (value) => !(filamentTypeOptions as readonly string[]).includes(value)
+                (value) =>
+                  !(filamentTypeOptions as readonly string[]).includes(value),
               );
               const allOptions = [...filamentTypeOptions, ...legacyOptions];
 
@@ -202,20 +233,18 @@ export function BrandFormFields({
                           "filamentTypes",
                           nextChecked
                             ? [...current, option]
-                            : current.filter((value) => value !== option)
+                            : current.filter((value) => value !== option),
                         );
                       }}
                     />
-                    {filamentTypeLabels[option as (typeof filamentTypeOptions)[number]] ?? option}
+                    {filamentTypeLabels[
+                      option as (typeof filamentTypeOptions)[number]
+                    ] ?? option}
                   </label>
                 );
               });
             })()}
           </div>
-          <FieldDescription>
-            Tipos que já estavam marcados mas não fazem mais parte da lista padrão também
-            aparecem aqui — desmarque-os para removê-los da marca.
-          </FieldDescription>
           <FieldError errors={[form.formState.errors.filamentTypes]} />
         </FieldContent>
       </Field>
@@ -279,29 +308,30 @@ function BestColorsField({ form }: { form: UseFormReturn<BrandFormInput> }) {
           </Button>
         </div>
         {colors.length > 0 && (
-          <div className="flex flex-wrap gap-1">
+          <div className="mt-2 flex flex-wrap gap-1">
             {colors.map((color) => (
-              <Badge key={color} variant="secondary" className="gap-1">
+              <Badge
+                key={color}
+                variant="secondary"
+                className="h-7 gap-1.5 px-3 text-sm"
+              >
                 {color}
                 <button
                   type="button"
                   onClick={() =>
                     form.setValue(
                       "bestColors",
-                      colors.filter((value) => value !== color)
+                      colors.filter((value) => value !== color),
                     )
                   }
                   aria-label={`Remover ${color}`}
                 >
-                  <XIcon className="size-3" />
+                  <XIcon className="size-3.5" />
                 </button>
               </Badge>
             ))}
           </div>
         )}
-        <FieldDescription>
-          Cores que você mais gostou ou recomenda dessa marca (se tiver).
-        </FieldDescription>
         <FieldError errors={[form.formState.errors.bestColors]} />
       </FieldContent>
     </Field>

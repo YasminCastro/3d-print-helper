@@ -10,7 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { FilamentCard } from "@/components/filament-card";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
+import { availabilityLabels } from "@/components/filament-form-fields";
 import { filamentTypeOptions } from "@/lib/schemas/brand";
+import { availabilityOptions } from "@/lib/schemas/filament";
 import type { FilamentWithBrand } from "@/lib/types/filament";
 
 function toggleInSet(set: Set<string>, value: string) {
@@ -39,6 +41,7 @@ export function FilamentsPageContent({
   const [brandFilter, setBrandFilter] = useState<Set<string>>(new Set());
   const [colorFilter, setColorFilter] = useState<Set<string>>(new Set());
   const [typeFilter, setTypeFilter] = useState<Set<string>>(new Set());
+  const [availabilityFilter, setAvailabilityFilter] = useState<Set<string>>(new Set());
   const [ratingFilter, setRatingFilter] = useState<Set<string>>(new Set());
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
@@ -80,6 +83,13 @@ export function FilamentsPageContent({
       }
 
       if (
+        availabilityFilter.size > 0 &&
+        (!filament.availability || !availabilityFilter.has(filament.availability))
+      ) {
+        return false;
+      }
+
+      if (
         ratingFilter.size > 0 &&
         (filament.rating == null || !ratingFilter.has(String(filament.rating)))
       ) {
@@ -95,12 +105,23 @@ export function FilamentsPageContent({
 
       return true;
     });
-  }, [filaments, search, brandFilter, colorFilter, typeFilter, ratingFilter, priceMin, priceMax]);
+  }, [
+    filaments,
+    search,
+    brandFilter,
+    colorFilter,
+    typeFilter,
+    availabilityFilter,
+    ratingFilter,
+    priceMin,
+    priceMax,
+  ]);
 
   const activeFilterCount =
     brandFilter.size +
     colorFilter.size +
     typeFilter.size +
+    availabilityFilter.size +
     ratingFilter.size +
     (priceMin.trim() ? 1 : 0) +
     (priceMax.trim() ? 1 : 0);
@@ -181,6 +202,25 @@ export function FilamentsPageContent({
                     onCheckedChange={() => setTypeFilter((prev) => toggleInSet(prev, option))}
                   />
                   {filamentTypeLabels[option]}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              Disponibilidade
+            </span>
+            <div className="mt-2 flex flex-wrap gap-3">
+              {availabilityOptions.map((option) => (
+                <label key={option} className="flex items-center gap-1.5 text-sm">
+                  <Checkbox
+                    checked={availabilityFilter.has(option)}
+                    onCheckedChange={() =>
+                      setAvailabilityFilter((prev) => toggleInSet(prev, option))
+                    }
+                  />
+                  {availabilityLabels[option]}
                 </label>
               ))}
             </div>
