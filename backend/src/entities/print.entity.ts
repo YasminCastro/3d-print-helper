@@ -34,6 +34,7 @@ export interface PrintPersistenceData {
   printCost?: number | null;
   saleValue?: number | null;
   saleValueWorstCase?: number | null;
+  saleValueActual?: number | null;
   createdAt?: Date;
   userId: string;
   filaments?: { id: number; position: number; filamentId: number | null; grams: number | null }[];
@@ -49,6 +50,7 @@ export interface PrintCreateData {
   printerId?: number | null;
   printLink?: string | null;
   profitPercent?: number | null;
+  saleValueActual?: number | null;
   userId: string;
   filaments?: PrintFilamentInput[];
 }
@@ -73,6 +75,7 @@ export class Print {
     private _printCost: number | null,
     private _saleValue: number | null,
     private _saleValueWorstCase: number | null,
+    private _saleValueActual: number | null,
     private readonly _userId: string,
     private _filaments: PrintFilamentData[],
     private readonly _createdAt: Date = new Date(),
@@ -98,6 +101,7 @@ export class Print {
       null,
       null,
       null,
+      data.saleValueActual ?? null,
       data.userId,
       Print.buildFilaments(data.filaments),
     );
@@ -121,6 +125,7 @@ export class Print {
       data.printCost ?? null,
       data.saleValue ?? null,
       data.saleValueWorstCase ?? null,
+      data.saleValueActual ?? null,
       data.userId,
       (data.filaments ?? [])
         .slice()
@@ -180,6 +185,7 @@ export class Print {
     if (data.printerId !== undefined) this._printerId = Print.validatePositiveId(data.printerId);
     if (data.printLink !== undefined) this._printLink = data.printLink;
     if (data.profitPercent !== undefined) this._profitPercent = data.profitPercent;
+    if (data.saleValueActual !== undefined) this._saleValueActual = data.saleValueActual;
     if (data.filaments !== undefined) this._filaments = Print.buildFilaments(data.filaments);
   }
 
@@ -243,6 +249,9 @@ export class Print {
   get saleValueWorstCase(): number | null {
     return this._saleValueWorstCase;
   }
+  get saleValueActual(): number | null {
+    return this._saleValueActual;
+  }
   get userId(): string {
     return this._userId;
   }
@@ -269,6 +278,7 @@ export class Print {
     printCost: number | null;
     saleValue: number | null;
     saleValueWorstCase: number | null;
+    saleValueActual: number | null;
     userId: string;
   } {
     return {
@@ -287,6 +297,7 @@ export class Print {
       printCost: this._printCost,
       saleValue: this._saleValue,
       saleValueWorstCase: this._saleValueWorstCase,
+      saleValueActual: this._saleValueActual,
       userId: this._userId,
     };
   }
@@ -308,6 +319,7 @@ export class Print {
     printCost: number | null;
     saleValue: number | null;
     saleValueWorstCase: number | null;
+    saleValueActual: number | null;
     createdAt: Date;
     filaments: PrintFilamentData[];
   } {
@@ -328,6 +340,7 @@ export class Print {
       printCost: this._printCost,
       saleValue: this._saleValue,
       saleValueWorstCase: this._saleValueWorstCase,
+      saleValueActual: this._saleValueActual,
       createdAt: this._createdAt,
       filaments: this._filaments,
     };

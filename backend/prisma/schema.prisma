@@ -196,6 +196,7 @@ model Print {
   printCost          Float?   @map("print_cost")
   saleValue          Float?   @map("sale_value")
   saleValueWorstCase Float?   @map("sale_value_worst_case")
+  saleValueActual    Float?   @map("sale_value_actual")
   createdAt          DateTime @default(now()) @map("created_at")
   userId             String   @map("user_id")
 

@@ -13,6 +13,12 @@ export const STAT_COLOR_CLASSES = {
   red: "bg-red-500/15 text-red-600 dark:text-red-400",
   yellow: "bg-yellow-500/15 text-yellow-600 dark:text-yellow-400",
   lime: "bg-lime-500/15 text-lime-600 dark:text-lime-400",
+  blue: "bg-blue-500/15 text-blue-600 dark:text-blue-400",
+  purple: "bg-purple-500/15 text-purple-600 dark:text-purple-400",
+  pink: "bg-pink-500/15 text-pink-600 dark:text-pink-400",
+  orange: "bg-orange-500/15 text-orange-600 dark:text-orange-400",
+  teal: "bg-teal-500/15 text-teal-600 dark:text-teal-400",
+  indigo: "bg-indigo-500/15 text-indigo-600 dark:text-indigo-400",
   gray: "bg-muted text-muted-foreground",
 } as const;
 

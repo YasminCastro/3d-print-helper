@@ -21,6 +21,7 @@ export type Print = {
   print_cost: number | null;
   sale_value: number | null;
   sale_value_worst_case: number | null;
+  sale_value_actual: number | null;
   created_at: string;
 };
 

@@ -28,12 +28,12 @@ import { LogoutButton } from "@/components/logout-button";
 
 const NAV_ITEMS = [
   { title: "Início", url: "/", icon: LayoutDashboard },
+  { title: "Impressões", url: "/prints", icon: Images },
+  { title: "Filamentos", url: "/filaments", icon: Layers },
+  { title: "Diário", url: "/journal", icon: NotebookText },
+  { title: "Calibrações", url: "/calibrations", icon: Gauge },
   { title: "Impressoras", url: "/printers", icon: Printer },
   { title: "Marcas", url: "/brands", icon: Package },
-  { title: "Filamentos", url: "/filaments", icon: Layers },
-  { title: "Calibrações", url: "/calibrations", icon: Gauge },
-  { title: "Diário", url: "/journal", icon: NotebookText },
-  { title: "Impressões", url: "/prints", icon: Images },
 ];
 
 export function AppSidebar({ isLoggedIn }: { isLoggedIn: boolean }) {

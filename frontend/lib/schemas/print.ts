@@ -29,6 +29,7 @@ export const printFormSchema = z.object({
   filaments: z.array(printFilamentSchema).optional(),
   printLink: z.string().trim().optional(),
   profitPercent: optionalNumberInput,
+  saleValueActual: optionalNumberInput,
 });
 
 export type PrintFormInput = z.input<typeof printFormSchema>;

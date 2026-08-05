@@ -38,6 +38,7 @@ function buildDefaultValues(
     filaments: [],
     printLink: "",
     profitPercent: lastProfitPercent ?? 100,
+    saleValueActual: undefined,
   };
 }
 
@@ -85,6 +86,8 @@ export function PrintFormDialog({
       if (values.printLink) formData.append("printLink", values.printLink);
       if (values.profitPercent !== undefined)
         formData.append("profitPercent", String(values.profitPercent));
+      if (values.saleValueActual !== undefined)
+        formData.append("saleValueActual", String(values.saleValueActual));
       if (photoFile) formData.append("photo", photoFile);
 
       await createPrintAction(formData);

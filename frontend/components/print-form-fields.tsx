@@ -5,6 +5,7 @@ import {
   CalendarIcon,
   CircleCheckIcon,
   ClockIcon,
+  CoinsIcon,
   ImageIcon,
   LayersIcon,
   LinkIcon,
@@ -26,6 +27,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Combobox,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxInputGroup,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+} from "@/components/ui/combobox";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { PrintPhotoPicker } from "@/components/print-photo-picker";
 import {
@@ -52,6 +64,8 @@ function filamentOptionLabel(filament: FilamentOption) {
   if (filament.brand_name) parts.push(filament.brand_name);
   return parts.join(" - ");
 }
+
+type FilamentComboItem = { value: string; label: string };
 
 export const printStatusLabels: Record<(typeof printStatusOptions)[number], string> = {
   fila: "Fila",
@@ -111,6 +125,15 @@ export function PrintFormFields({
     control: form.control,
     name: "filaments",
   });
+
+  const sortedFilamentOptions = [...filamentOptions].sort((a, b) =>
+    a.name.localeCompare(b.name, "pt-BR")
+  );
+
+  const filamentItems: FilamentComboItem[] = sortedFilamentOptions.map((filament) => ({
+    value: String(filament.id),
+    label: filamentOptionLabel(filament),
+  }));
 
   return (
     <FieldGroup>
@@ -278,7 +301,7 @@ export function PrintFormFields({
         </FieldContent>
       </Field>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-3 gap-4">
         <Field data-invalid={!!form.formState.errors.printerId}>
           <FieldLabel htmlFor="print-printer">
             <FieldIcon icon={PrinterIcon} color="chart-2" />
@@ -324,6 +347,23 @@ export function PrintFormFields({
             <FieldError errors={[form.formState.errors.profitPercent]} />
           </FieldContent>
         </Field>
+
+        <Field data-invalid={!!form.formState.errors.saleValueActual}>
+          <FieldLabel htmlFor="print-sale-value-actual">
+            <FieldIcon icon={CoinsIcon} color="chart-4" />
+            Preço real de venda
+          </FieldLabel>
+          <FieldContent>
+            <Input
+              id="print-sale-value-actual"
+              type="number"
+              step="any"
+              placeholder="Ex: 45.00"
+              {...form.register("saleValueActual", { valueAsNumber: true })}
+            />
+            <FieldError errors={[form.formState.errors.saleValueActual]} />
+          </FieldContent>
+        </Field>
       </div>
 
       <Field>
@@ -336,33 +376,47 @@ export function PrintFormFields({
             {fields.map((field, index) => (
               <div key={field.id} className="flex items-start gap-2">
                 <div className="flex-1">
-                  <Select
-                    items={filamentOptions.map((filament) => ({
-                      value: String(filament.id),
-                      label: filamentOptionLabel(filament),
-                    }))}
-                    value={form.watch(`filaments.${index}.filamentId`) ?? ""}
-                    onValueChange={(value) =>
-                      form.setValue(`filaments.${index}.filamentId`, value ?? "")
+                  <Combobox
+                    items={filamentItems}
+                    value={
+                      filamentItems.find(
+                        (item) => item.value === form.watch(`filaments.${index}.filamentId`)
+                      ) ?? null
+                    }
+                    onValueChange={(item) =>
+                      form.setValue(
+                        `filaments.${index}.filamentId`,
+                        (item as FilamentComboItem | null)?.value ?? ""
+                      )
                     }
                   >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Selecione o filamento" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {filamentOptions.map((filament) => (
-                        <SelectItem key={filament.id} value={String(filament.id)}>
-                          <span className="flex items-center gap-2">
-                            <span
-                              className="size-3.5 shrink-0 rounded-full border"
-                              style={{ backgroundColor: filament.color ?? "#a1a1aa" }}
-                            />
-                            {filamentOptionLabel(filament)}
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <ComboboxInputGroup>
+                      <ComboboxInput placeholder="Pesquisar filamento..." />
+                      <ComboboxClear aria-label="Limpar seleção" />
+                      <ComboboxTrigger aria-label="Abrir lista" />
+                    </ComboboxInputGroup>
+                    <ComboboxContent>
+                      <ComboboxEmpty>Nenhum filamento encontrado.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(item: FilamentComboItem) => {
+                          const filament = sortedFilamentOptions.find(
+                            (option) => String(option.id) === item.value
+                          );
+                          return (
+                            <ComboboxItem key={item.value} value={item}>
+                              <span className="flex items-center gap-2">
+                                <span
+                                  className="size-3.5 shrink-0 rounded-full border"
+                                  style={{ backgroundColor: filament?.color ?? "#a1a1aa" }}
+                                />
+                                {item.label}
+                              </span>
+                            </ComboboxItem>
+                          );
+                        }}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
                 </div>
                 <Input
                   type="number"

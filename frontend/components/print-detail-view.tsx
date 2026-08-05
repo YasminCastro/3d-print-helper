@@ -17,6 +17,7 @@ import {
   PencilIcon,
   Printer as PrinterIcon,
   ReceiptIcon,
+  Scale,
   TagIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
@@ -49,6 +50,7 @@ import {
 import {
   PrintFormFields,
   printResultLabels,
+  printStatusColors,
   printStatusLabels,
 } from "@/components/print-form-fields";
 import type {
@@ -68,11 +70,6 @@ import { PrinterStatCard, type StatColor } from "@/components/printer-stat-card"
 const statusIcons: Record<(typeof printStatusOptions)[number], typeof CheckCircle2> = {
   fila: HourglassIcon,
   pronto: CheckCircle2,
-};
-
-const statusStatColors: Record<(typeof printStatusOptions)[number], StatColor> = {
-  fila: "yellow",
-  pronto: "green",
 };
 
 const resultIcons: Record<(typeof printResultOptions)[number], typeof ThumbsUpIcon> = {
@@ -118,6 +115,7 @@ function toFormValues(print: PrintWithDetails): PrintFormInput {
     })),
     printLink: print.print_link ?? "",
     profitPercent: print.profit_percent ?? 100,
+    saleValueActual: print.sale_value_actual ?? undefined,
   };
 }
 
@@ -179,6 +177,8 @@ export function PrintDetailView({
       if (values.printLink) formData.append("printLink", values.printLink);
       if (values.profitPercent !== undefined)
         formData.append("profitPercent", String(values.profitPercent));
+      if (values.saleValueActual !== undefined)
+        formData.append("saleValueActual", String(values.saleValueActual));
       if (photoFile) formData.append("photo", photoFile);
 
       await updatePrintAction(print.id, formData);
@@ -202,6 +202,11 @@ export function PrintDetailView({
 
   const status = print.status as (typeof printStatusOptions)[number] | null;
   const result = print.result as (typeof printResultOptions)[number] | null;
+
+  const totalGramsUsed = print.filaments.reduce(
+    (sum, filament) => sum + (filament.grams ?? 0),
+    0
+  );
 
   const filamentCostTotal = totalFilamentCost(
     print.filaments.map((filament) => ({
@@ -256,7 +261,7 @@ export function PrintDetailView({
   });
 
   return (
-    <div className="flex h-[calc(100svh-5.5rem)] flex-col gap-4">
+    <div className={cn("flex flex-col gap-4", !isEditing && "h-[calc(100svh-5.5rem)]")}>
       <div className="flex items-center justify-between">
         <Link
           href="/prints"
@@ -307,7 +312,7 @@ export function PrintDetailView({
       </div>
 
       {isEditing ? (
-        <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+        <div className="flex flex-col gap-4 pb-4">
           <div className="flex items-center gap-4 rounded-xl bg-linear-to-br from-primary/15 via-primary/5 to-transparent p-5 ring-1 ring-foreground/10">
             <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary">
               <PencilIcon className="size-6" />
@@ -370,7 +375,19 @@ export function PrintDetailView({
                 <BoxIcon className="size-7" />
               </div>
               <div className="min-w-0">
-                <h1 className="truncate text-xl font-semibold">{print.name}</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="truncate text-xl font-semibold">{print.name}</h1>
+                  {status && (
+                    <span title={printStatusLabels[status]}>
+                      {(() => {
+                        const StatusIcon = statusIcons[status];
+                        return (
+                          <StatusIcon className={cn("size-5 shrink-0", printStatusColors[status])} />
+                        );
+                      })()}
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Impresso em{" "}
                   {print.print_date
@@ -386,27 +403,38 @@ export function PrintDetailView({
               </h2>
               <div className="grid grid-cols-2 gap-3">
                 <PrinterStatCard
+                  className="col-span-2"
+                  icon={CoinsIcon}
+                  label="Preço real de venda"
+                  color="green"
+                  value={
+                    print.sale_value_actual != null
+                      ? currencyFormatter.format(print.sale_value_actual)
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
                   icon={WalletIcon}
                   label={`Venda (${effectiveProfitPercent}% lucro)`}
-                  color="chart-4"
+                  color="yellow"
                   value={currencyFormatter.format(saleValueTotal)}
                 />
                 <PrinterStatCard
                   icon={TrendingDownIcon}
                   label="Venda (pior cenário)"
-                  color="chart-5"
+                  color="yellow"
                   value={currencyFormatter.format(saleValueWorstCase)}
                 />
                 <PrinterStatCard
                   icon={ReceiptIcon}
                   label="Preço de custo"
-                  color="chart-2"
+                  color="red"
                   value={currencyFormatter.format(printCostTotal)}
                 />
                 <PrinterStatCard
                   icon={CoinsIcon}
                   label="Preço do filamento"
-                  color="chart-1"
+                  color="red"
                   value={currencyFormatter.format(filamentCostTotal)}
                 />
               </div>
@@ -420,25 +448,27 @@ export function PrintDetailView({
                 <PrinterStatCard
                   icon={ClockIcon}
                   label="Tempo de impressão"
-                  color="chart-3"
+                  color="blue"
                   value={formatDuration(print.duration_minutes) ?? "—"}
                 />
-                <PrinterStatCard
-                  icon={status ? statusIcons[status] : HourglassIcon}
-                  label="Status"
-                  color={status ? statusStatColors[status] : "chart-3"}
-                  value={status ? printStatusLabels[status] : "—"}
-                />
+                {print.filaments.length > 0 && (
+                  <PrinterStatCard
+                    icon={Scale}
+                    label="Total de filamento usado"
+                    color="teal"
+                    value={`${totalGramsUsed} g`}
+                  />
+                )}
                 <PrinterStatCard
                   icon={result ? resultIcons[result] : ThumbsUpIcon}
                   label="Resultado"
-                  color={result ? resultStatColors[result] : "chart-3"}
+                  color={result ? resultStatColors[result] : "gray"}
                   value={result ? printResultLabels[result] : "—"}
                 />
                 <PrinterStatCard
                   icon={TagIcon}
                   label="Categoria"
-                  color="chart-2"
+                  color="purple"
                   value={
                     print.category_name ? (
                       <Badge
@@ -458,13 +488,13 @@ export function PrintDetailView({
                 <PrinterStatCard
                   icon={PrinterIcon}
                   label="Impressora"
-                  color="chart-2"
+                  color="orange"
                   value={print.printer_name ?? "—"}
                 />
                 <PrinterStatCard
                   icon={LinkIcon}
                   label="Link"
-                  color="chart-2"
+                  color="indigo"
                   value={
                     print.print_link ? (
                       <a

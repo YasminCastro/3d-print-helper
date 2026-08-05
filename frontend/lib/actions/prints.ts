@@ -28,6 +28,7 @@ type ApiPrint = {
   printCost: number | null;
   saleValue: number | null;
   saleValueWorstCase: number | null;
+  saleValueActual: number | null;
   createdAt: string;
   filaments: ApiPrintFilament[];
 };
@@ -60,6 +61,7 @@ function toDomain(api: ApiPrint): PrintWithFilaments {
     print_cost: api.printCost,
     sale_value: api.saleValue,
     sale_value_worst_case: api.saleValueWorstCase,
+    sale_value_actual: api.saleValueActual,
     created_at: api.createdAt,
     filaments: api.filaments.map((filament, index) => ({
       filament_id: filament.filamentId,
@@ -131,6 +133,7 @@ async function parseFields(formData: FormData) {
   const printerIdRaw = String(formData.get("printerId") ?? "").trim() || null;
   const printLink = String(formData.get("printLink") ?? "").trim() || null;
   const profitPercent = parseNumber(formData.get("profitPercent"));
+  const saleValueActual = parseNumber(formData.get("saleValueActual"));
 
   const durationTotalMinutes =
     durationHours === null && durationMinutes === null
@@ -151,6 +154,7 @@ async function parseFields(formData: FormData) {
     printerId,
     printLink,
     profitPercent,
+    saleValueActual,
     filaments,
   };
 }
@@ -166,6 +170,7 @@ function toPayload(fields: Awaited<ReturnType<typeof parseFields>>) {
     printerId: fields.printerId,
     printLink: fields.printLink,
     profitPercent: fields.profitPercent,
+    saleValueActual: fields.saleValueActual,
     filaments: fields.filaments.map((filament) => ({
       filamentId: filament.filamentId,
       grams: filament.grams,

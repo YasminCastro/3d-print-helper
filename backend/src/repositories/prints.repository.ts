@@ -19,6 +19,7 @@ const printSelect = {
   printCost: true,
   saleValue: true,
   saleValueWorstCase: true,
+  saleValueActual: true,
   createdAt: true,
   userId: true,
   filaments: { select: { id: true, position: true, filamentId: true, grams: true } },
