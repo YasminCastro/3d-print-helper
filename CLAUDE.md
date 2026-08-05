@@ -4,10 +4,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repository layout
 
-This is a monorepo with three independent projects (no shared tooling, no workspace manager):
+This is a monorepo with three projects (no shared tooling, no workspace manager):
 
-- `frontend/` — Next.js 16 app (App Router). This is the actual working application: a self-contained 3D-printing tracker (printers, filaments/brands, calibrations, prints, journal) with its own embedded SQLite database. **It does not call the backend.**
-- `backend/` — Express 5 + TypeScript API boilerplate (DI via `tsyringe`, JWT auth, users CRUD). Currently a standalone scaffold (auth/users only) and not wired to the frontend — no fetch/HTTP calls between the two projects exist today. Treat it as its own project when working in it.
+- `frontend/` — Next.js 16 app (App Router). The UI for a 3D-printing tracker (printers, filaments/brands, calibrations, prints, journal, extra items). Holds no data itself: every domain read/write goes through Server Actions in `lib/actions/*.ts` that call the backend's REST API over HTTP.
+- `backend/` — Express 5 + TypeScript API (DI via `tsyringe`, JWT auth), backed by Postgres via Prisma. Owns all domain data and business logic; the frontend is just a client of it.
 - `mobile/` — empty, not yet started.
 
 Always `cd` into the relevant project directory before running commands; there is no root `package.json`.
@@ -20,16 +20,18 @@ Do not manually test changes by running the app, dev servers, or ad-hoc shell/cu
 
 ## Frontend (`frontend/`)
 
-Architecture: Next.js Server Actions + `better-sqlite3`, no separate API layer.
+Architecture: Next.js Server Actions as a thin client over the backend REST API — no local database, no separate API route layer of its own (aside from binary passthrough routes, see below).
 
-- `lib/db.ts` — single SQLite connection (`data/print-helper.db`). Schema is defined and migrated imperatively at startup via `CREATE TABLE IF NOT EXISTS` + ad-hoc `ALTER TABLE ... ADD COLUMN` checks in this same file (no migration framework). When changing the data model, add both the `CREATE TABLE` column and a corresponding backfill/`ALTER TABLE` block here.
-- `lib/actions/*.ts` — one file per domain entity (printers, filaments, brands, calibrations, prints, journal, settings), each exporting Server Actions that read/write the DB directly and are called from client components.
-- `lib/schemas/*.ts` — Zod schemas per entity, used for form/action validation.
-- `lib/types/*.ts` — TypeScript types per entity, mirrors the schemas.
-- `lib/print-calculations.ts` / `lib/cost-benefit.ts` — derived-value logic (print cost, sale value, profit) recalculated via `recalculatePrintCalculations`, invoked both on write and during DB backfill in `db.ts`.
-- `app/<entity>/` — route per domain entity; each pairs with a `components/<entity>-page-content.tsx`, `<entity>-card.tsx`, `<entity>-form-dialog.tsx`/`-form-fields.tsx`, `-details-dialog.tsx` set.
+- `lib/backend-url.ts` — builds backend URLs from `BACKEND_API_URL` (e.g. `http://localhost:4000/api/v1`); throws if unset.
+- `lib/backend-fetch.ts` — `backendFetch(path, init)` wraps `fetch`, attaching the `Authorization` cookie as a `Bearer` header. All backend calls should go through this.
+- `lib/actions/*.ts` — one file per domain entity (printers, filaments, brands, calibrations, prints, journal, extra-items, auth), each exporting Server Actions that call `backendFetch` and call `refresh()` (from `next/cache`) after mutations.
+- `lib/schemas/*.ts` — Zod schemas per entity, used for form/action validation before payloads are sent to the backend.
+- `lib/types/*.ts` — TypeScript types per entity, mirroring the backend's DTOs.
+- `lib/print-calculations.ts` / `lib/cost-benefit.ts` — derived-value display logic (print cost, sale value, profit) on the frontend side.
+- `app/<entity>/` — route per domain entity under the `(app)` route group (auth-gated); `(auth)` group holds `login`/`signup`. Each entity pairs with a `components/<entity>-page-content.tsx`, `<entity>-card.tsx`, `<entity>-form-dialog.tsx`/`-form-fields.tsx`, `-details-dialog.tsx` set.
+- `app/journal-photos/[id]/route.ts` and `app/print-photos/[id]/route.ts` — Route Handlers that proxy binary image data (photos stored as bytes in Postgres) from the backend for `<img>` tags.
 - `components/ui/` — shadcn/ui primitives.
-- Prints relate to filaments many-to-many via `print_filaments` (with `grams`/`position`), and to printers/categories many-to-one.
+- Auth: JWT stored in an `Authorization` cookie, set by `lib/actions/auth.ts` and read by `backend-fetch.ts` on every request.
 
 Conventions (from `frontend/AGENTS.md` / `frontend/CLAUDE.md`):
 - Always use **shadcn/ui** for UI components and **lucide-react** for icons.
@@ -42,13 +44,15 @@ npm run build    # production build
 npm run start    # run production build
 npm run lint     # eslint
 ```
-No test suite is currently configured for the frontend.
+No test suite is currently configured for the frontend. Requires `BACKEND_API_URL` set (see `.env.example`) pointing at the backend's `/api/v1` prefix.
 
 ## Backend (`backend/`)
 
 Layered Express structure: `routes` → `controllers` → `services` → `repositories`, with `dtos`/`interfaces`/`entities` for typing and `tsyringe` for dependency injection. Errors flow through `exceptions/httpException.ts` and `middlewares/error.middleware.ts`; requests are validated via `middlewares/validation.middleware.ts`. Swagger docs are generated from JSDoc comments in `src/controllers/*.ts` plus `swagger.yaml`, served at `/api-docs`.
 
-Only `auth` and `users` domains exist so far.
+Data layer: Postgres via Prisma (`prisma/schema.prisma`, migrations in `prisma/migrations/`). Prisma client is generated into `src/generated/prisma/` (custom output path — not the default `node_modules/.prisma`). After editing `schema.prisma`, run `npm run db:generate` then `npm run db:migrate` to create a migration.
+
+Domains: `auth`, `users`, `printers`, `filaments` (+ `filament-brands`), `calibrations`, `journal` (entries/attempts/photos), `prints` (+ `print-categories`, many-to-many `print_filaments`/`print_extra_items`), `extra-items`. All domain records are scoped to the owning `userId` (JWT-authenticated) with `onDelete: Cascade`/`SetNull` relations as appropriate — mirrors the frontend's entity list one-to-one.
 
 Commands (run from `backend/`):
 ```
@@ -61,10 +65,18 @@ npm run format           # biome format --write
 npm test                  # jest --watch (all tests)
 npm run test:unit         # jest --watch, unit tests only (src/test/unit)
 npm run test:e2e          # jest --watch, e2e tests only (src/test/e2e)
+npm run db:generate       # regenerate Prisma client
+npm run db:migrate        # create + apply a dev migration
+npm run db:deploy         # apply pending migrations (prod)
+npm run db:studio         # Prisma Studio
 ```
 To run a single test file, pass a path to jest directly, e.g. `npx jest --config jest.config.cjs src/test/unit/services/users.service.spec.ts` (drop `--watch` for a one-shot run).
 
-Deployment: `Dockerfile.dev`/`Dockerfile.prod`, `docker-compose.yml`, `nginx.conf`, and `ecosystem.config.js` (PM2, via `npm run deploy:dev`/`deploy:prod`) are present for this project.
+Requires `DATABASE_URL` (Postgres) and `SECRET_KEY` (JWT) set — see `.env`. `ORIGIN`/`CORS_ORIGIN_LIST` must include the frontend's URL for CORS to allow it.
+
+## Docker
+
+`docker-compose.yml` at the repo root runs all three pieces together for local dev: `postgres` (data), `backend` (build context `./backend`, `Dockerfile.dev`, port 4000), `frontend` (build context `./frontend`, `Dockerfile.dev`, port 3000). The frontend container talks to the backend via the service name (`http://backend:4000/api/v1`), not `localhost`. Backend also has its own `Dockerfile.prod`, `nginx.conf`, and `ecosystem.config.js` (PM2, via `npm run deploy:dev`/`deploy:prod`) for deployment.
 
 ## graphify
 
