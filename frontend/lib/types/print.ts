@@ -16,6 +16,7 @@ export type Print = {
   category_id: number | null;
   printer_id: number | null;
   print_link: string | null;
+  notes: string | null;
   profit_percent: number | null;
   filament_cost: number | null;
   print_cost: number | null;
@@ -34,6 +35,7 @@ export type PrintFilament = {
 export type PrintFilamentWithDetails = PrintFilament & {
   filament_name: string | null;
   filament_color: string | null;
+  filament_color2: string | null;
   filament_material: string | null;
   filament_min_price_paid: number | null;
   filament_max_price_paid: number | null;

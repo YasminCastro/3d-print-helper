@@ -9,6 +9,7 @@ import {
   ImageIcon,
   LayersIcon,
   LinkIcon,
+  NotebookTextIcon,
   PercentIcon,
   Printer as PrinterIcon,
   PlusIcon,
@@ -20,6 +21,7 @@ import {
 } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -74,6 +76,7 @@ function filamentOptionLabel(filament: FilamentOption) {
 
 type FilamentComboItem = { value: string; label: string };
 type ExtraItemComboItem = { value: string; label: string };
+type CategoryComboItem = { value: string; label: string };
 
 export const printStatusLabels: Record<(typeof printStatusOptions)[number], string> = {
   fila: "Fila",
@@ -161,6 +164,18 @@ export function PrintFormFields({
     value: String(extraItem.id),
     label: `${extraItem.name} - ${currencyFormatter.format(extraItem.cost)}`,
   }));
+
+  const sortedCategoryOptions = [...categoryOptions].sort((a, b) =>
+    a.name.localeCompare(b.name, "pt-BR")
+  );
+
+  const categoryItems: CategoryComboItem[] = [
+    ...sortedCategoryOptions.map((category) => ({
+      value: String(category.id),
+      label: category.name,
+    })),
+    { value: NEW_CATEGORY_VALUE, label: "+ Criar nova categoria" },
+  ];
 
   return (
     <FieldGroup>
@@ -283,39 +298,42 @@ export function PrintFormFields({
           Categoria
         </FieldLabel>
         <FieldContent>
-          <Select
-            items={[
-              ...categoryOptions.map((category) => ({
-                value: String(category.id),
-                label: category.name,
-              })),
-              { value: NEW_CATEGORY_VALUE, label: "+ Criar nova categoria" },
-            ]}
-            value={categoryId ?? ""}
-            onValueChange={(value) => {
-              form.setValue("categoryId", value ?? "");
+          <Combobox
+            items={categoryItems}
+            value={categoryItems.find((item) => item.value === categoryId) ?? null}
+            onValueChange={(item) => {
+              const value = (item as CategoryComboItem | null)?.value ?? "";
+              form.setValue("categoryId", value);
               if (value !== NEW_CATEGORY_VALUE) form.setValue("newCategoryName", "");
             }}
           >
-            <SelectTrigger id="print-category" className="w-full">
-              <SelectValue placeholder="Selecione a categoria" />
-            </SelectTrigger>
-            <SelectContent>
-              {categoryOptions.map((category) => (
-                <SelectItem key={category.id} value={String(category.id)}>
-                  <span className="flex items-center gap-2">
-                    <span
-                      className={`size-2.5 shrink-0 rounded-full ${categoryDotColorClass(category.name)}`}
-                    />
-                    {category.name}
-                  </span>
-                </SelectItem>
-              ))}
-              <SelectItem value={NEW_CATEGORY_VALUE}>
-                + Criar nova categoria
-              </SelectItem>
-            </SelectContent>
-          </Select>
+            <ComboboxInputGroup>
+              <ComboboxInput id="print-category" placeholder="Pesquisar categoria..." />
+              <ComboboxClear aria-label="Limpar seleção" />
+              <ComboboxTrigger aria-label="Abrir lista" />
+            </ComboboxInputGroup>
+            <ComboboxContent>
+              <ComboboxEmpty>Nenhuma categoria encontrada.</ComboboxEmpty>
+              <ComboboxList>
+                {(item: CategoryComboItem) =>
+                  item.value === NEW_CATEGORY_VALUE ? (
+                    <ComboboxItem key={item.value} value={item}>
+                      {item.label}
+                    </ComboboxItem>
+                  ) : (
+                    <ComboboxItem key={item.value} value={item}>
+                      <span className="flex items-center gap-2">
+                        <span
+                          className={`size-2.5 shrink-0 rounded-full ${categoryDotColorClass(item.label)}`}
+                        />
+                        {item.label}
+                      </span>
+                    </ComboboxItem>
+                  )
+                }
+              </ComboboxList>
+            </ComboboxContent>
+          </Combobox>
           <FieldError errors={[form.formState.errors.categoryId]} />
 
           {categoryId === NEW_CATEGORY_VALUE && (
@@ -329,6 +347,40 @@ export function PrintFormFields({
       </Field>
 
       <div className="grid grid-cols-3 gap-4">
+        <Field data-invalid={!!form.formState.errors.saleValueActual}>
+          <FieldLabel htmlFor="print-sale-value-actual">
+            <FieldIcon icon={CoinsIcon} color="chart-4" />
+            Preço real de venda
+          </FieldLabel>
+          <FieldContent>
+            <Input
+              id="print-sale-value-actual"
+              type="number"
+              step="any"
+              placeholder="Ex: 45.00"
+              {...form.register("saleValueActual", { valueAsNumber: true })}
+            />
+            <FieldError errors={[form.formState.errors.saleValueActual]} />
+          </FieldContent>
+        </Field>
+
+        <Field data-invalid={!!form.formState.errors.profitPercent}>
+          <FieldLabel htmlFor="print-profit-percent">
+            <FieldIcon icon={PercentIcon} color="chart-4" />
+            Lucro (%)
+          </FieldLabel>
+          <FieldContent>
+            <Input
+              id="print-profit-percent"
+              type="number"
+              step="any"
+              placeholder="100"
+              {...form.register("profitPercent", { valueAsNumber: true })}
+            />
+            <FieldError errors={[form.formState.errors.profitPercent]} />
+          </FieldContent>
+        </Field>
+
         <Field data-invalid={!!form.formState.errors.printerId}>
           <FieldLabel htmlFor="print-printer">
             <FieldIcon icon={PrinterIcon} color="chart-2" />
@@ -357,41 +409,50 @@ export function PrintFormFields({
             <FieldError errors={[form.formState.errors.printerId]} />
           </FieldContent>
         </Field>
-
-        <Field data-invalid={!!form.formState.errors.profitPercent}>
-          <FieldLabel htmlFor="print-profit-percent">
-            <FieldIcon icon={PercentIcon} color="chart-4" />
-            Lucro (%)
-          </FieldLabel>
-          <FieldContent>
-            <Input
-              id="print-profit-percent"
-              type="number"
-              step="any"
-              placeholder="100"
-              {...form.register("profitPercent", { valueAsNumber: true })}
-            />
-            <FieldError errors={[form.formState.errors.profitPercent]} />
-          </FieldContent>
-        </Field>
-
-        <Field data-invalid={!!form.formState.errors.saleValueActual}>
-          <FieldLabel htmlFor="print-sale-value-actual">
-            <FieldIcon icon={CoinsIcon} color="chart-4" />
-            Preço real de venda
-          </FieldLabel>
-          <FieldContent>
-            <Input
-              id="print-sale-value-actual"
-              type="number"
-              step="any"
-              placeholder="Ex: 45.00"
-              {...form.register("saleValueActual", { valueAsNumber: true })}
-            />
-            <FieldError errors={[form.formState.errors.saleValueActual]} />
-          </FieldContent>
-        </Field>
       </div>
+
+      <Field
+        data-invalid={
+          !!form.formState.errors.durationHours ||
+          !!form.formState.errors.durationMinutes
+        }
+      >
+        <FieldLabel htmlFor="print-duration-hours">
+          <FieldIcon icon={ClockIcon} color="chart-3" />
+          Tempo de impressão
+        </FieldLabel>
+        <FieldContent>
+          <div className="flex items-center gap-2">
+            <Input
+              id="print-duration-hours"
+              type="number"
+              step="1"
+              min="0"
+              placeholder="0"
+              className="w-20"
+              {...form.register("durationHours", { valueAsNumber: true })}
+            />
+            <span className="text-sm text-muted-foreground">h</span>
+            <Input
+              id="print-duration-minutes"
+              type="number"
+              step="1"
+              min="0"
+              max="59"
+              placeholder="0"
+              className="w-20"
+              {...form.register("durationMinutes", { valueAsNumber: true })}
+            />
+            <span className="text-sm text-muted-foreground">min</span>
+          </div>
+          <FieldError
+            errors={[
+              form.formState.errors.durationHours,
+              form.formState.errors.durationMinutes,
+            ]}
+          />
+        </FieldContent>
+      </Field>
 
       <Field>
         <FieldLabel>
@@ -550,49 +611,6 @@ export function PrintFormFields({
         </FieldContent>
       </Field>
 
-      <Field
-        data-invalid={
-          !!form.formState.errors.durationHours ||
-          !!form.formState.errors.durationMinutes
-        }
-      >
-        <FieldLabel htmlFor="print-duration-hours">
-          <FieldIcon icon={ClockIcon} color="chart-3" />
-          Tempo de impressão
-        </FieldLabel>
-        <FieldContent>
-          <div className="flex items-center gap-2">
-            <Input
-              id="print-duration-hours"
-              type="number"
-              step="1"
-              min="0"
-              placeholder="0"
-              className="w-20"
-              {...form.register("durationHours", { valueAsNumber: true })}
-            />
-            <span className="text-sm text-muted-foreground">h</span>
-            <Input
-              id="print-duration-minutes"
-              type="number"
-              step="1"
-              min="0"
-              max="59"
-              placeholder="0"
-              className="w-20"
-              {...form.register("durationMinutes", { valueAsNumber: true })}
-            />
-            <span className="text-sm text-muted-foreground">min</span>
-          </div>
-          <FieldError
-            errors={[
-              form.formState.errors.durationHours,
-              form.formState.errors.durationMinutes,
-            ]}
-          />
-        </FieldContent>
-      </Field>
-
       <Field data-invalid={!!form.formState.errors.printLink}>
         <FieldLabel htmlFor="print-link">
           <FieldIcon icon={LinkIcon} color="chart-2" />
@@ -606,6 +624,21 @@ export function PrintFormFields({
             {...form.register("printLink")}
           />
           <FieldError errors={[form.formState.errors.printLink]} />
+        </FieldContent>
+      </Field>
+
+      <Field data-invalid={!!form.formState.errors.notes}>
+        <FieldLabel htmlFor="print-notes">
+          <FieldIcon icon={NotebookTextIcon} color="chart-3" />
+          Notas
+        </FieldLabel>
+        <FieldContent>
+          <Textarea
+            id="print-notes"
+            placeholder="Qualquer observação sobre a impressão..."
+            {...form.register("notes")}
+          />
+          <FieldError errors={[form.formState.errors.notes]} />
         </FieldContent>
       </Field>
 

@@ -192,6 +192,7 @@ model Print {
   printerId          Int?           @map("printer_id")
   printer            Printer?       @relation(fields: [printerId], references: [id], onDelete: SetNull)
   printLink          String?        @map("print_link")
+  notes              String?
   profitPercent      Float?         @map("profit_percent")
   filamentCost       Float?         @map("filament_cost")
   printCost          Float?         @map("print_cost")

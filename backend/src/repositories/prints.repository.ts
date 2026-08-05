@@ -14,6 +14,7 @@ const printSelect = {
   categoryId: true,
   printerId: true,
   printLink: true,
+  notes: true,
   profitPercent: true,
   filamentCost: true,
   printCost: true,

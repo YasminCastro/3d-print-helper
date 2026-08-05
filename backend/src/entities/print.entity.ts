@@ -41,6 +41,7 @@ export interface PrintPersistenceData {
   categoryId?: number | null;
   printerId?: number | null;
   printLink?: string | null;
+  notes?: string | null;
   profitPercent?: number | null;
   filamentCost?: number | null;
   printCost?: number | null;
@@ -67,6 +68,7 @@ export interface PrintCreateData {
   categoryId?: number | null;
   printerId?: number | null;
   printLink?: string | null;
+  notes?: string | null;
   profitPercent?: number | null;
   saleValueActual?: number | null;
   userId: string;
@@ -89,6 +91,7 @@ export class Print {
     private _categoryId: number | null,
     private _printerId: number | null,
     private _printLink: string | null,
+    private _notes: string | null,
     private _profitPercent: number | null,
     private _filamentCost: number | null,
     private _printCost: number | null,
@@ -116,6 +119,7 @@ export class Print {
       Print.validatePositiveId(data.categoryId),
       Print.validatePositiveId(data.printerId),
       data.printLink ?? null,
+      data.notes ?? null,
       data.profitPercent ?? null,
       null,
       null,
@@ -141,6 +145,7 @@ export class Print {
       data.categoryId ?? null,
       data.printerId ?? null,
       data.printLink ?? null,
+      data.notes ?? null,
       data.profitPercent ?? null,
       data.filamentCost ?? null,
       data.printCost ?? null,
@@ -224,6 +229,7 @@ export class Print {
       this._categoryId = Print.validatePositiveId(data.categoryId);
     if (data.printerId !== undefined) this._printerId = Print.validatePositiveId(data.printerId);
     if (data.printLink !== undefined) this._printLink = data.printLink;
+    if (data.notes !== undefined) this._notes = data.notes;
     if (data.profitPercent !== undefined) this._profitPercent = data.profitPercent;
     if (data.saleValueActual !== undefined) this._saleValueActual = data.saleValueActual;
     if (data.filaments !== undefined) this._filaments = Print.buildFilaments(data.filaments);
@@ -275,6 +281,9 @@ export class Print {
   get printLink(): string | null {
     return this._printLink;
   }
+  get notes(): string | null {
+    return this._notes;
+  }
   get profitPercent(): number | null {
     return this._profitPercent;
   }
@@ -317,6 +326,7 @@ export class Print {
     categoryId: number | null;
     printerId: number | null;
     printLink: string | null;
+    notes: string | null;
     profitPercent: number | null;
     filamentCost: number | null;
     printCost: number | null;
@@ -336,6 +346,7 @@ export class Print {
       categoryId: this._categoryId,
       printerId: this._printerId,
       printLink: this._printLink,
+      notes: this._notes,
       profitPercent: this._profitPercent,
       filamentCost: this._filamentCost,
       printCost: this._printCost,
@@ -358,6 +369,7 @@ export class Print {
     categoryId: number | null;
     printerId: number | null;
     printLink: string | null;
+    notes: string | null;
     profitPercent: number | null;
     filamentCost: number | null;
     printCost: number | null;
@@ -380,6 +392,7 @@ export class Print {
       categoryId: this._categoryId,
       printerId: this._printerId,
       printLink: this._printLink,
+      notes: this._notes,
       profitPercent: this._profitPercent,
       filamentCost: this._filamentCost,
       printCost: this._printCost,

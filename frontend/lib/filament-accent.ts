@@ -27,22 +27,47 @@ function glyphColorFor(colors: string[]): string {
   return colors.length === 1 ? colors[0] : "#fff";
 }
 
-/** Style for a small icon avatar: translucent tint for one color, a solid gradient for several. */
+/** A filament's color(s): a single color, or a [color, color2] pair for duo-color filaments. */
+export type ColorSwatch = string | [string, string];
+
+/** Builds a swatch for one filament, collapsing to a single color when color2 is unset or identical. */
+export function colorSwatch(
+  color: string | null | undefined,
+  color2?: string | null | undefined
+): ColorSwatch | null {
+  if (!color) return null;
+  if (color2 && color2 !== color) return [color, color2];
+  return color;
+}
+
+/**
+ * Style for a small icon avatar.
+ * - One color: translucent tint.
+ * - One duo-color filament: a smooth blend between its two colors.
+ * - Several filaments/colors: a hard-stop segmented gradient, so it reads as distinct colors rather than a blend.
+ */
 export function filamentIconStyle(
-  colors: (string | null | undefined)[]
+  swatches: (ColorSwatch | null | undefined)[]
 ): CSSProperties | undefined {
-  const list = uniqueColors(colors);
+  const list = swatches.filter((swatch): swatch is ColorSwatch => !!swatch);
   if (list.length === 0) return undefined;
 
-  const color = glyphColorFor(list);
   const boxShadow = "inset 0 0 0 1px color-mix(in srgb, currentColor 25%, transparent)";
 
   if (list.length === 1) {
-    return { backgroundColor: `${list[0]}26`, color, boxShadow };
+    const swatch = list[0];
+    if (Array.isArray(swatch)) {
+      const color = glyphColorFor(swatch);
+      return { background: `linear-gradient(135deg, ${swatch[0]}, ${swatch[1]})`, color, boxShadow };
+    }
+    const color = glyphColorFor([swatch]);
+    return { backgroundColor: `${swatch}26`, color, boxShadow };
   }
 
-  const step = 100 / list.length;
-  const stops = list
+  const flatColors = uniqueColors(list.flatMap((swatch) => (Array.isArray(swatch) ? swatch : [swatch])));
+  const color = glyphColorFor(flatColors);
+  const step = 100 / flatColors.length;
+  const stops = flatColors
     .map((c, index) => `${c} ${index * step}%, ${c} ${(index + 1) * step}%`)
     .join(", ");
   return { background: `linear-gradient(135deg, ${stops})`, color, boxShadow };

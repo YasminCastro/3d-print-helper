@@ -14,6 +14,7 @@ import {
   HourglassIcon,
   Layers,
   LinkIcon,
+  NotebookTextIcon,
   PencilIcon,
   Printer as PrinterIcon,
   ReceiptIcon,
@@ -35,7 +36,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { categoryColorClass } from "@/lib/category-colors";
-import { filamentBannerStyle, filamentIconStyle } from "@/lib/filament-accent";
+import { colorSwatch, filamentBannerStyle, filamentIconStyle } from "@/lib/filament-accent";
 import { cn } from "@/lib/utils";
 import {
   AlertDialog,
@@ -122,6 +123,7 @@ function toFormValues(print: PrintWithDetails): PrintFormInput {
       quantity: extraItem.quantity ?? undefined,
     })),
     printLink: print.print_link ?? "",
+    notes: print.notes ?? "",
     profitPercent: print.profit_percent ?? 100,
     saleValueActual: print.sale_value_actual ?? undefined,
   };
@@ -186,6 +188,7 @@ export function PrintDetailView({
       formData.append("filaments", JSON.stringify(values.filaments ?? []));
       formData.append("extraItems", JSON.stringify(values.extraItems ?? []));
       if (values.printLink) formData.append("printLink", values.printLink);
+      if (values.notes) formData.append("notes", values.notes);
       if (values.profitPercent !== undefined)
         formData.append("profitPercent", String(values.profitPercent));
       if (values.saleValueActual !== undefined)
@@ -207,9 +210,11 @@ export function PrintDetailView({
 
   const photoUrl = print.photo_filename ? `/print-photos/${print.id}` : null;
 
-  const filamentColors = print.filaments.map((f) => f.filament_color);
+  const filamentColors = print.filaments.flatMap((f) => [f.filament_color, f.filament_color2]);
   const bannerStyle = filamentBannerStyle(filamentColors);
-  const iconStyle = filamentIconStyle(filamentColors);
+  const iconStyle = filamentIconStyle(
+    print.filaments.map((f) => colorSwatch(f.filament_color, f.filament_color2))
+  );
 
   const status = print.status as (typeof printStatusOptions)[number] | null;
   const result = print.result as (typeof printResultOptions)[number] | null;
@@ -597,6 +602,20 @@ export function PrintDetailView({
                     </li>
                   ))}
                 </ul>
+              </div>
+            )}
+
+            {print.notes && (
+              <div className="flex flex-col gap-2 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-chart-3/15 text-chart-3">
+                    <NotebookTextIcon className="size-3.5" />
+                  </span>
+                  Notas
+                </div>
+                <p className="whitespace-pre-wrap text-sm text-muted-foreground">
+                  {print.notes}
+                </p>
               </div>
             )}
           </div>

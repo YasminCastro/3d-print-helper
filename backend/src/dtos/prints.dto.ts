@@ -35,6 +35,7 @@ export const createPrintSchema = z.object({
   categoryId: z.number().int().positive().nullable().optional(),
   printerId: z.number().int().positive().nullable().optional(),
   printLink: optionalText,
+  notes: optionalText,
   profitPercent: z.number().nullable().optional(),
   saleValueActual: z.number().nullable().optional(),
   filaments: z.array(printFilamentInputSchema).optional(),

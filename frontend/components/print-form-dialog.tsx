@@ -39,6 +39,7 @@ function buildDefaultValues(
     filaments: [],
     extraItems: [],
     printLink: "",
+    notes: "",
     profitPercent: lastProfitPercent ?? 100,
     saleValueActual: undefined,
   };
@@ -89,6 +90,7 @@ export function PrintFormDialog({
       formData.append("filaments", JSON.stringify(values.filaments ?? []));
       formData.append("extraItems", JSON.stringify(values.extraItems ?? []));
       if (values.printLink) formData.append("printLink", values.printLink);
+      if (values.notes) formData.append("notes", values.notes);
       if (values.profitPercent !== undefined)
         formData.append("profitPercent", String(values.profitPercent));
       if (values.saleValueActual !== undefined)

@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { StarRatingDisplay } from "@/components/star-rating-display";
 import { availabilityColors, availabilityLabels } from "@/components/filament-form-fields";
 import { filamentTypeColors, filamentTypeLabels } from "@/components/brand-form-fields";
-import { filamentIconStyle } from "@/lib/filament-accent";
+import { colorSwatch, filamentIconStyle } from "@/lib/filament-accent";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import type { availabilityOptions } from "@/lib/schemas/filament";
 import type { FilamentWithBrand } from "@/lib/types/filament";
@@ -48,7 +48,7 @@ export function FilamentCard({ filament }: { filament: FilamentWithBrand }) {
   const material = filament.material as (typeof filamentTypeOptions)[number] | null;
   const availability = filament.availability as (typeof availabilityOptions)[number] | null;
   const AvailabilityIcon = availability ? availabilityIcons[availability] : null;
-  const iconStyle = filamentIconStyle([filament.color, filament.color2]);
+  const iconStyle = filamentIconStyle([colorSwatch(filament.color, filament.color2)]);
 
   return (
     <Link href={`/filaments/${filament.id}`} className="block h-full">

@@ -1,31 +1,21 @@
 import Link from "next/link";
-import { BoxIcon, ClockIcon, ImageIcon } from "lucide-react";
+import { BoxIcon, CheckCircle2, ClockIcon, CoinsIcon, HourglassIcon, ImageIcon, Scale } from "lucide-react";
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  printResultLabels,
+  printStatusColors,
   printStatusLabels,
 } from "@/components/print-form-fields";
 import { categoryColorClass } from "@/lib/category-colors";
-import { filamentIconStyle } from "@/lib/filament-accent";
-import type { printResultOptions, printStatusOptions } from "@/lib/schemas/print";
+import { colorSwatch, filamentIconStyle } from "@/lib/filament-accent";
+import type { printStatusOptions } from "@/lib/schemas/print";
 import type { PrintWithDetails } from "@/lib/types/print";
 import { cn } from "@/lib/utils";
 
-const STATUS_BADGE_CLASSES: Record<(typeof printStatusOptions)[number], string> = {
-  fila: "border-yellow-200 bg-yellow-100 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300",
-  pronto:
-    "border-green-200 bg-green-100 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300",
-};
-
-const RESULT_BADGE_CLASSES: Record<(typeof printResultOptions)[number], string> = {
-  ruim: "border-red-200 bg-red-100 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300",
-  razoavel:
-    "border-yellow-200 bg-yellow-100 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300",
-  bom: "border-lime-200 bg-lime-100 text-lime-700 dark:border-lime-900 dark:bg-lime-950 dark:text-lime-300",
-  perfeito:
-    "border-green-200 bg-green-100 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300",
+const statusIcons: Record<(typeof printStatusOptions)[number], typeof CheckCircle2> = {
+  fila: HourglassIcon,
+  pronto: CheckCircle2,
 };
 
 const ACCENT_CLASSES = [
@@ -35,6 +25,11 @@ const ACCENT_CLASSES = [
   "bg-chart-4/15 text-chart-4",
   "bg-chart-5/15 text-chart-5",
 ];
+
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
 
 function accentFor(id: number) {
   return ACCENT_CLASSES[id % ACCENT_CLASSES.length];
@@ -50,8 +45,12 @@ function formatDuration(minutes: number | null) {
 export function PrintCard({ print }: { print: PrintWithDetails }) {
   const duration = formatDuration(print.duration_minutes);
   const status = print.status as (typeof printStatusOptions)[number] | null;
-  const result = print.result as (typeof printResultOptions)[number] | null;
-  const iconStyle = filamentIconStyle(print.filaments.map((f) => f.filament_color));
+  const iconStyle = filamentIconStyle(
+    print.filaments.map((f) => colorSwatch(f.filament_color, f.filament_color2))
+  );
+  const totalGrams = print.filaments.reduce((sum, filament) => sum + (filament.grams ?? 0), 0);
+  const isActualSaleValue = print.sale_value_actual != null;
+  const displaySaleValue = print.sale_value_actual ?? print.sale_value_worst_case;
 
   return (
     <Link href={`/prints/${print.id}`} className="block h-full">
@@ -82,7 +81,19 @@ export function PrintCard({ print }: { print: PrintWithDetails }) {
             <BoxIcon className="size-5" />
           </div>
           <div className="min-w-0">
-            <CardTitle className="truncate text-base">{print.name}</CardTitle>
+            <div className="flex items-center gap-1.5">
+              <CardTitle className="truncate text-base">{print.name}</CardTitle>
+              {status && (
+                <span title={printStatusLabels[status]}>
+                  {(() => {
+                    const StatusIcon = statusIcons[status];
+                    return (
+                      <StatusIcon className={cn("size-4 shrink-0", printStatusColors[status])} />
+                    );
+                  })()}
+                </span>
+              )}
+            </div>
             {print.category_name && (
               <Badge
                 variant="outline"
@@ -96,37 +107,32 @@ export function PrintCard({ print }: { print: PrintWithDetails }) {
 
         <CardContent className="mt-auto flex flex-col gap-2">
           <div className="flex flex-wrap items-center gap-1.5">
-            {status && (
-              <Badge variant="outline" className={STATUS_BADGE_CLASSES[status]}>
-                {printStatusLabels[status]}
-              </Badge>
-            )}
-            {result && (
-              <Badge variant="outline" className={RESULT_BADGE_CLASSES[result]}>
-                {printResultLabels[result]}
-              </Badge>
-            )}
             {duration && (
               <Badge variant="secondary">
                 <ClockIcon className="size-3" />
                 {duration}
               </Badge>
             )}
+            {totalGrams > 0 && (
+              <Badge variant="secondary">
+                <Scale className="size-3" />
+                {totalGrams}g
+              </Badge>
+            )}
+            {displaySaleValue != null && (
+              <Badge
+                variant="outline"
+                className={
+                  isActualSaleValue
+                    ? "border-green-200 bg-green-100 text-green-700 dark:border-green-900 dark:bg-green-950 dark:text-green-300"
+                    : "border-yellow-200 bg-yellow-100 text-yellow-700 dark:border-yellow-900 dark:bg-yellow-950 dark:text-yellow-300"
+                }
+              >
+                <CoinsIcon className="size-3" />
+                {currencyFormatter.format(displaySaleValue)}
+              </Badge>
+            )}
           </div>
-          {print.filaments.length > 0 && (
-            <div className="flex flex-wrap gap-1.5 text-xs text-muted-foreground">
-              {print.filaments.map((filament) => (
-                <span key={filament.position} className="flex items-center gap-1.5">
-                  <span
-                    className="size-2.5 shrink-0 rounded-full border"
-                    style={{ backgroundColor: filament.filament_color ?? "#a1a1aa" }}
-                  />
-                  {filament.filament_name ?? "—"}
-                  {filament.grams != null && ` (${filament.grams}g)`}
-                </span>
-              ))}
-            </div>
-          )}
         </CardContent>
       </Card>
     </Link>
