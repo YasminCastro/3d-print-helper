@@ -67,6 +67,16 @@ export function saleValue(
   return Math.round(rawValue * 100) / 100;
 }
 
+export function totalExtraItemsCost(
+  extraItems: { quantity: number | null; cost: number | null }[],
+): number {
+  const raw = extraItems.reduce(
+    (sum, extraItem) => sum + (extraItem.quantity ?? 0) * (extraItem.cost ?? 0),
+    0,
+  );
+  return Math.round(raw * 100) / 100;
+}
+
 export function computeMaterialMaxPrices(
   filaments: { material: string | null; pricePerKg: number | null }[],
 ): Record<string, number> {
@@ -86,12 +96,14 @@ export type PrintCalculationsInput = {
   durationMinutes: number | null;
   profitPercent: number | null;
   printFilaments: { grams: number | null; filamentId: number | null }[];
+  printExtraItems: { quantity: number | null; extraItemId: number | null }[];
   printer: {
     powerConsumptionW: number | null;
     energyCostPerKwh: number | null;
     maintenanceCostPerHour: number | null;
   } | null;
   filamentsById: Map<number, { material: string | null; minPricePaid: number | null; maxPricePaid: number | null }>;
+  extraItemsById: Map<number, { cost: number | null }>;
   materialMaxPrices: Record<string, number>;
 };
 
@@ -136,14 +148,27 @@ export function calculatePrintCosts(input: PrintCalculationsInput): {
   };
   const effectiveProfitPercent = input.profitPercent ?? DEFAULT_PROFIT_PERCENT;
 
+  const extraItemsCost = totalExtraItemsCost(
+    input.printExtraItems.map((extraItem) => ({
+      quantity: extraItem.quantity,
+      cost: extraItem.extraItemId != null ? (input.extraItemsById.get(extraItem.extraItemId)?.cost ?? null) : null,
+    })),
+  );
+
   return {
     filamentCost: filamentCostTotal,
-    printCost: printCost({ ...printerInput, filamentCostTotal }),
-    saleValue: saleValue({ ...printerInput, filamentCostTotal, profitPercent: effectiveProfitPercent }),
+    printCost: printCost({ ...printerInput, filamentCostTotal, extraMaterialsCost: extraItemsCost }),
+    saleValue: saleValue({
+      ...printerInput,
+      filamentCostTotal,
+      profitPercent: effectiveProfitPercent,
+      extraMaterialsCost: extraItemsCost,
+    }),
     saleValueWorstCase: saleValue({
       ...printerInput,
       filamentCostTotal: worstCaseFilamentCostTotal,
       profitPercent: effectiveProfitPercent,
+      extraMaterialsCost: extraItemsCost,
     }),
   };
 }

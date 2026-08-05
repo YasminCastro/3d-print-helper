@@ -21,6 +21,11 @@ export const printFilamentInputSchema = z.object({
   grams: z.number().nullable().optional(),
 });
 
+export const printExtraItemInputSchema = z.object({
+  extraItemId: z.number().int().positive().nullable().optional(),
+  quantity: z.number().nullable().optional(),
+});
+
 export const createPrintSchema = z.object({
   name: z.string().trim().min(1, { message: 'Name is required' }),
   printDate: optionalText,
@@ -33,6 +38,7 @@ export const createPrintSchema = z.object({
   profitPercent: z.number().nullable().optional(),
   saleValueActual: z.number().nullable().optional(),
   filaments: z.array(printFilamentInputSchema).optional(),
+  extraItems: z.array(printExtraItemInputSchema).optional(),
 });
 
 export type CreatePrintDto = z.infer<typeof createPrintSchema>;

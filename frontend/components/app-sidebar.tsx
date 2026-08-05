@@ -10,6 +10,7 @@ import {
   Gauge,
   NotebookText,
   Images,
+  ShoppingBag,
 } from "lucide-react";
 
 import {
@@ -30,6 +31,7 @@ const NAV_ITEMS = [
   { title: "Início", url: "/", icon: LayoutDashboard },
   { title: "Impressões", url: "/prints", icon: Images },
   { title: "Filamentos", url: "/filaments", icon: Layers },
+  { title: "Itens Extras", url: "/extra-items", icon: ShoppingBag },
   { title: "Diário", url: "/journal", icon: NotebookText },
   { title: "Calibrações", url: "/calibrations", icon: Gauge },
   { title: "Impressoras", url: "/printers", icon: Printer },

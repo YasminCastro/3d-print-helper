@@ -15,13 +15,14 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  printers Printer[]
-  filamentBrands FilamentBrand[]
-  filaments Filament[]
-  calibrations Calibration[]
-  journalEntries JournalEntry[]
+  printers        Printer[]
+  filamentBrands  FilamentBrand[]
+  filaments       Filament[]
+  calibrations    Calibration[]
+  journalEntries  JournalEntry[]
   printCategories PrintCategory[]
-  prints Print[]
+  prints          Print[]
+  extraItems      ExtraItem[]
 
   @@map("users")
 }
@@ -66,54 +67,54 @@ model FilamentBrand {
 }
 
 model Filament {
-  id               Int      @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   name             String
   availability     String?
-  lastPurchaseDate String?  @map("last_purchase_date")
+  lastPurchaseDate String?        @map("last_purchase_date")
   material         String?
-  brandId          Int?     @map("brand_id")
+  brandId          Int?           @map("brand_id")
   brand            FilamentBrand? @relation(fields: [brandId], references: [id], onDelete: SetNull)
-  purchaseLink     String?  @map("purchase_link")
-  saleName         String?  @map("sale_name")
-  minPricePaid     Float?   @map("min_price_paid")
-  maxPricePaid     Float?   @map("max_price_paid")
-  nozzleTempMin    Int?     @map("nozzle_temp_min")
-  nozzleTempMax    Int?     @map("nozzle_temp_max")
-  bedTempMin       Int?     @map("bed_temp_min")
-  bedTempMax       Int?     @map("bed_temp_max")
+  purchaseLink     String?        @map("purchase_link")
+  saleName         String?        @map("sale_name")
+  minPricePaid     Float?         @map("min_price_paid")
+  maxPricePaid     Float?         @map("max_price_paid")
+  nozzleTempMin    Int?           @map("nozzle_temp_min")
+  nozzleTempMax    Int?           @map("nozzle_temp_max")
+  bedTempMin       Int?           @map("bed_temp_min")
+  bedTempMax       Int?           @map("bed_temp_max")
   rating           Int?
   color            String?
   color2           String?
-  createdAt        DateTime @default(now()) @map("created_at")
-  userId           String   @map("user_id")
+  createdAt        DateTime       @default(now()) @map("created_at")
+  userId           String         @map("user_id")
 
-  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  calibrations     Calibration[]
-  journalEntries   JournalEntry[]
-  printFilaments   PrintFilament[]
+  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calibrations   Calibration[]
+  journalEntries JournalEntry[]
+  printFilaments PrintFilament[]
 
   @@map("filaments")
 }
 
 model Calibration {
-  id                 Int      @id @default(autoincrement())
+  id                 Int       @id @default(autoincrement())
   slicer             String
-  filamentId         Int?     @map("filament_id")
+  filamentId         Int?      @map("filament_id")
   filament           Filament? @relation(fields: [filamentId], references: [id], onDelete: Cascade)
   status             String?
-  calibrationDate    String?  @map("calibration_date")
-  bedTempFirstLayer  Float?   @map("bed_temp_first_layer")
-  bedTempOtherLayers Float?   @map("bed_temp_other_layers")
-  nozzleTempInitial  Float?   @map("nozzle_temp_initial")
-  nozzleTempFinal    Float?   @map("nozzle_temp_final")
-  maxVolumetricSpeed Float?   @map("max_volumetric_speed")
-  pressureAdvance    Float?   @map("pressure_advance")
-  flowRatio          Float?   @map("flow_ratio")
-  retractionDistance Float?   @map("retraction_distance")
-  purchaseBatch      String?  @map("purchase_batch")
+  calibrationDate    String?   @map("calibration_date")
+  bedTempFirstLayer  Float?    @map("bed_temp_first_layer")
+  bedTempOtherLayers Float?    @map("bed_temp_other_layers")
+  nozzleTempInitial  Float?    @map("nozzle_temp_initial")
+  nozzleTempFinal    Float?    @map("nozzle_temp_final")
+  maxVolumetricSpeed Float?    @map("max_volumetric_speed")
+  pressureAdvance    Float?    @map("pressure_advance")
+  flowRatio          Float?    @map("flow_ratio")
+  retractionDistance Float?    @map("retraction_distance")
+  purchaseBatch      String?   @map("purchase_batch")
   notes              String?
-  createdAt          DateTime @default(now()) @map("created_at")
-  userId             String   @map("user_id")
+  createdAt          DateTime  @default(now()) @map("created_at")
+  userId             String    @map("user_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -121,17 +122,17 @@ model Calibration {
 }
 
 model JournalEntry {
-  id              Int      @id @default(autoincrement())
-  title           String
-  entryDate       String?  @map("entry_date")
-  filamentId      Int?     @map("filament_id")
-  filament        Filament? @relation(fields: [filamentId], references: [id], onDelete: SetNull)
-  status          String?
-  symptom         String?
-  possibleCauses  String?  @map("possible_causes")
-  notes           String?
-  createdAt       DateTime @default(now()) @map("created_at")
-  userId          String   @map("user_id")
+  id             Int       @id @default(autoincrement())
+  title          String
+  entryDate      String?   @map("entry_date")
+  filamentId     Int?      @map("filament_id")
+  filament       Filament? @relation(fields: [filamentId], references: [id], onDelete: SetNull)
+  status         String?
+  symptom        String?
+  possibleCauses String?   @map("possible_causes")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at")
+  userId         String    @map("user_id")
 
   user     User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   attempts JournalAttempt[]
@@ -141,8 +142,8 @@ model JournalEntry {
 }
 
 model JournalAttempt {
-  id       Int     @id @default(autoincrement())
-  entryId  Int     @map("entry_id")
+  id       Int          @id @default(autoincrement())
+  entryId  Int          @map("entry_id")
   entry    JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
   position Int
   attempt  String?
@@ -152,13 +153,13 @@ model JournalAttempt {
 }
 
 model JournalPhoto {
-  id        Int      @id @default(autoincrement())
-  entryId   Int      @map("entry_id")
+  id        Int          @id @default(autoincrement())
+  entryId   Int          @map("entry_id")
   entry     JournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
   filename  String
-  mimeType  String   @map("mime_type")
+  mimeType  String       @map("mime_type")
   data      Bytes
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime     @default(now()) @map("created_at")
 
   @@map("journal_photos")
 }
@@ -177,43 +178,69 @@ model PrintCategory {
 }
 
 model Print {
-  id                 Int      @id @default(autoincrement())
+  id                 Int            @id @default(autoincrement())
   name               String
-  photoFilename      String?  @map("photo_filename")
-  photoMimeType      String?  @map("photo_mime_type")
-  photoData          Bytes?   @map("photo_data")
-  printDate          String?  @map("print_date")
-  durationMinutes    Int?     @map("duration_minutes")
+  photoFilename      String?        @map("photo_filename")
+  photoMimeType      String?        @map("photo_mime_type")
+  photoData          Bytes?         @map("photo_data")
+  printDate          String?        @map("print_date")
+  durationMinutes    Int?           @map("duration_minutes")
   status             String?
   result             String?
-  categoryId         Int?     @map("category_id")
+  categoryId         Int?           @map("category_id")
   category           PrintCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-  printerId          Int?     @map("printer_id")
-  printer            Printer? @relation(fields: [printerId], references: [id], onDelete: SetNull)
-  printLink          String?  @map("print_link")
-  profitPercent      Float?   @map("profit_percent")
-  filamentCost       Float?   @map("filament_cost")
-  printCost          Float?   @map("print_cost")
-  saleValue          Float?   @map("sale_value")
-  saleValueWorstCase Float?   @map("sale_value_worst_case")
-  saleValueActual    Float?   @map("sale_value_actual")
-  createdAt          DateTime @default(now()) @map("created_at")
-  userId             String   @map("user_id")
+  printerId          Int?           @map("printer_id")
+  printer            Printer?       @relation(fields: [printerId], references: [id], onDelete: SetNull)
+  printLink          String?        @map("print_link")
+  profitPercent      Float?         @map("profit_percent")
+  filamentCost       Float?         @map("filament_cost")
+  printCost          Float?         @map("print_cost")
+  saleValue          Float?         @map("sale_value")
+  saleValueWorstCase Float?         @map("sale_value_worst_case")
+  saleValueActual    Float?         @map("sale_value_actual")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  userId             String         @map("user_id")
 
-  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  filaments PrintFilament[]
+  user       User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filaments  PrintFilament[]
+  extraItems PrintExtraItem[]
 
   @@map("prints")
 }
 
 model PrintFilament {
-  id         Int      @id @default(autoincrement())
-  printId    Int      @map("print_id")
-  print      Print    @relation(fields: [printId], references: [id], onDelete: Cascade)
-  filamentId Int?     @map("filament_id")
+  id         Int       @id @default(autoincrement())
+  printId    Int       @map("print_id")
+  print      Print     @relation(fields: [printId], references: [id], onDelete: Cascade)
+  filamentId Int?      @map("filament_id")
   filament   Filament? @relation(fields: [filamentId], references: [id], onDelete: SetNull)
   grams      Float?
   position   Int
 
   @@map("print_filaments")
+}
+
+model ExtraItem {
+  id        Int      @id @default(autoincrement())
+  name      String
+  cost      Float
+  createdAt DateTime @default(now()) @map("created_at")
+  userId    String   @map("user_id")
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  printExtraItems PrintExtraItem[]
+
+  @@map("extra_items")
+}
+
+model PrintExtraItem {
+  id          Int        @id @default(autoincrement())
+  printId     Int        @map("print_id")
+  print       Print      @relation(fields: [printId], references: [id], onDelete: Cascade)
+  extraItemId Int?       @map("extra_item_id")
+  extraItem   ExtraItem? @relation(fields: [extraItemId], references: [id], onDelete: SetNull)
+  quantity    Float?
+  position    Int
+
+  @@map("print_extra_items")
 }

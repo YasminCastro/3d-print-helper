@@ -30,6 +30,16 @@ export function totalFilamentCost(
   );
 }
 
+export function totalExtraItemsCost(
+  extraItems: { quantity: number | null; cost: number | null }[]
+) {
+  const raw = extraItems.reduce(
+    (sum, extraItem) => sum + (extraItem.quantity ?? 0) * (extraItem.cost ?? 0),
+    0
+  );
+  return Math.round(raw * 100) / 100;
+}
+
 type PrinterTimeCostInput = {
   durationMinutes: number | null;
   powerConsumptionW: number | null;

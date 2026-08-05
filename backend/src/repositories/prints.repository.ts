@@ -23,6 +23,7 @@ const printSelect = {
   createdAt: true,
   userId: true,
   filaments: { select: { id: true, position: true, filamentId: true, grams: true } },
+  extraItems: { select: { id: true, position: true, extraItemId: true, quantity: true } },
 } as const;
 
 export interface PrintPhotoBinary {
@@ -73,6 +74,13 @@ export class PrintsRepository implements IPrintsRepository {
             grams,
           })),
         },
+        extraItems: {
+          create: print.extraItems.map(({ position, extraItemId, quantity }) => ({
+            position,
+            extraItemId,
+            quantity,
+          })),
+        },
       },
       select: printSelect,
     });
@@ -85,6 +93,7 @@ export class PrintsRepository implements IPrintsRepository {
 
     const row = await prisma.$transaction(async (tx) => {
       await tx.printFilament.deleteMany({ where: { printId: id } });
+      await tx.printExtraItem.deleteMany({ where: { printId: id } });
 
       return tx.print.update({
         where: { id },
@@ -95,6 +104,13 @@ export class PrintsRepository implements IPrintsRepository {
               position,
               filamentId,
               grams,
+            })),
+          },
+          extraItems: {
+            create: print.extraItems.map(({ position, extraItemId, quantity }) => ({
+              position,
+              extraItemId,
+              quantity,
             })),
           },
         },

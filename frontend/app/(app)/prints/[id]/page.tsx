@@ -5,6 +5,8 @@ import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
 import { getFilamentOptions, getFilaments, getFilamentPricingData } from "@/lib/actions/filaments";
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
+import { getExtraItems } from "@/lib/actions/extra-items";
+import { extraItemDenormalizedFields } from "@/lib/extra-item-helpers";
 import { getPrint, getPrintCategories } from "@/lib/actions/prints";
 import type { PrintWithDetails } from "@/lib/types/print";
 
@@ -18,9 +20,10 @@ export default async function PrintDetailPage({
 
   if (Number.isNaN(printId)) notFound();
 
-  const [printers, filaments, printRaw, categoryOptions] = await Promise.all([
+  const [printers, filaments, extraItems, printRaw, categoryOptions] = await Promise.all([
     getPrinters(),
     getFilaments(),
+    getExtraItems(),
     getPrint(printId),
     getPrintCategories(),
   ]);
@@ -29,6 +32,7 @@ export default async function PrintDetailPage({
 
   const printersById = new Map(printers.map((printer) => [printer.id, printer]));
   const filamentsById = new Map(filaments.map((filament) => [filament.id, filament]));
+  const extraItemsById = new Map(extraItems.map((extraItem) => [extraItem.id, extraItem]));
   const categoriesById = new Map(categoryOptions.map((category) => [category.id, category]));
 
   const printWithDetails: PrintWithDetails = {
@@ -44,6 +48,12 @@ export default async function PrintDetailPage({
       ...filament,
       ...filamentDenormalizedFields(
         filament.filament_id != null ? filamentsById.get(filament.filament_id) : null
+      ),
+    })),
+    extraItems: printRaw.extraItems.map((extraItem) => ({
+      ...extraItem,
+      ...extraItemDenormalizedFields(
+        extraItem.extra_item_id != null ? extraItemsById.get(extraItem.extra_item_id) : null
       ),
     })),
   };
@@ -62,6 +72,7 @@ export default async function PrintDetailPage({
       categoryOptions={categoryOptions}
       filamentOptions={filamentOptions}
       printerOptions={printerOptions}
+      extraItemOptions={extraItems}
       materialMaxPrices={materialMaxPrices}
     />
   );

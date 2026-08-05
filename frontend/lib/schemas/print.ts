@@ -16,6 +16,11 @@ export const printFilamentSchema = z.object({
   grams: optionalNumberInput,
 });
 
+export const printExtraItemSchema = z.object({
+  extraItemId: z.string().trim().optional(),
+  quantity: optionalNumberInput,
+});
+
 export const printFormSchema = z.object({
   name: z.string().trim().min(1, "Informe um nome"),
   printDate: z.string().trim().optional(),
@@ -27,6 +32,7 @@ export const printFormSchema = z.object({
   newCategoryName: z.string().trim().optional(),
   printerId: z.string().trim().optional(),
   filaments: z.array(printFilamentSchema).optional(),
+  extraItems: z.array(printExtraItemSchema).optional(),
   printLink: z.string().trim().optional(),
   profitPercent: optionalNumberInput,
   saleValueActual: optionalNumberInput,

@@ -18,6 +18,7 @@ import {
   Printer as PrinterIcon,
   ReceiptIcon,
   Scale,
+  ShoppingBagIcon,
   TagIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
@@ -58,11 +59,13 @@ import type {
   printStatusOptions,
 } from "@/lib/schemas/print";
 import type { FilamentOption } from "@/lib/types/filament";
+import type { ExtraItem } from "@/lib/types/extra-item";
 import {
   filamentPricePerKg,
   mostExpensivePricePerKgOfType,
   printCost,
   saleValue,
+  totalExtraItemsCost,
   totalFilamentCost,
 } from "@/lib/print-calculations";
 import { PrinterStatCard, type StatColor } from "@/components/printer-stat-card";
@@ -113,6 +116,11 @@ function toFormValues(print: PrintWithDetails): PrintFormInput {
         filament.filament_id != null ? String(filament.filament_id) : "",
       grams: filament.grams ?? undefined,
     })),
+    extraItems: print.extraItems.map((extraItem) => ({
+      extraItemId:
+        extraItem.extra_item_id != null ? String(extraItem.extra_item_id) : "",
+      quantity: extraItem.quantity ?? undefined,
+    })),
     printLink: print.print_link ?? "",
     profitPercent: print.profit_percent ?? 100,
     saleValueActual: print.sale_value_actual ?? undefined,
@@ -139,12 +147,14 @@ export function PrintDetailView({
   categoryOptions,
   filamentOptions,
   printerOptions,
+  extraItemOptions,
   materialMaxPrices,
 }: {
   print: PrintWithDetails;
   categoryOptions: PrintCategory[];
   filamentOptions: FilamentOption[];
   printerOptions: { id: number; name: string }[];
+  extraItemOptions: ExtraItem[];
   materialMaxPrices: Record<string, number>;
 }) {
   const router = useRouter();
@@ -174,6 +184,7 @@ export function PrintDetailView({
         formData.append("newCategoryName", values.newCategoryName);
       if (values.printerId) formData.append("printerId", values.printerId);
       formData.append("filaments", JSON.stringify(values.filaments ?? []));
+      formData.append("extraItems", JSON.stringify(values.extraItems ?? []));
       if (values.printLink) formData.append("printLink", values.printLink);
       if (values.profitPercent !== undefined)
         formData.append("profitPercent", String(values.profitPercent));
@@ -218,12 +229,20 @@ export function PrintDetailView({
     })),
   );
 
+  const extraItemsCostTotal = totalExtraItemsCost(
+    print.extraItems.map((extraItem) => ({
+      quantity: extraItem.quantity,
+      cost: extraItem.extra_item_cost,
+    })),
+  );
+
   const printCostTotal = printCost({
     filamentCostTotal,
     durationMinutes: print.duration_minutes,
     powerConsumptionW: print.printer_power_consumption_w,
     energyCostPerKwh: print.printer_energy_cost_per_kwh,
     maintenanceCostPerHour: print.printer_maintenance_cost_per_hour,
+    extraMaterialsCost: extraItemsCostTotal,
   });
 
   const effectiveProfitPercent = print.profit_percent ?? 100;
@@ -235,6 +254,7 @@ export function PrintDetailView({
     energyCostPerKwh: print.printer_energy_cost_per_kwh,
     maintenanceCostPerHour: print.printer_maintenance_cost_per_hour,
     profitPercent: effectiveProfitPercent,
+    extraMaterialsCost: extraItemsCostTotal,
   });
 
   const worstCaseFilamentCostTotal = totalFilamentCost(
@@ -258,6 +278,7 @@ export function PrintDetailView({
     energyCostPerKwh: print.printer_energy_cost_per_kwh,
     maintenanceCostPerHour: print.printer_maintenance_cost_per_hour,
     profitPercent: effectiveProfitPercent,
+    extraMaterialsCost: extraItemsCostTotal,
   });
 
   return (
@@ -334,6 +355,7 @@ export function PrintDetailView({
                   categoryOptions={categoryOptions}
                   filamentOptions={filamentOptions}
                   printerOptions={printerOptions}
+                  extraItemOptions={extraItemOptions}
                 />
                 <div className="mt-4 flex justify-end gap-2">
                   <Button
@@ -539,6 +561,37 @@ export function PrintDetailView({
                       {filament.grams != null && (
                         <span className="text-muted-foreground">
                           ({filament.grams} g)
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {print.extraItems.length > 0 && (
+              <div className="flex flex-col gap-2 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2 text-sm font-medium">
+                    <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-chart-4/15 text-chart-4">
+                      <ShoppingBagIcon className="size-3.5" />
+                    </span>
+                    Itens extras
+                  </div>
+                  <span className="text-sm font-medium text-muted-foreground">
+                    {currencyFormatter.format(extraItemsCostTotal)}
+                  </span>
+                </div>
+                <ul className="flex flex-col gap-1.5">
+                  {print.extraItems.map((extraItem) => (
+                    <li
+                      key={extraItem.position}
+                      className="flex items-center gap-2 text-sm"
+                    >
+                      {extraItem.extra_item_name ?? "—"}
+                      {extraItem.quantity != null && (
+                        <span className="text-muted-foreground">
+                          ({extraItem.quantity}x)
                         </span>
                       )}
                     </li>

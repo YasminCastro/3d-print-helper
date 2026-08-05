@@ -12,6 +12,7 @@ import {
   PercentIcon,
   Printer as PrinterIcon,
   PlusIcon,
+  ShoppingBagIcon,
   TagIcon,
   ThumbsUpIcon,
   Trash2Icon,
@@ -49,9 +50,15 @@ import {
 import type { PrintCategory } from "@/lib/types/print";
 import { categoryDotColorClass } from "@/lib/category-colors";
 import type { FilamentOption } from "@/lib/types/filament";
+import type { ExtraItem } from "@/lib/types/extra-item";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import { FieldIcon } from "@/components/field-icon";
+
+const currencyFormatter = new Intl.NumberFormat("pt-BR", {
+  style: "currency",
+  currency: "BRL",
+});
 
 function filamentOptionLabel(filament: FilamentOption) {
   const parts = [filament.name];
@@ -66,6 +73,7 @@ function filamentOptionLabel(filament: FilamentOption) {
 }
 
 type FilamentComboItem = { value: string; label: string };
+type ExtraItemComboItem = { value: string; label: string };
 
 export const printStatusLabels: Record<(typeof printStatusOptions)[number], string> = {
   fila: "Fila",
@@ -111,6 +119,7 @@ export function PrintFormFields({
   categoryOptions,
   filamentOptions,
   printerOptions,
+  extraItemOptions,
 }: {
   form: UseFormReturn<PrintFormInput>;
   photoFile: File | null;
@@ -119,11 +128,20 @@ export function PrintFormFields({
   categoryOptions: PrintCategory[];
   filamentOptions: FilamentOption[];
   printerOptions: { id: number; name: string }[];
+  extraItemOptions: ExtraItem[];
 }) {
   const categoryId = form.watch("categoryId");
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "filaments",
+  });
+  const {
+    fields: extraItemFields,
+    append: appendExtraItem,
+    remove: removeExtraItem,
+  } = useFieldArray({
+    control: form.control,
+    name: "extraItems",
   });
 
   const sortedFilamentOptions = [...filamentOptions].sort((a, b) =>
@@ -133,6 +151,15 @@ export function PrintFormFields({
   const filamentItems: FilamentComboItem[] = sortedFilamentOptions.map((filament) => ({
     value: String(filament.id),
     label: filamentOptionLabel(filament),
+  }));
+
+  const sortedExtraItemOptions = [...extraItemOptions].sort((a, b) =>
+    a.name.localeCompare(b.name, "pt-BR")
+  );
+
+  const extraItemItems: ExtraItemComboItem[] = sortedExtraItemOptions.map((extraItem) => ({
+    value: String(extraItem.id),
+    label: `${extraItem.name} - ${currencyFormatter.format(extraItem.cost)}`,
   }));
 
   return (
@@ -445,6 +472,79 @@ export function PrintFormFields({
             >
               <PlusIcon />
               Adicionar filamento
+            </Button>
+          </div>
+        </FieldContent>
+      </Field>
+
+      <Field>
+        <FieldLabel>
+          <FieldIcon icon={ShoppingBagIcon} color="chart-4" />
+          Itens extras
+        </FieldLabel>
+        <FieldContent>
+          <div className="flex flex-col gap-2">
+            {extraItemFields.map((field, index) => (
+              <div key={field.id} className="flex items-start gap-2">
+                <div className="flex-1">
+                  <Combobox
+                    items={extraItemItems}
+                    value={
+                      extraItemItems.find(
+                        (item) => item.value === form.watch(`extraItems.${index}.extraItemId`)
+                      ) ?? null
+                    }
+                    onValueChange={(item) =>
+                      form.setValue(
+                        `extraItems.${index}.extraItemId`,
+                        (item as ExtraItemComboItem | null)?.value ?? ""
+                      )
+                    }
+                  >
+                    <ComboboxInputGroup>
+                      <ComboboxInput placeholder="Pesquisar item extra..." />
+                      <ComboboxClear aria-label="Limpar seleção" />
+                      <ComboboxTrigger aria-label="Abrir lista" />
+                    </ComboboxInputGroup>
+                    <ComboboxContent>
+                      <ComboboxEmpty>Nenhum item extra encontrado.</ComboboxEmpty>
+                      <ComboboxList>
+                        {(item: ExtraItemComboItem) => (
+                          <ComboboxItem key={item.value} value={item}>
+                            {item.label}
+                          </ComboboxItem>
+                        )}
+                      </ComboboxList>
+                    </ComboboxContent>
+                  </Combobox>
+                </div>
+                <Input
+                  type="number"
+                  step="any"
+                  placeholder="qtd"
+                  className="w-24"
+                  {...form.register(`extraItems.${index}.quantity` as const, {
+                    valueAsNumber: true,
+                  })}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  onClick={() => removeExtraItem(index)}
+                >
+                  <Trash2Icon />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              className="self-start"
+              onClick={() => appendExtraItem({ extraItemId: "", quantity: 1 })}
+            >
+              <PlusIcon />
+              Adicionar item extra
             </Button>
           </div>
         </FieldContent>

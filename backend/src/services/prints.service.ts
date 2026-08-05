@@ -6,6 +6,8 @@ import {
   type PrintCategoryUpdateData,
 } from '@entities/print-category.entity';
 import { HttpException } from '@exceptions/httpException';
+import { ExtraItemsRepository } from '@repositories/extra-items.repository';
+import type { IExtraItemsRepository } from '@repositories/extra-items.repository';
 import { FilamentsRepository } from '@repositories/filaments.repository';
 import type { IFilamentsRepository } from '@repositories/filaments.repository';
 import { PrintCategoriesRepository } from '@repositories/print-categories.repository';
@@ -23,6 +25,7 @@ export class PrintsService {
     @inject(PrintCategoriesRepository) private printCategoriesRepository: IPrintCategoriesRepository,
     @inject(PrintersRepository) private printersRepository: IPrintersRepository,
     @inject(FilamentsRepository) private filamentsRepository: IFilamentsRepository,
+    @inject(ExtraItemsRepository) private extraItemsRepository: IExtraItemsRepository,
   ) {}
 
   async getAllCategories(userId: string): Promise<PrintCategory[]> {
@@ -135,12 +138,19 @@ export class PrintsService {
       })),
     );
 
+    const extraItems = await this.extraItemsRepository.findAll(print.userId);
+    const extraItemsById = new Map(extraItems.map((extraItem) => [extraItem.id, { cost: extraItem.cost }]));
+
     const calculations = calculatePrintCosts({
       durationMinutes: print.durationMinutes,
       profitPercent: print.profitPercent,
       printFilaments: print.filaments.map((filament) => ({
         grams: filament.grams,
         filamentId: filament.filamentId,
+      })),
+      printExtraItems: print.extraItems.map((extraItem) => ({
+        quantity: extraItem.quantity,
+        extraItemId: extraItem.extraItemId,
       })),
       printer: printer
         ? {
@@ -150,6 +160,7 @@ export class PrintsService {
           }
         : null,
       filamentsById,
+      extraItemsById,
       materialMaxPrices,
     });
 

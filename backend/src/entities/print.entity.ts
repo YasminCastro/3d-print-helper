@@ -10,6 +10,18 @@ export interface PrintFilamentInput {
   grams?: number | null;
 }
 
+export interface PrintExtraItemData {
+  id?: number;
+  position: number;
+  extraItemId: number | null;
+  quantity: number | null;
+}
+
+export interface PrintExtraItemInput {
+  extraItemId?: number | null;
+  quantity?: number | null;
+}
+
 export interface PrintCalculations {
   filamentCost: number;
   printCost: number;
@@ -38,6 +50,12 @@ export interface PrintPersistenceData {
   createdAt?: Date;
   userId: string;
   filaments?: { id: number; position: number; filamentId: number | null; grams: number | null }[];
+  extraItems?: {
+    id: number;
+    position: number;
+    extraItemId: number | null;
+    quantity: number | null;
+  }[];
 }
 
 export interface PrintCreateData {
@@ -53,6 +71,7 @@ export interface PrintCreateData {
   saleValueActual?: number | null;
   userId: string;
   filaments?: PrintFilamentInput[];
+  extraItems?: PrintExtraItemInput[];
 }
 
 export type PrintUpdateData = Partial<PrintCreateData>;
@@ -78,6 +97,7 @@ export class Print {
     private _saleValueActual: number | null,
     private readonly _userId: string,
     private _filaments: PrintFilamentData[],
+    private _extraItems: PrintExtraItemData[],
     private readonly _createdAt: Date = new Date(),
   ) {}
 
@@ -104,6 +124,7 @@ export class Print {
       data.saleValueActual ?? null,
       data.userId,
       Print.buildFilaments(data.filaments),
+      Print.buildExtraItems(data.extraItems),
     );
   }
 
@@ -135,6 +156,15 @@ export class Print {
           position: filament.position,
           filamentId: filament.filamentId,
           grams: filament.grams,
+        })),
+      (data.extraItems ?? [])
+        .slice()
+        .sort((a, b) => a.position - b.position)
+        .map((extraItem) => ({
+          id: extraItem.id,
+          position: extraItem.position,
+          extraItemId: extraItem.extraItemId,
+          quantity: extraItem.quantity,
         })),
       data.createdAt || new Date(),
     );
@@ -174,6 +204,16 @@ export class Print {
       }));
   }
 
+  private static buildExtraItems(extraItems?: PrintExtraItemInput[]): PrintExtraItemData[] {
+    return (extraItems ?? [])
+      .filter((extraItem) => extraItem.extraItemId != null || extraItem.quantity != null)
+      .map((extraItem, index) => ({
+        position: index,
+        extraItemId: extraItem.extraItemId ?? null,
+        quantity: extraItem.quantity ?? null,
+      }));
+  }
+
   update(data: PrintUpdateData): void {
     if (data.name !== undefined) this._name = Print.validateName(data.name);
     if (data.printDate !== undefined) this._printDate = data.printDate;
@@ -187,6 +227,7 @@ export class Print {
     if (data.profitPercent !== undefined) this._profitPercent = data.profitPercent;
     if (data.saleValueActual !== undefined) this._saleValueActual = data.saleValueActual;
     if (data.filaments !== undefined) this._filaments = Print.buildFilaments(data.filaments);
+    if (data.extraItems !== undefined) this._extraItems = Print.buildExtraItems(data.extraItems);
   }
 
   applyCalculations(calculations: PrintCalculations): void {
@@ -258,6 +299,9 @@ export class Print {
   get filaments(): PrintFilamentData[] {
     return this._filaments;
   }
+  get extraItems(): PrintExtraItemData[] {
+    return this._extraItems;
+  }
   get createdAt(): Date {
     return new Date(this._createdAt);
   }
@@ -322,6 +366,7 @@ export class Print {
     saleValueActual: number | null;
     createdAt: Date;
     filaments: PrintFilamentData[];
+    extraItems: PrintExtraItemData[];
   } {
     return {
       id: this._id,
@@ -343,6 +388,7 @@ export class Print {
       saleValueActual: this._saleValueActual,
       createdAt: this._createdAt,
       filaments: this._filaments,
+      extraItems: this._extraItems,
     };
   }
 

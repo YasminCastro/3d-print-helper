@@ -11,6 +11,11 @@ type ApiPrintFilament = {
   grams: number | null;
 };
 
+type ApiPrintExtraItem = {
+  extraItemId: number | null;
+  quantity: number | null;
+};
+
 type ApiPrint = {
   id: number;
   name: string;
@@ -31,6 +36,7 @@ type ApiPrint = {
   saleValueActual: number | null;
   createdAt: string;
   filaments: ApiPrintFilament[];
+  extraItems: ApiPrintExtraItem[];
 };
 
 type ApiPrintCategory = {
@@ -66,6 +72,11 @@ function toDomain(api: ApiPrint): PrintWithFilaments {
     filaments: api.filaments.map((filament, index) => ({
       filament_id: filament.filamentId,
       grams: filament.grams,
+      position: index,
+    })),
+    extraItems: api.extraItems.map((extraItem, index) => ({
+      extra_item_id: extraItem.extraItemId,
+      quantity: extraItem.quantity,
       position: index,
     })),
   };
@@ -121,6 +132,24 @@ function parseFilaments(formData: FormData) {
     .filter((entry) => entry.filamentId !== null || entry.grams !== null);
 }
 
+function parseExtraItems(formData: FormData) {
+  const raw = String(formData.get("extraItems") ?? "[]");
+
+  let parsed: { extraItemId?: string; quantity?: number }[] = [];
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    parsed = [];
+  }
+
+  return parsed
+    .map((entry) => ({
+      extraItemId: entry.extraItemId ? Number(entry.extraItemId) : null,
+      quantity: parseNumber(entry.quantity),
+    }))
+    .filter((entry) => entry.extraItemId !== null || entry.quantity !== null);
+}
+
 async function parseFields(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
   const printDate = String(formData.get("printDate") ?? "").trim() || null;
@@ -143,6 +172,7 @@ async function parseFields(formData: FormData) {
   const categoryId = await resolveCategoryId(categoryIdRaw, newCategoryName);
   const printerId = printerIdRaw ? Number(printerIdRaw) : null;
   const filaments = parseFilaments(formData);
+  const extraItems = parseExtraItems(formData);
 
   return {
     name,
@@ -156,6 +186,7 @@ async function parseFields(formData: FormData) {
     profitPercent,
     saleValueActual,
     filaments,
+    extraItems,
   };
 }
 
@@ -174,6 +205,10 @@ function toPayload(fields: Awaited<ReturnType<typeof parseFields>>) {
     filaments: fields.filaments.map((filament) => ({
       filamentId: filament.filamentId,
       grams: filament.grams,
+    })),
+    extraItems: fields.extraItems.map((extraItem) => ({
+      extraItemId: extraItem.extraItemId,
+      quantity: extraItem.quantity,
     })),
   };
 }

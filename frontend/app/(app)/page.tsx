@@ -23,6 +23,8 @@ import { printerDenormalizedFields } from "@/lib/printer-helpers";
 import { getBrands } from "@/lib/actions/brands";
 import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
+import { getExtraItems } from "@/lib/actions/extra-items";
+import { extraItemDenormalizedFields } from "@/lib/extra-item-helpers";
 import { getPrintCategories, getPrints } from "@/lib/actions/prints";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import type { PrintWithDetails } from "@/lib/types/print";
@@ -65,6 +67,9 @@ export default async function Home() {
 
   const filamentOptions = await getFilamentOptions();
 
+  const extraItems = await getExtraItems();
+  const extraItemsById = new Map(extraItems.map((extraItem) => [extraItem.id, extraItem]));
+
   const [printCategoryOptions, printsRaw] = await Promise.all([
     getPrintCategories(),
     getPrints(),
@@ -99,6 +104,12 @@ export default async function Home() {
         ...filament,
         ...filamentDenormalizedFields(
           filament.filament_id != null ? filamentsById.get(filament.filament_id) : null
+        ),
+      })),
+      extraItems: print.extraItems.map((extraItem) => ({
+        ...extraItem,
+        ...extraItemDenormalizedFields(
+          extraItem.extra_item_id != null ? extraItemsById.get(extraItem.extra_item_id) : null
         ),
       })),
     }));
@@ -160,6 +171,7 @@ export default async function Home() {
             categoryOptions={printCategoryOptions}
             filamentOptions={filamentOptions}
             printerOptions={printerOptions}
+            extraItemOptions={extraItems}
             lastPrinterId={lastPrint?.printer_id}
             lastProfitPercent={lastPrintProfit?.profit_percent}
             trigger={

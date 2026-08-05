@@ -39,8 +39,20 @@ export type PrintFilamentWithDetails = PrintFilament & {
   filament_max_price_paid: number | null;
 };
 
+export type PrintExtraItem = {
+  extra_item_id: number | null;
+  quantity: number | null;
+  position: number;
+};
+
+export type PrintExtraItemWithDetails = PrintExtraItem & {
+  extra_item_name: string | null;
+  extra_item_cost: number | null;
+};
+
 export type PrintWithFilaments = Print & {
   filaments: PrintFilament[];
+  extraItems: PrintExtraItem[];
 };
 
 export type PrintWithCategory = Print & {
@@ -53,4 +65,5 @@ export type PrintWithCategory = Print & {
 
 export type PrintWithDetails = PrintWithCategory & {
   filaments: PrintFilamentWithDetails[];
+  extraItems: PrintExtraItemWithDetails[];
 };

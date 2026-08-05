@@ -10,6 +10,7 @@ import { createPrintAction } from "@/lib/actions/prints";
 import { printFormSchema, type PrintFormInput } from "@/lib/schemas/print";
 import type { PrintCategory } from "@/lib/types/print";
 import type { FilamentOption } from "@/lib/types/filament";
+import type { ExtraItem } from "@/lib/types/extra-item";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -36,6 +37,7 @@ function buildDefaultValues(
     newCategoryName: "",
     printerId: lastPrinterId ? String(lastPrinterId) : "",
     filaments: [],
+    extraItems: [],
     printLink: "",
     profitPercent: lastProfitPercent ?? 100,
     saleValueActual: undefined,
@@ -46,6 +48,7 @@ export function PrintFormDialog({
   categoryOptions,
   filamentOptions,
   printerOptions,
+  extraItemOptions,
   lastPrinterId,
   lastProfitPercent,
   trigger,
@@ -53,6 +56,7 @@ export function PrintFormDialog({
   categoryOptions: PrintCategory[];
   filamentOptions: FilamentOption[];
   printerOptions: { id: number; name: string }[];
+  extraItemOptions: ExtraItem[];
   lastPrinterId?: number | null;
   lastProfitPercent?: number | null;
   trigger?: ReactNode;
@@ -83,6 +87,7 @@ export function PrintFormDialog({
         formData.append("newCategoryName", values.newCategoryName);
       if (values.printerId) formData.append("printerId", values.printerId);
       formData.append("filaments", JSON.stringify(values.filaments ?? []));
+      formData.append("extraItems", JSON.stringify(values.extraItems ?? []));
       if (values.printLink) formData.append("printLink", values.printLink);
       if (values.profitPercent !== undefined)
         formData.append("profitPercent", String(values.profitPercent));
@@ -129,6 +134,7 @@ export function PrintFormDialog({
             categoryOptions={categoryOptions}
             filamentOptions={filamentOptions}
             printerOptions={printerOptions}
+            extraItemOptions={extraItemOptions}
           />
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={isPending}>

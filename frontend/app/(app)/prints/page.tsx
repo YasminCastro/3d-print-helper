@@ -5,19 +5,23 @@ import { getPrinters } from "@/lib/actions/printers";
 import { printerDenormalizedFields } from "@/lib/printer-helpers";
 import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
+import { getExtraItems } from "@/lib/actions/extra-items";
+import { extraItemDenormalizedFields } from "@/lib/extra-item-helpers";
 import { getPrintCategories, getPrints } from "@/lib/actions/prints";
 import type { PrintWithDetails } from "@/lib/types/print";
 
 export default async function PrintsPage() {
-  const [printers, filaments, printsRaw, categoryOptions] = await Promise.all([
+  const [printers, filaments, extraItems, printsRaw, categoryOptions] = await Promise.all([
     getPrinters(),
     getFilaments(),
+    getExtraItems(),
     getPrints(),
     getPrintCategories(),
   ]);
 
   const printersById = new Map(printers.map((printer) => [printer.id, printer]));
   const filamentsById = new Map(filaments.map((filament) => [filament.id, filament]));
+  const extraItemsById = new Map(extraItems.map((extraItem) => [extraItem.id, extraItem]));
   const categoriesById = new Map(categoryOptions.map((category) => [category.id, category]));
 
   const printsWithDetails: PrintWithDetails[] = [...printsRaw]
@@ -37,6 +41,12 @@ export default async function PrintsPage() {
         ...filament,
         ...filamentDenormalizedFields(
           filament.filament_id != null ? filamentsById.get(filament.filament_id) : null
+        ),
+      })),
+      extraItems: print.extraItems.map((extraItem) => ({
+        ...extraItem,
+        ...extraItemDenormalizedFields(
+          extraItem.extra_item_id != null ? extraItemsById.get(extraItem.extra_item_id) : null
         ),
       })),
     }));
@@ -61,6 +71,7 @@ export default async function PrintsPage() {
           categoryOptions={categoryOptions}
           filamentOptions={filamentOptions}
           printerOptions={printerOptions}
+          extraItemOptions={extraItems}
           lastPrinterId={lastPrint?.printer_id}
           lastProfitPercent={lastPrintProfit?.profit_percent}
         />
