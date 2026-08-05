@@ -23,7 +23,6 @@ export const filamentFormSchema = z.object({
   nozzleTempMax: optionalNumberInput,
   bedTempMin: optionalNumberInput,
   bedTempMax: optionalNumberInput,
-  purchaseBatch: z.string().trim().optional(),
   rating: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5)]).optional(),
   color: z.string().trim().optional(),
   color2: z.string().trim().optional(),

@@ -30,7 +30,6 @@ export const createFilamentSchema = z.object({
   nozzleTempMax: z.number().int().nullable().optional(),
   bedTempMin: z.number().int().nullable().optional(),
   bedTempMax: z.number().int().nullable().optional(),
-  purchaseBatch: optionalText,
   rating: z.number().int().min(1).max(5).nullable().optional(),
   color: optionalText,
   color2: optionalText,

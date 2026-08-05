@@ -8,7 +8,10 @@ import {
   calibrationStatusLabels,
   slicerLabels,
 } from "@/components/calibration-form-fields";
+import { filamentTypeColors, filamentTypeLabels } from "@/components/brand-form-fields";
+import { filamentIconStyle } from "@/lib/filament-accent";
 import type { calibrationStatusOptions, slicerOptions } from "@/lib/schemas/calibration";
+import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import type { CalibrationWithFilament } from "@/lib/types/calibration";
 
 const STATUS_BADGE_CLASSES: Record<(typeof calibrationStatusOptions)[number], string> = {
@@ -44,7 +47,11 @@ function formatDate(value: string | null) {
 export function CalibrationCard({ calibration }: { calibration: CalibrationWithFilament }) {
   const slicer = calibration.slicer as (typeof slicerOptions)[number];
   const status = calibration.status as (typeof calibrationStatusOptions)[number] | null;
+  const material = calibration.filament_material as
+    | (typeof filamentTypeOptions)[number]
+    | null;
   const date = formatDate(calibration.calibration_date);
+  const iconStyle = filamentIconStyle([calibration.filament_color]);
 
   return (
     <Link href={`/calibrations/${calibration.id}`} className="block h-full">
@@ -53,16 +60,9 @@ export function CalibrationCard({ calibration }: { calibration: CalibrationWithF
           <div
             className={cn(
               "flex size-10 shrink-0 items-center justify-center rounded-xl",
-              !calibration.filament_color && accentFor(calibration.id)
+              !iconStyle && accentFor(calibration.id)
             )}
-            style={
-              calibration.filament_color
-                ? {
-                    backgroundColor: `${calibration.filament_color}26`,
-                    color: calibration.filament_color,
-                  }
-                : undefined
-            }
+            style={iconStyle}
           >
             <Gauge className="size-5" />
           </div>
@@ -74,11 +74,16 @@ export function CalibrationCard({ calibration }: { calibration: CalibrationWithF
           </div>
         </CardHeader>
 
-        {(status || date) && (
+        {(status || material || date) && (
           <CardContent className="mt-auto flex flex-wrap items-center gap-1.5">
             {status && (
               <Badge variant="outline" className={STATUS_BADGE_CLASSES[status]}>
                 {calibrationStatusLabels[status]}
+              </Badge>
+            )}
+            {material && (
+              <Badge variant="outline" className={filamentTypeColors[material]}>
+                {filamentTypeLabels[material] ?? material}
               </Badge>
             )}
             {date && <Badge variant="secondary">{date}</Badge>}

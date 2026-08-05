@@ -22,7 +22,6 @@ type ApiFilament = {
   nozzleTempMax: number | null;
   bedTempMin: number | null;
   bedTempMax: number | null;
-  purchaseBatch: string | null;
   rating: number | null;
   color: string | null;
   color2: string | null;
@@ -45,7 +44,6 @@ function toDomain(api: ApiFilament): Filament {
     nozzle_temp_max: api.nozzleTempMax,
     bed_temp_min: api.bedTempMin,
     bed_temp_max: api.bedTempMax,
-    purchase_batch: api.purchaseBatch,
     rating: api.rating,
     color: api.color,
     color2: api.color2,
@@ -70,7 +68,6 @@ function toPayload(values: FilamentFormInput) {
     nozzleTempMax: parsed.nozzleTempMax ?? null,
     bedTempMin: parsed.bedTempMin ?? null,
     bedTempMax: parsed.bedTempMax ?? null,
-    purchaseBatch: parsed.purchaseBatch || null,
     rating: parsed.rating ?? null,
     color: parsed.color || null,
     color2: parsed.color2 || null,

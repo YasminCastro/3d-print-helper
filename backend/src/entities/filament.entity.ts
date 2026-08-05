@@ -13,7 +13,6 @@ export interface FilamentPersistenceData {
   nozzleTempMax?: number | null;
   bedTempMin?: number | null;
   bedTempMax?: number | null;
-  purchaseBatch?: string | null;
   rating?: number | null;
   color?: string | null;
   color2?: string | null;
@@ -35,7 +34,6 @@ export interface FilamentCreateData {
   nozzleTempMax?: number | null;
   bedTempMin?: number | null;
   bedTempMax?: number | null;
-  purchaseBatch?: string | null;
   rating?: number | null;
   color?: string | null;
   color2?: string | null;
@@ -60,7 +58,6 @@ export class Filament {
     private _nozzleTempMax: number | null,
     private _bedTempMin: number | null,
     private _bedTempMax: number | null,
-    private _purchaseBatch: string | null,
     private _rating: number | null,
     private _color: string | null,
     private _color2: string | null,
@@ -87,7 +84,6 @@ export class Filament {
       data.nozzleTempMax ?? null,
       data.bedTempMin ?? null,
       data.bedTempMax ?? null,
-      data.purchaseBatch ?? null,
       validatedRating,
       data.color ?? null,
       data.color2 ?? null,
@@ -112,7 +108,6 @@ export class Filament {
       data.nozzleTempMax ?? null,
       data.bedTempMin ?? null,
       data.bedTempMax ?? null,
-      data.purchaseBatch ?? null,
       data.rating ?? null,
       data.color ?? null,
       data.color2 ?? null,
@@ -163,7 +158,6 @@ export class Filament {
     if (data.nozzleTempMax !== undefined) this._nozzleTempMax = data.nozzleTempMax;
     if (data.bedTempMin !== undefined) this._bedTempMin = data.bedTempMin;
     if (data.bedTempMax !== undefined) this._bedTempMax = data.bedTempMax;
-    if (data.purchaseBatch !== undefined) this._purchaseBatch = data.purchaseBatch;
     if (data.rating !== undefined) this._rating = Filament.validateRating(data.rating);
     if (data.color !== undefined) this._color = data.color;
     if (data.color2 !== undefined) this._color2 = data.color2;
@@ -211,9 +205,6 @@ export class Filament {
   get bedTempMax(): number | null {
     return this._bedTempMax;
   }
-  get purchaseBatch(): string | null {
-    return this._purchaseBatch;
-  }
   get rating(): number | null {
     return this._rating;
   }
@@ -245,7 +236,6 @@ export class Filament {
       nozzleTempMax: this._nozzleTempMax,
       bedTempMin: this._bedTempMin,
       bedTempMax: this._bedTempMax,
-      purchaseBatch: this._purchaseBatch,
       rating: this._rating,
       color: this._color,
       color2: this._color2,
@@ -268,7 +258,6 @@ export class Filament {
     nozzleTempMax: number | null;
     bedTempMin: number | null;
     bedTempMax: number | null;
-    purchaseBatch: string | null;
     rating: number | null;
     color: string | null;
     color2: string | null;
@@ -289,7 +278,6 @@ export class Filament {
       nozzleTempMax: this._nozzleTempMax,
       bedTempMin: this._bedTempMin,
       bedTempMax: this._bedTempMax,
-      purchaseBatch: this._purchaseBatch,
       rating: this._rating,
       color: this._color,
       color2: this._color2,

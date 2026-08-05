@@ -36,6 +36,7 @@ const defaultValues: CalibrationFormInput = {
   pressureAdvance: undefined,
   flowRatio: undefined,
   retractionDistance: undefined,
+  purchaseBatch: "",
   notes: "",
 };
 

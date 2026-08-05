@@ -22,6 +22,7 @@ export const calibrationFormSchema = z.object({
   pressureAdvance: optionalNumberInput,
   flowRatio: optionalNumberInput,
   retractionDistance: optionalNumberInput,
+  purchaseBatch: z.string().trim().optional(),
   notes: z.string().trim().optional(),
 });
 

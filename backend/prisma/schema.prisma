@@ -81,7 +81,6 @@ model Filament {
   nozzleTempMax    Int?     @map("nozzle_temp_max")
   bedTempMin       Int?     @map("bed_temp_min")
   bedTempMax       Int?     @map("bed_temp_max")
-  purchaseBatch    String?  @map("purchase_batch")
   rating           Int?
   color            String?
   color2           String?
@@ -111,6 +110,7 @@ model Calibration {
   pressureAdvance    Float?   @map("pressure_advance")
   flowRatio          Float?   @map("flow_ratio")
   retractionDistance Float?   @map("retraction_distance")
+  purchaseBatch      String?  @map("purchase_batch")
   notes              String?
   createdAt          DateTime @default(now()) @map("created_at")
   userId             String   @map("user_id")

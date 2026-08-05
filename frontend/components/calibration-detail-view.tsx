@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   DropletIcon,
   Gauge,
+  HashIcon,
   Layers,
   MoveHorizontalIcon,
   NotebookTextIcon,
@@ -52,10 +53,13 @@ import {
   calibrationStatusLabels,
   slicerLabels,
 } from "@/components/calibration-form-fields";
+import { filamentTypeLabels } from "@/components/brand-form-fields";
+import { filamentBannerStyle, filamentIconStyle } from "@/lib/filament-accent";
 import type {
   calibrationStatusOptions,
   slicerOptions,
 } from "@/lib/schemas/calibration";
+import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import { PrinterStatCard, type StatColor } from "@/components/printer-stat-card";
 
 const statusIcons: Record<(typeof calibrationStatusOptions)[number], typeof CheckCircle2> = {
@@ -89,6 +93,7 @@ function toFormValues(
     pressureAdvance: calibration.pressure_advance ?? undefined,
     flowRatio: calibration.flow_ratio ?? undefined,
     retractionDistance: calibration.retraction_distance ?? undefined,
+    purchaseBatch: calibration.purchase_batch ?? "",
     notes: calibration.notes ?? "",
   };
 }
@@ -134,6 +139,11 @@ export function CalibrationDetailView({
   const status = calibration.status as
     | (typeof calibrationStatusOptions)[number]
     | null;
+  const material = calibration.filament_material as
+    | (typeof filamentTypeOptions)[number]
+    | null;
+  const bannerStyle = filamentBannerStyle([calibration.filament_color]);
+  const iconStyle = filamentIconStyle([calibration.filament_color]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -231,27 +241,16 @@ export function CalibrationDetailView({
           <div
             className={cn(
               "flex items-center gap-4 rounded-xl p-5 ring-1 ring-foreground/10",
-              !calibration.filament_color &&
-                "bg-linear-to-br from-primary/15 via-primary/5 to-transparent"
+              !bannerStyle && "bg-linear-to-br from-primary/15 via-primary/5 to-transparent"
             )}
-            style={
-              calibration.filament_color
-                ? {
-                    background: `linear-gradient(to bottom right, ${calibration.filament_color}26, ${calibration.filament_color}0d, transparent)`,
-                  }
-                : undefined
-            }
+            style={bannerStyle}
           >
             <div
-              className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-primary"
-              style={
-                calibration.filament_color
-                  ? {
-                      backgroundColor: `${calibration.filament_color}26`,
-                      color: calibration.filament_color,
-                    }
-                  : undefined
-              }
+              className={cn(
+                "flex size-14 shrink-0 items-center justify-center rounded-2xl",
+                !iconStyle && "bg-primary/15 text-primary"
+              )}
+              style={iconStyle}
             >
               <Gauge className="size-7" />
             </div>
@@ -283,6 +282,11 @@ export function CalibrationDetailView({
                     />
                   )}
                   {calibration.filament_name ?? "—"}
+                  {material && (
+                    <span className="text-xs font-normal text-muted-foreground">
+                      ({filamentTypeLabels[material] ?? material})
+                    </span>
+                  )}
                 </span>
               }
             />
@@ -297,6 +301,12 @@ export function CalibrationDetailView({
               label="Data de calibração"
               color="chart-3"
               value={formatDate(calibration.calibration_date)}
+            />
+            <PrinterStatCard
+              icon={HashIcon}
+              label="Lote do filamento"
+              color="chart-1"
+              value={calibration.purchase_batch ?? "—"}
             />
           </div>
 
@@ -375,6 +385,92 @@ export function CalibrationDetailView({
                 <PrinterStatCard
                   icon={MoveHorizontalIcon}
                   label="Retração de distância"
+                  color="chart-1"
+                  value={
+                    calibration.retraction_distance != null
+                      ? `${calibration.retraction_distance} mm`
+                      : "—"
+                  }
+                />
+              </div>
+            </div>
+          )}
+
+          {slicer === "creality" && (
+            <div className="flex flex-col gap-3 rounded-xl bg-card p-4 ring-1 ring-foreground/10">
+              <div className="flex items-center gap-2 text-sm font-medium">
+                <span className="flex size-6 shrink-0 items-center justify-center rounded-md bg-chart-3/15 text-chart-3">
+                  <SlidersHorizontalIcon className="size-3.5" />
+                </span>
+                Configurações do Creality Slicer
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                <PrinterStatCard
+                  icon={ThermometerIcon}
+                  label="Temp. mesa 1ª camada"
+                  color="chart-3"
+                  value={
+                    calibration.bed_temp_first_layer != null
+                      ? `${calibration.bed_temp_first_layer}°C`
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
+                  icon={ThermometerIcon}
+                  label="Temp. mesa demais camadas"
+                  color="chart-3"
+                  value={
+                    calibration.bed_temp_other_layers != null
+                      ? `${calibration.bed_temp_other_layers}°C`
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
+                  icon={ThermometerIcon}
+                  label="Temp. bico inicial"
+                  color="chart-5"
+                  value={
+                    calibration.nozzle_temp_initial != null
+                      ? `${calibration.nozzle_temp_initial}°C`
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
+                  icon={ThermometerIcon}
+                  label="Temp. bico final"
+                  color="chart-5"
+                  value={
+                    calibration.nozzle_temp_final != null
+                      ? `${calibration.nozzle_temp_final}°C`
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
+                  icon={ActivityIcon}
+                  label="Max Volumetric Speed"
+                  color="chart-2"
+                  value={
+                    calibration.max_volumetric_speed != null
+                      ? `${calibration.max_volumetric_speed} mm³/s`
+                      : "—"
+                  }
+                />
+                <PrinterStatCard
+                  icon={ActivityIcon}
+                  label="Pressure Advance"
+                  color="chart-2"
+                  value={calibration.pressure_advance ?? "—"}
+                />
+                <PrinterStatCard
+                  icon={DropletIcon}
+                  label="Flow ratio"
+                  color="chart-4"
+                  value={calibration.flow_ratio ?? "—"}
+                />
+                <PrinterStatCard
+                  icon={MoveHorizontalIcon}
+                  label="Retração"
                   color="chart-1"
                   value={
                     calibration.retraction_distance != null

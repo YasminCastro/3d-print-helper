@@ -26,6 +26,7 @@ export const createCalibrationSchema = z.object({
   pressureAdvance: optionalNumber,
   flowRatio: optionalNumber,
   retractionDistance: optionalNumber,
+  purchaseBatch: optionalText,
   notes: z.string().trim().nullable().optional(),
 });
 

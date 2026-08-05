@@ -5,7 +5,6 @@ import {
   Building2Icon,
   CalendarIcon,
   CircleCheckIcon,
-  HashIcon,
   LayersIcon,
   LinkIcon,
   PaletteIcon,
@@ -368,21 +367,6 @@ export function FilamentFormFields({
               />
             </div>
           </div>
-        </FieldContent>
-      </Field>
-
-      <Field data-invalid={!!form.formState.errors.purchaseBatch}>
-        <FieldLabel htmlFor="filament-purchase-batch">
-          <FieldIcon icon={HashIcon} color="chart-5" />
-          Lote de compra
-        </FieldLabel>
-        <FieldContent>
-          <Input
-            id="filament-purchase-batch"
-            placeholder="Ex: L2024-08"
-            {...form.register("purchaseBatch")}
-          />
-          <FieldError errors={[form.formState.errors.purchaseBatch]} />
         </FieldContent>
       </Field>
     </FieldGroup>

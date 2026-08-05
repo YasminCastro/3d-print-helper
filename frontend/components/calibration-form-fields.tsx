@@ -7,6 +7,7 @@ import {
   CircleCheckIcon,
   DropletIcon,
   Gauge,
+  HashIcon,
   Layers,
   MoveHorizontalIcon,
   NotebookTextIcon,
@@ -22,6 +23,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Combobox,
+  ComboboxClear,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxInputGroup,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+} from "@/components/ui/combobox";
 import {
   Field,
   FieldContent,
@@ -39,6 +51,8 @@ import type { FilamentOption } from "@/lib/types/filament";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import { FieldIcon } from "@/components/field-icon";
+
+type FilamentComboItem = { value: string; label: string };
 
 function filamentOptionLabel(filament: FilamentOption) {
   const parts = [filament.name];
@@ -82,6 +96,15 @@ export function CalibrationFormFields({
   form: UseFormReturn<CalibrationFormInput>;
   filamentOptions: FilamentOption[];
 }) {
+  const sortedFilamentOptions = [...filamentOptions].sort((a, b) =>
+    a.name.localeCompare(b.name, "pt-BR")
+  );
+
+  const filamentItems: FilamentComboItem[] = sortedFilamentOptions.map((filament) => ({
+    value: String(filament.id),
+    label: filamentOptionLabel(filament),
+  }));
+
   return (
     <FieldGroup>
       <Field data-invalid={!!form.formState.errors.slicer}>
@@ -115,40 +138,74 @@ export function CalibrationFormFields({
         </FieldContent>
       </Field>
 
-      <Field data-invalid={!!form.formState.errors.filamentId}>
-        <FieldLabel htmlFor="calibration-filament">
-          <FieldIcon icon={Layers} color="chart-1" />
-          Filamento
-        </FieldLabel>
-        <FieldContent>
-          <Select
-            items={filamentOptions.map((filament) => ({
-              value: String(filament.id),
-              label: filamentOptionLabel(filament),
-            }))}
-            value={form.watch("filamentId") ?? ""}
-            onValueChange={(value) => form.setValue("filamentId", value ?? "")}
-          >
-            <SelectTrigger id="calibration-filament" className="w-full">
-              <SelectValue placeholder="Selecione o filamento" />
-            </SelectTrigger>
-            <SelectContent>
-              {filamentOptions.map((filament) => (
-                <SelectItem key={filament.id} value={String(filament.id)}>
-                  <span className="flex items-center gap-2">
-                    <span
-                      className="size-3.5 shrink-0 rounded-full border"
-                      style={{ backgroundColor: filament.color ?? "#a1a1aa" }}
-                    />
-                    {filamentOptionLabel(filament)}
-                  </span>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FieldError errors={[form.formState.errors.filamentId]} />
-        </FieldContent>
-      </Field>
+      <div className="grid grid-cols-3 gap-4">
+        <Field
+          className="col-span-2"
+          data-invalid={!!form.formState.errors.filamentId}
+        >
+          <FieldLabel htmlFor="calibration-filament">
+            <FieldIcon icon={Layers} color="chart-1" />
+            Filamento
+          </FieldLabel>
+          <FieldContent>
+            <Combobox
+              items={filamentItems}
+              value={
+                filamentItems.find((item) => item.value === form.watch("filamentId")) ?? null
+              }
+              onValueChange={(item) =>
+                form.setValue("filamentId", (item as FilamentComboItem | null)?.value ?? "")
+              }
+            >
+              <ComboboxInputGroup>
+                <ComboboxInput
+                  id="calibration-filament"
+                  placeholder="Pesquisar filamento..."
+                />
+                <ComboboxClear aria-label="Limpar seleção" />
+                <ComboboxTrigger aria-label="Abrir lista" />
+              </ComboboxInputGroup>
+              <ComboboxContent>
+                <ComboboxEmpty>Nenhum filamento encontrado.</ComboboxEmpty>
+                <ComboboxList>
+                  {(item: FilamentComboItem) => {
+                    const filament = sortedFilamentOptions.find(
+                      (option) => String(option.id) === item.value
+                    );
+                    return (
+                      <ComboboxItem key={item.value} value={item}>
+                        <span className="flex items-center gap-2">
+                          <span
+                            className="size-3.5 shrink-0 rounded-full border"
+                            style={{ backgroundColor: filament?.color ?? "#a1a1aa" }}
+                          />
+                          {item.label}
+                        </span>
+                      </ComboboxItem>
+                    );
+                  }}
+                </ComboboxList>
+              </ComboboxContent>
+            </Combobox>
+            <FieldError errors={[form.formState.errors.filamentId]} />
+          </FieldContent>
+        </Field>
+
+        <Field data-invalid={!!form.formState.errors.purchaseBatch}>
+          <FieldLabel htmlFor="calibration-purchase-batch">
+            <FieldIcon icon={HashIcon} color="chart-1" />
+            Lote
+          </FieldLabel>
+          <FieldContent>
+            <Input
+              id="calibration-purchase-batch"
+              placeholder="Ex: L2024-08"
+              {...form.register("purchaseBatch")}
+            />
+            <FieldError errors={[form.formState.errors.purchaseBatch]} />
+          </FieldContent>
+        </Field>
+      </div>
 
       <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.status}>
@@ -374,6 +431,195 @@ export function CalibrationFormFields({
             <FieldContent>
               <Textarea
                 id="calibration-notes"
+                placeholder="Observações sobre a calibração..."
+                {...form.register("notes")}
+              />
+              <FieldError errors={[form.formState.errors.notes]} />
+            </FieldContent>
+          </Field>
+        </>
+      )}
+
+      {form.watch("slicer") === "creality" && (
+        <>
+          <FieldSeparator>Configurações do Creality Slicer</FieldSeparator>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field data-invalid={!!form.formState.errors.bedTempFirstLayer}>
+              <FieldLabel htmlFor="calibration-creality-bed-first">
+                <FieldIcon icon={ThermometerIcon} color="chart-3" />
+                Temperatura mesa 1ª camada (°C)
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="calibration-creality-bed-first"
+                  type="number"
+                  step="any"
+                  placeholder="Ex: 65"
+                  {...form.register("bedTempFirstLayer", {
+                    valueAsNumber: true,
+                  })}
+                />
+                <FieldError
+                  errors={[form.formState.errors.bedTempFirstLayer]}
+                />
+              </FieldContent>
+            </Field>
+
+            <Field data-invalid={!!form.formState.errors.bedTempOtherLayers}>
+              <FieldLabel htmlFor="calibration-creality-bed-other">
+                <FieldIcon icon={ThermometerIcon} color="chart-3" />
+                Temperatura mesa demais camadas (°C)
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="calibration-creality-bed-other"
+                  type="number"
+                  step="any"
+                  placeholder="Ex: 60"
+                  {...form.register("bedTempOtherLayers", {
+                    valueAsNumber: true,
+                  })}
+                />
+                <FieldError
+                  errors={[form.formState.errors.bedTempOtherLayers]}
+                />
+              </FieldContent>
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field data-invalid={!!form.formState.errors.nozzleTempInitial}>
+              <FieldLabel htmlFor="calibration-creality-nozzle-initial">
+                <FieldIcon icon={ThermometerIcon} color="chart-5" />
+                Temperatura bico inicial (°C)
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="calibration-creality-nozzle-initial"
+                  type="number"
+                  step="any"
+                  placeholder="Ex: 205"
+                  {...form.register("nozzleTempInitial", {
+                    valueAsNumber: true,
+                  })}
+                />
+                <FieldError
+                  errors={[form.formState.errors.nozzleTempInitial]}
+                />
+              </FieldContent>
+            </Field>
+
+            <Field data-invalid={!!form.formState.errors.nozzleTempFinal}>
+              <FieldLabel htmlFor="calibration-creality-nozzle-final">
+                <FieldIcon icon={ThermometerIcon} color="chart-5" />
+                Temperatura bico final (°C)
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="calibration-creality-nozzle-final"
+                  type="number"
+                  step="any"
+                  placeholder="Ex: 200"
+                  {...form.register("nozzleTempFinal", {
+                    valueAsNumber: true,
+                  })}
+                />
+                <FieldError
+                  errors={[form.formState.errors.nozzleTempFinal]}
+                />
+              </FieldContent>
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field data-invalid={!!form.formState.errors.maxVolumetricSpeed}>
+              <FieldLabel htmlFor="calibration-creality-max-volumetric-speed">
+                <FieldIcon icon={ActivityIcon} color="chart-2" />
+                Max Volumetric Speed (mm³/s)
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="calibration-creality-max-volumetric-speed"
+                  type="number"
+                  step="any"
+                  placeholder="Ex: 18"
+                  {...form.register("maxVolumetricSpeed", {
+                    valueAsNumber: true,
+                  })}
+                />
+                <FieldError
+                  errors={[form.formState.errors.maxVolumetricSpeed]}
+                />
+              </FieldContent>
+            </Field>
+
+            <Field data-invalid={!!form.formState.errors.pressureAdvance}>
+              <FieldLabel htmlFor="calibration-creality-pressure-advance">
+                <FieldIcon icon={ActivityIcon} color="chart-2" />
+                Pressure Advance
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="calibration-creality-pressure-advance"
+                  type="number"
+                  step="any"
+                  placeholder="Ex: 0.042"
+                  {...form.register("pressureAdvance", { valueAsNumber: true })}
+                />
+                <FieldError errors={[form.formState.errors.pressureAdvance]} />
+              </FieldContent>
+            </Field>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <Field data-invalid={!!form.formState.errors.flowRatio}>
+              <FieldLabel htmlFor="calibration-creality-flow-ratio">
+                <FieldIcon icon={DropletIcon} color="chart-4" />
+                Flow ratio
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="calibration-creality-flow-ratio"
+                  type="number"
+                  step="any"
+                  placeholder="Ex: 0.95"
+                  {...form.register("flowRatio", { valueAsNumber: true })}
+                />
+                <FieldError errors={[form.formState.errors.flowRatio]} />
+              </FieldContent>
+            </Field>
+
+            <Field data-invalid={!!form.formState.errors.retractionDistance}>
+              <FieldLabel htmlFor="calibration-creality-retraction-distance">
+                <FieldIcon icon={MoveHorizontalIcon} color="chart-1" />
+                Retração (mm)
+              </FieldLabel>
+              <FieldContent>
+                <Input
+                  id="calibration-creality-retraction-distance"
+                  type="number"
+                  step="any"
+                  placeholder="Ex: 0.8"
+                  {...form.register("retractionDistance", {
+                    valueAsNumber: true,
+                  })}
+                />
+                <FieldError
+                  errors={[form.formState.errors.retractionDistance]}
+                />
+              </FieldContent>
+            </Field>
+          </div>
+
+          <Field data-invalid={!!form.formState.errors.notes}>
+            <FieldLabel htmlFor="calibration-creality-notes">
+              <FieldIcon icon={NotebookTextIcon} color="chart-1" />
+              Notas
+            </FieldLabel>
+            <FieldContent>
+              <Textarea
+                id="calibration-creality-notes"
                 placeholder="Observações sobre a calibração..."
                 {...form.register("notes")}
               />

@@ -12,6 +12,7 @@ export interface CalibrationPersistenceData {
   pressureAdvance?: number | null;
   flowRatio?: number | null;
   retractionDistance?: number | null;
+  purchaseBatch?: string | null;
   notes?: string | null;
   createdAt?: Date;
   userId: string;
@@ -30,6 +31,7 @@ export interface CalibrationCreateData {
   pressureAdvance?: number | null;
   flowRatio?: number | null;
   retractionDistance?: number | null;
+  purchaseBatch?: string | null;
   notes?: string | null;
   userId: string;
 }
@@ -51,6 +53,7 @@ export class Calibration {
     private _pressureAdvance: number | null,
     private _flowRatio: number | null,
     private _retractionDistance: number | null,
+    private _purchaseBatch: string | null,
     private _notes: string | null,
     private readonly _userId: string,
     private readonly _createdAt: Date = new Date(),
@@ -74,6 +77,7 @@ export class Calibration {
       data.pressureAdvance ?? null,
       data.flowRatio ?? null,
       data.retractionDistance ?? null,
+      data.purchaseBatch ?? null,
       data.notes ?? null,
       data.userId,
     );
@@ -94,6 +98,7 @@ export class Calibration {
       data.pressureAdvance ?? null,
       data.flowRatio ?? null,
       data.retractionDistance ?? null,
+      data.purchaseBatch ?? null,
       data.notes ?? null,
       data.userId,
       data.createdAt || new Date(),
@@ -140,6 +145,7 @@ export class Calibration {
     if (data.flowRatio !== undefined) this._flowRatio = data.flowRatio;
     if (data.retractionDistance !== undefined)
       this._retractionDistance = data.retractionDistance;
+    if (data.purchaseBatch !== undefined) this._purchaseBatch = data.purchaseBatch;
     if (data.notes !== undefined) this._notes = data.notes;
   }
 
@@ -182,6 +188,9 @@ export class Calibration {
   get retractionDistance(): number | null {
     return this._retractionDistance;
   }
+  get purchaseBatch(): string | null {
+    return this._purchaseBatch;
+  }
   get notes(): string | null {
     return this._notes;
   }
@@ -206,6 +215,7 @@ export class Calibration {
       pressureAdvance: this._pressureAdvance,
       flowRatio: this._flowRatio,
       retractionDistance: this._retractionDistance,
+      purchaseBatch: this._purchaseBatch,
       notes: this._notes,
       userId: this._userId,
     };
@@ -225,6 +235,7 @@ export class Calibration {
     pressureAdvance: number | null;
     flowRatio: number | null;
     retractionDistance: number | null;
+    purchaseBatch: string | null;
     notes: string | null;
     createdAt: Date;
   } {
@@ -242,6 +253,7 @@ export class Calibration {
       pressureAdvance: this._pressureAdvance,
       flowRatio: this._flowRatio,
       retractionDistance: this._retractionDistance,
+      purchaseBatch: this._purchaseBatch,
       notes: this._notes,
       createdAt: this._createdAt,
     };

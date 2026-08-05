@@ -12,6 +12,7 @@ export type Calibration = {
   pressure_advance: number | null;
   flow_ratio: number | null;
   retraction_distance: number | null;
+  purchase_batch: string | null;
   notes: string | null;
   created_at: string;
 };
@@ -19,4 +20,5 @@ export type Calibration = {
 export type CalibrationWithFilament = Calibration & {
   filament_name: string | null;
   filament_color: string | null;
+  filament_material: string | null;
 };

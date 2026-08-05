@@ -20,6 +20,7 @@ type ApiCalibration = {
   pressureAdvance: number | null;
   flowRatio: number | null;
   retractionDistance: number | null;
+  purchaseBatch: string | null;
   notes: string | null;
   createdAt: string;
 };
@@ -39,6 +40,7 @@ function toDomain(api: ApiCalibration): Calibration {
     pressure_advance: api.pressureAdvance,
     flow_ratio: api.flowRatio,
     retraction_distance: api.retractionDistance,
+    purchase_batch: api.purchaseBatch,
     notes: api.notes,
     created_at: api.createdAt,
   };
@@ -60,6 +62,7 @@ function toPayload(values: CalibrationFormInput) {
     pressureAdvance: parsed.pressureAdvance ?? null,
     flowRatio: parsed.flowRatio ?? null,
     retractionDistance: parsed.retractionDistance ?? null,
+    purchaseBatch: parsed.purchaseBatch || null,
     notes: parsed.notes || null,
   };
 }

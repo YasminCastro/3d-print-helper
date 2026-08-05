@@ -11,7 +11,6 @@ import {
   Building2Icon,
   CalendarIcon,
   CheckCircle2,
-  HashIcon,
   Layers,
   LinkIcon,
   PaletteIcon,
@@ -83,7 +82,6 @@ function toFormValues(filament: FilamentWithBrand): FilamentFormInput {
     nozzleTempMax: filament.nozzle_temp_max ?? undefined,
     bedTempMin: filament.bed_temp_min ?? undefined,
     bedTempMax: filament.bed_temp_max ?? undefined,
-    purchaseBatch: filament.purchase_batch ?? "",
     rating: (filament.rating as FilamentFormInput["rating"]) ?? undefined,
     color: filament.color ?? "",
     color2: filament.color2 ?? "",
@@ -300,12 +298,6 @@ export function FilamentDetailView({
               label="Última compra"
               color="chart-3"
               value={formatDate(filament.last_purchase_date)}
-            />
-            <PrinterStatCard
-              icon={HashIcon}
-              label="Lote de compra"
-              color="chart-5"
-              value={filament.purchase_batch ?? "—"}
             />
             <PrinterStatCard
               icon={PaletteIcon}

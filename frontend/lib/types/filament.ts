@@ -13,7 +13,6 @@ export type Filament = {
   nozzle_temp_max: number | null;
   bed_temp_min: number | null;
   bed_temp_max: number | null;
-  purchase_batch: string | null;
   rating: number | null;
   color: string | null;
   color2: string | null;

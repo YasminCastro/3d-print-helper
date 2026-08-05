@@ -37,7 +37,6 @@ const defaultValues: FilamentFormInput = {
   nozzleTempMax: undefined,
   bedTempMin: undefined,
   bedTempMax: undefined,
-  purchaseBatch: "",
   rating: undefined,
   color: "",
   color2: "",
