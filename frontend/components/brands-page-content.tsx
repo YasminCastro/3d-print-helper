@@ -10,7 +10,6 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { BrandCard } from "@/components/brand-card";
 import { costBenefitLabels, filamentTypeLabels } from "@/components/brand-form-fields";
-import { brandAveragePrice } from "@/lib/cost-benefit";
 import { costBenefitOptions, filamentTypeOptions } from "@/lib/schemas/brand";
 import type { BrandListItem } from "@/lib/brand-helpers";
 
@@ -27,8 +26,6 @@ export function BrandsPageContent({ items }: { items: BrandListItem[] }) {
   const [costBenefitFilter, setCostBenefitFilter] = useState<Set<string>>(new Set());
   const [filamentTypeFilter, setFilamentTypeFilter] = useState<Set<string>>(new Set());
   const [colorFilter, setColorFilter] = useState<Set<string>>(new Set());
-  const [priceMin, setPriceMin] = useState("");
-  const [priceMax, setPriceMax] = useState("");
 
   const availableColors = useMemo(() => {
     const set = new Set<string>();
@@ -39,22 +36,13 @@ export function BrandsPageContent({ items }: { items: BrandListItem[] }) {
   }, [items]);
 
   const filtered = useMemo(() => {
-    const min = priceMin.trim() ? Number(priceMin) : null;
-    const max = priceMax.trim() ? Number(priceMax) : null;
     const query = search.trim().toLowerCase();
 
-    return items.filter(({ brand, costBenefit, priceMin: itemPriceMin, priceMax: itemPriceMax }) => {
+    return items.filter(({ brand, costBenefit }) => {
       if (query && !brand.name.toLowerCase().includes(query)) return false;
 
       if (costBenefitFilter.size > 0 && (!costBenefit || !costBenefitFilter.has(costBenefit))) {
         return false;
-      }
-
-      if (min != null || max != null) {
-        const avgPrice = brandAveragePrice({ avgPriceMin: itemPriceMin, avgPriceMax: itemPriceMax });
-        if (avgPrice == null) return false;
-        if (min != null && avgPrice < min) return false;
-        if (max != null && avgPrice > max) return false;
       }
 
       if (filamentTypeFilter.size > 0) {
@@ -67,14 +55,9 @@ export function BrandsPageContent({ items }: { items: BrandListItem[] }) {
 
       return true;
     });
-  }, [items, search, costBenefitFilter, filamentTypeFilter, colorFilter, priceMin, priceMax]);
+  }, [items, search, costBenefitFilter, filamentTypeFilter, colorFilter]);
 
-  const activeFilterCount =
-    costBenefitFilter.size +
-    filamentTypeFilter.size +
-    colorFilter.size +
-    (priceMin.trim() ? 1 : 0) +
-    (priceMax.trim() ? 1 : 0);
+  const activeFilterCount = costBenefitFilter.size + filamentTypeFilter.size + colorFilter.size;
 
   return (
     <div className="flex flex-col gap-4">
@@ -101,46 +84,22 @@ export function BrandsPageContent({ items }: { items: BrandListItem[] }) {
 
       {filtersOpen && (
         <div className="flex flex-col gap-4 rounded-lg border p-4">
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div>
-            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              Custo-benefício
-            </span>
-            <div className="mt-2 flex flex-wrap gap-3">
-              {costBenefitOptions.map((option) => (
-                <label key={option} className="flex items-center gap-1.5 text-sm">
-                  <Checkbox
-                    checked={costBenefitFilter.has(option)}
-                    onCheckedChange={() =>
-                      setCostBenefitFilter((prev) => toggleInSet(prev, option))
-                    }
-                  />
-                  {costBenefitLabels[option]}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-              Preço médio (R$)
-            </span>
-            <div className="mt-2 flex gap-2">
-              <Input
-                type="number"
-                step="any"
-                placeholder="Mín"
-                value={priceMin}
-                onChange={(event) => setPriceMin(event.target.value)}
-              />
-              <Input
-                type="number"
-                step="any"
-                placeholder="Máx"
-                value={priceMax}
-                onChange={(event) => setPriceMax(event.target.value)}
-              />
-            </div>
+        <div>
+          <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Custo-benefício
+          </span>
+          <div className="mt-2 flex flex-wrap gap-3">
+            {costBenefitOptions.map((option) => (
+              <label key={option} className="flex items-center gap-1.5 text-sm">
+                <Checkbox
+                  checked={costBenefitFilter.has(option)}
+                  onCheckedChange={() =>
+                    setCostBenefitFilter((prev) => toggleInSet(prev, option))
+                  }
+                />
+                {costBenefitLabels[option]}
+              </label>
+            ))}
           </div>
         </div>
 

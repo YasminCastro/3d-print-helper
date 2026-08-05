@@ -9,8 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PrintCard } from "@/components/print-card";
+import { printResultLabels, printStatusLabels } from "@/components/print-form-fields";
 import { categoryDotColorClass } from "@/lib/category-colors";
 import { cn } from "@/lib/utils";
+import { printResultOptions, printStatusOptions } from "@/lib/schemas/print";
 import type { PrintCategory, PrintWithDetails } from "@/lib/types/print";
 
 const durationRanges = [
@@ -21,15 +23,17 @@ const durationRanges = [
 ];
 
 const sortOptions = [
-  { value: "data", label: "Data (mais recentes primeiro)" },
-  { value: "nome", label: "Nome (A-Z)" },
-  { value: "tempo_maior", label: "Tempo de impressão (maior primeiro)" },
-  { value: "tempo_menor", label: "Tempo de impressão (menor primeiro)" },
-  { value: "venda_maior", label: "Valor de venda (maior primeiro)" },
-  { value: "venda_menor", label: "Valor de venda (menor primeiro)" },
+  { value: "novidades", label: "Novidades" },
+  { value: "mais_antigos", label: "Mais antigos" },
+  { value: "nome", label: "Ordem alfabética (A-Z)" },
+  { value: "nome_desc", label: "Ordem alfabética (Z-A)" },
+  { value: "tempo_maior", label: "Maior tempo de impressão" },
+  { value: "tempo_menor", label: "Menor tempo de impressão" },
+  { value: "venda_maior", label: "Maior valor de venda" },
+  { value: "venda_menor", label: "Menor valor de venda" },
 ] as const;
 
-const DEFAULT_SORT = "data";
+const DEFAULT_SORT = "novidades";
 
 function toggleInSet(set: Set<string>, value: string) {
   const next = new Set(set);
@@ -50,9 +54,12 @@ export function PrintsPageContent({
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
   const [durationFilter, setDurationFilter] = useState<Set<string>>(new Set());
+  const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
+  const [resultFilter, setResultFilter] = useState<Set<string>>(new Set());
   const [sort, setSort] = useState<(typeof sortOptions)[number]["value"]>(DEFAULT_SORT);
 
-  const activeFilterCount = categoryFilter.size + durationFilter.size;
+  const activeFilterCount =
+    categoryFilter.size + durationFilter.size + statusFilter.size + resultFilter.size;
 
   const filtered = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -76,6 +83,14 @@ export function PrintsPageContent({
         if (!matches) return false;
       }
 
+      if (statusFilter.size > 0 && (!print.status || !statusFilter.has(print.status))) {
+        return false;
+      }
+
+      if (resultFilter.size > 0 && (!print.result || !resultFilter.has(print.result))) {
+        return false;
+      }
+
       return true;
     });
 
@@ -83,6 +98,9 @@ export function PrintsPageContent({
     switch (sort) {
       case "nome":
         sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "nome_desc":
+        sorted.sort((a, b) => b.name.localeCompare(a.name));
         break;
       case "tempo_maior":
         sorted.sort((a, b) => (b.duration_minutes ?? -1) - (a.duration_minutes ?? -1));
@@ -99,6 +117,13 @@ export function PrintsPageContent({
       case "venda_menor":
         sorted.sort((a, b) => (a.sale_value ?? 0) - (b.sale_value ?? 0));
         break;
+      case "mais_antigos":
+        sorted.sort((a, b) => {
+          const dateA = a.print_date ? new Date(a.print_date).getTime() : new Date(a.created_at).getTime();
+          const dateB = b.print_date ? new Date(b.print_date).getTime() : new Date(b.created_at).getTime();
+          return dateA - dateB;
+        });
+        break;
       default:
         sorted.sort((a, b) => {
           const dateA = a.print_date ? new Date(a.print_date).getTime() : new Date(a.created_at).getTime();
@@ -108,7 +133,7 @@ export function PrintsPageContent({
     }
 
     return sorted;
-  }, [prints, search, categoryFilter, durationFilter, sort]);
+  }, [prints, search, categoryFilter, durationFilter, statusFilter, resultFilter, sort]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -199,6 +224,40 @@ export function PrintsPageContent({
                     }
                   />
                   {range.label}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              Status
+            </span>
+            <div className="mt-2 flex flex-wrap gap-3">
+              {printStatusOptions.map((option) => (
+                <label key={option} className="flex items-center gap-1.5 text-sm">
+                  <Checkbox
+                    checked={statusFilter.has(option)}
+                    onCheckedChange={() => setStatusFilter((prev) => toggleInSet(prev, option))}
+                  />
+                  {printStatusLabels[option]}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              Resultado
+            </span>
+            <div className="mt-2 flex flex-wrap gap-3">
+              {printResultOptions.map((option) => (
+                <label key={option} className="flex items-center gap-1.5 text-sm">
+                  <Checkbox
+                    checked={resultFilter.has(option)}
+                    onCheckedChange={() => setResultFilter((prev) => toggleInSet(prev, option))}
+                  />
+                  {printResultLabels[option]}
                 </label>
               ))}
             </div>

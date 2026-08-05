@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { FilterIcon, SearchIcon, StarIcon } from "lucide-react";
+import { ChevronDownIcon, FilterIcon, SearchIcon, StarIcon } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -13,7 +13,21 @@ import { filamentTypeLabels } from "@/components/brand-form-fields";
 import { availabilityLabels } from "@/components/filament-form-fields";
 import { filamentTypeOptions } from "@/lib/schemas/brand";
 import { availabilityOptions } from "@/lib/schemas/filament";
+import { cn } from "@/lib/utils";
 import type { FilamentWithBrand } from "@/lib/types/filament";
+
+const sortOptions = [
+  { value: "novidades", label: "Novidades" },
+  { value: "mais_antigos", label: "Mais antigos" },
+  { value: "nome", label: "Ordem alfabética (A-Z)" },
+  { value: "nome_desc", label: "Ordem alfabética (Z-A)" },
+  { value: "avaliacao_maior", label: "Maior avaliação" },
+  { value: "avaliacao_menor", label: "Menor avaliação" },
+  { value: "preco_menor", label: "Menores preços" },
+  { value: "preco_maior", label: "Maiores preços" },
+] as const;
+
+const DEFAULT_SORT = "novidades";
 
 function toggleInSet(set: Set<string>, value: string) {
   const next = new Set(set);
@@ -37,14 +51,14 @@ export function FilamentsPageContent({
   filaments: FilamentWithBrand[];
 }) {
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [sortOpen, setSortOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [brandFilter, setBrandFilter] = useState<Set<string>>(new Set());
   const [colorFilter, setColorFilter] = useState<Set<string>>(new Set());
   const [typeFilter, setTypeFilter] = useState<Set<string>>(new Set());
   const [availabilityFilter, setAvailabilityFilter] = useState<Set<string>>(new Set());
   const [ratingFilter, setRatingFilter] = useState<Set<string>>(new Set());
-  const [priceMin, setPriceMin] = useState("");
-  const [priceMax, setPriceMax] = useState("");
+  const [sort, setSort] = useState<(typeof sortOptions)[number]["value"]>(DEFAULT_SORT);
 
   const availableBrands = useMemo(() => {
     const set = new Set<string>();
@@ -63,11 +77,9 @@ export function FilamentsPageContent({
   }, [filaments]);
 
   const filtered = useMemo(() => {
-    const min = priceMin.trim() ? Number(priceMin) : null;
-    const max = priceMax.trim() ? Number(priceMax) : null;
     const query = search.trim().toLowerCase();
 
-    return filaments.filter((filament) => {
+    const result = filaments.filter((filament) => {
       if (query && !filament.name.toLowerCase().includes(query)) return false;
 
       if (brandFilter.size > 0 && (!filament.brand_name || !brandFilter.has(filament.brand_name))) {
@@ -96,35 +108,49 @@ export function FilamentsPageContent({
         return false;
       }
 
-      if (min != null || max != null) {
-        const avgPrice = filamentAveragePrice(filament);
-        if (avgPrice == null) return false;
-        if (min != null && avgPrice < min) return false;
-        if (max != null && avgPrice > max) return false;
-      }
-
       return true;
     });
-  }, [
-    filaments,
-    search,
-    brandFilter,
-    colorFilter,
-    typeFilter,
-    availabilityFilter,
-    ratingFilter,
-    priceMin,
-    priceMax,
-  ]);
+
+    const sorted = [...result];
+    switch (sort) {
+      case "nome":
+        sorted.sort((a, b) => a.name.localeCompare(b.name));
+        break;
+      case "nome_desc":
+        sorted.sort((a, b) => b.name.localeCompare(a.name));
+        break;
+      case "avaliacao_maior":
+        sorted.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1));
+        break;
+      case "avaliacao_menor":
+        sorted.sort((a, b) => (a.rating ?? Infinity) - (b.rating ?? Infinity));
+        break;
+      case "preco_menor":
+        sorted.sort(
+          (a, b) => (filamentAveragePrice(a) ?? Infinity) - (filamentAveragePrice(b) ?? Infinity)
+        );
+        break;
+      case "preco_maior":
+        sorted.sort(
+          (a, b) => (filamentAveragePrice(b) ?? -1) - (filamentAveragePrice(a) ?? -1)
+        );
+        break;
+      case "mais_antigos":
+        sorted.sort(
+          (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        break;
+      default:
+        sorted.sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+    }
+
+    return sorted;
+  }, [filaments, search, brandFilter, colorFilter, typeFilter, availabilityFilter, ratingFilter, sort]);
 
   const activeFilterCount =
-    brandFilter.size +
-    colorFilter.size +
-    typeFilter.size +
-    availabilityFilter.size +
-    ratingFilter.size +
-    (priceMin.trim() ? 1 : 0) +
-    (priceMax.trim() ? 1 : 0);
+    brandFilter.size + colorFilter.size + typeFilter.size + availabilityFilter.size + ratingFilter.size;
 
   return (
     <div className="flex flex-col gap-4">
@@ -143,52 +169,57 @@ export function FilamentsPageContent({
           Filtros
           {activeFilterCount > 0 && <Badge variant="secondary">{activeFilterCount}</Badge>}
         </Button>
+
+        <Button type="button" variant="outline" onClick={() => setSortOpen((open) => !open)}>
+          Ordenar
+          <ChevronDownIcon
+            className={cn("size-4 transition-transform", sortOpen && "rotate-180")}
+          />
+        </Button>
       </div>
+
+      {sortOpen && (
+        <div className="rounded-lg border p-4">
+          <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+            Ordenar
+          </span>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {sortOptions.map((option) => (
+              <Button
+                key={option.value}
+                type="button"
+                variant={sort === option.value ? "default" : "outline"}
+                size="sm"
+                className="rounded-full"
+                onClick={() => setSort(option.value)}
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {filtersOpen && (
         <div className="flex flex-col gap-4 rounded-lg border p-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            {availableBrands.length > 0 && (
-              <div>
-                <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                  Marca
-                </span>
-                <div className="mt-2 flex flex-wrap gap-3">
-                  {availableBrands.map((brand) => (
-                    <label key={brand} className="flex items-center gap-1.5 text-sm">
-                      <Checkbox
-                        checked={brandFilter.has(brand)}
-                        onCheckedChange={() => setBrandFilter((prev) => toggleInSet(prev, brand))}
-                      />
-                      {brand}
-                    </label>
-                  ))}
-                </div>
-              </div>
-            )}
-
+          {availableBrands.length > 0 && (
             <div>
               <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
-                Preço pago (R$)
+                Marca
               </span>
-              <div className="mt-2 flex gap-2">
-                <Input
-                  type="number"
-                  step="any"
-                  placeholder="Mín"
-                  value={priceMin}
-                  onChange={(event) => setPriceMin(event.target.value)}
-                />
-                <Input
-                  type="number"
-                  step="any"
-                  placeholder="Máx"
-                  value={priceMax}
-                  onChange={(event) => setPriceMax(event.target.value)}
-                />
+              <div className="mt-2 flex flex-wrap gap-3">
+                {availableBrands.map((brand) => (
+                  <label key={brand} className="flex items-center gap-1.5 text-sm">
+                    <Checkbox
+                      checked={brandFilter.has(brand)}
+                      onCheckedChange={() => setBrandFilter((prev) => toggleInSet(prev, brand))}
+                    />
+                    {brand}
+                  </label>
+                ))}
               </div>
             </div>
-          </div>
+          )}
 
           <div>
             <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
