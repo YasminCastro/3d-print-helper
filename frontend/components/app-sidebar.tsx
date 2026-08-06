@@ -11,6 +11,7 @@ import {
   NotebookText,
   Images,
   ShoppingBag,
+  SlidersHorizontal,
 } from "lucide-react";
 
 import {
@@ -34,6 +35,7 @@ const NAV_ITEMS = [
   { title: "Itens Extras", url: "/extra-items", icon: ShoppingBag },
   { title: "Diário", url: "/journal", icon: NotebookText },
   { title: "Calibrações", url: "/calibrations", icon: Gauge },
+  { title: "Calibração por Fatiador", url: "/slicer-calibration", icon: SlidersHorizontal },
   { title: "Impressoras", url: "/printers", icon: Printer },
   { title: "Marcas", url: "/brands", icon: Package },
 ];

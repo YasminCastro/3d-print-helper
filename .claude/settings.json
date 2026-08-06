@@ -35,7 +35,8 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/login)",
       "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\\\\n\" -b \"Authorization=fake\" http://localhost:3000/login)",
       "Bash(cp tsconfig.json /tmp/tsconfig.json.bak)",
-      "Bash(sed -i 's/\"moduleResolution\": \"node\",/\"moduleResolution\": \"node16\",/' tsconfig.json)"
+      "Bash(sed -i 's/\"moduleResolution\": \"node\",/\"moduleResolution\": \"node16\",/' tsconfig.json)",
+      "Bash(node -e \"const m=require\\('lucide-react'\\); console.log\\(Object.keys\\(m\\).filter\\(k=>/^Video/.test\\(k\\)\\)\\)\")"
     ]
   },
   "hooks": {
