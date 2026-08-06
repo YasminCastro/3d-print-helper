@@ -15,7 +15,12 @@ import type { IPrintCategoriesRepository } from '@repositories/print-categories.
 import { PrintersRepository } from '@repositories/printers.repository';
 import type { IPrintersRepository } from '@repositories/printers.repository';
 import { PrintsRepository } from '@repositories/prints.repository';
-import type { IPrintsRepository, PrintPhotoBinary } from '@repositories/prints.repository';
+import type {
+  IPrintsRepository,
+  PaginatedResult,
+  PaginationParams,
+  PrintPhotoBinary,
+} from '@repositories/prints.repository';
 import { calculatePrintCosts, computeMaterialMaxPrices } from '@utils/printCalculations';
 
 @injectable()
@@ -60,8 +65,8 @@ export class PrintsService {
     if (!deleted) throw new HttpException(404, 'Print category not found');
   }
 
-  async getAllPrints(userId: string): Promise<Print[]> {
-    return this.printsRepository.findAll(userId);
+  async getAllPrints(userId: string, pagination: PaginationParams): Promise<PaginatedResult<Print>> {
+    return this.printsRepository.findAll(userId, pagination);
   }
 
   async getPrintById(id: number, userId: string): Promise<Print> {

@@ -3,6 +3,7 @@ import { BoxIcon, CheckCircle2, ClockIcon, CoinsIcon, HourglassIcon, ImageIcon, 
 
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingImage } from "@/components/loading-image";
 import {
   printStatusColors,
   printStatusLabels,
@@ -59,11 +60,10 @@ export function PrintCard({ print }: { print: PrintWithDetails }) {
         className="flex h-full flex-col cursor-pointer gap-3 pt-0 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/40"
       >
         {print.photo_filename ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
+          <LoadingImage
             src={`/print-photos/${print.id}`}
-            alt=""
-            className="h-28 w-full object-cover"
+            className="h-28 w-full rounded-t-xl"
+            imgClassName="object-cover"
           />
         ) : (
           <div className="flex h-28 w-full items-center justify-center rounded-t-xl bg-muted">

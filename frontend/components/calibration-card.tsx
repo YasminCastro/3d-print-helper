@@ -1,9 +1,15 @@
+"use client";
+
 import Link from "next/link";
-import { Gauge } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { CopyIcon, Gauge } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cloneCalibrationAction } from "@/lib/actions/calibrations";
 import {
   calibrationStatusLabels,
   slicerLabels,
@@ -45,6 +51,9 @@ function formatDate(value: string | null) {
 }
 
 export function CalibrationCard({ calibration }: { calibration: CalibrationWithFilament }) {
+  const router = useRouter();
+  const [isCloning, startClone] = useTransition();
+
   const slicer = calibration.slicer as (typeof slicerOptions)[number];
   const status = calibration.status as (typeof calibrationStatusOptions)[number] | null;
   const material = calibration.filament_material as
@@ -53,10 +62,31 @@ export function CalibrationCard({ calibration }: { calibration: CalibrationWithF
   const date = formatDate(calibration.calibration_date);
   const iconStyle = filamentIconStyle([calibration.filament_color]);
 
+  function onClone(event: React.MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    startClone(async () => {
+      const cloned = await cloneCalibrationAction(calibration.id);
+      router.push(`/calibrations/${cloned.id}`);
+    });
+  }
+
   return (
     <Link href={`/calibrations/${calibration.id}`} className="block h-full">
-      <Card className="flex h-full flex-col cursor-pointer gap-3 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/40">
-        <CardHeader className="flex-row items-center gap-3 space-y-0">
+      <Card className="relative flex h-full flex-col cursor-pointer gap-3 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-primary/40">
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon-sm"
+          title="Clonar calibração"
+          disabled={isCloning}
+          onClick={onClone}
+          className="absolute top-3 right-3 z-10"
+        >
+          <CopyIcon />
+        </Button>
+
+        <CardHeader className="flex-row items-center gap-3 space-y-0 pr-10">
           <div
             className={cn(
               "flex size-10 shrink-0 items-center justify-center rounded-xl",
@@ -66,7 +96,7 @@ export function CalibrationCard({ calibration }: { calibration: CalibrationWithF
           >
             <Gauge className="size-5" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <CardTitle className="truncate text-base">
               {calibration.filament_name ?? "—"}
             </CardTitle>

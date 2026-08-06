@@ -55,3 +55,48 @@ export const addPrintPhotoSchema = z.object({
 });
 
 export type AddPrintPhotoDto = z.infer<typeof addPrintPhotoSchema>;
+
+export const printSortOptions = [
+  'newest',
+  'oldest',
+  'name_asc',
+  'name_desc',
+  'duration_desc',
+  'duration_asc',
+  'sale_value_desc',
+  'sale_value_asc',
+] as const;
+
+export const printDurationRangeValues = ['ate_1h', '1h_3h', '3h_6h', '6h_mais'] as const;
+
+export type PrintDurationRange = (typeof printDurationRangeValues)[number];
+
+export const printDurationRangeBounds: Record<PrintDurationRange, { min: number; max: number | null }> = {
+  ate_1h: { min: 0, max: 60 },
+  '1h_3h': { min: 61, max: 180 },
+  '3h_6h': { min: 181, max: 360 },
+  '6h_mais': { min: 361, max: null },
+};
+
+function arrayQueryParam<T extends z.ZodTypeAny>(schema: T) {
+  return z
+    .preprocess((value) => {
+      if (value === undefined) return undefined;
+      return Array.isArray(value) ? value : [value];
+    }, z.array(schema))
+    .optional();
+}
+
+export const listPrintsQuerySchema = z.object({
+  page: z.coerce.number().int().positive().optional(),
+  limit: z.coerce.number().int().positive().max(100).optional(),
+  sort: z.enum(printSortOptions).optional(),
+  search: z.string().trim().min(1).optional(),
+  categoryId: arrayQueryParam(z.coerce.number().int().positive()),
+  status: arrayQueryParam(z.enum(printStatusOptions)),
+  result: arrayQueryParam(z.enum(printResultOptions)),
+  duration: arrayQueryParam(z.enum(printDurationRangeValues)),
+});
+
+export type ListPrintsQueryDto = z.infer<typeof listPrintsQuerySchema>;
+export type PrintSortOption = (typeof printSortOptions)[number];

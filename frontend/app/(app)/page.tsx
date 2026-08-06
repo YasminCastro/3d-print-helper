@@ -70,10 +70,11 @@ export default async function Home() {
   const extraItems = await getExtraItems();
   const extraItemsById = new Map(extraItems.map((extraItem) => [extraItem.id, extraItem]));
 
-  const [printCategoryOptions, printsRaw] = await Promise.all([
+  const [printCategoryOptions, printsResult] = await Promise.all([
     getPrintCategories(),
-    getPrints(),
+    getPrints({ limit: 20 }),
   ]);
+  const printsRaw = printsResult.items;
   const categoriesById = new Map(printCategoryOptions.map((category) => [category.id, category]));
 
   const printerOptions = [...printers]

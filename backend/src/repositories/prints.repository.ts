@@ -1,6 +1,12 @@
 import { singleton } from 'tsyringe';
 import { Print } from '@entities/print.entity';
+import {
+  printDurationRangeBounds,
+  type PrintDurationRange,
+  type PrintSortOption,
+} from '@dtos/prints.dto';
 import { prisma } from '@config/prisma';
+import type { Prisma } from '@/generated/prisma/client';
 
 const printSelect = {
   id: true,
@@ -33,8 +39,68 @@ export interface PrintPhotoBinary {
   data: Buffer;
 }
 
+export interface PrintFilters {
+  search?: string;
+  categoryIds?: number[];
+  statuses?: string[];
+  results?: string[];
+  durationRanges?: PrintDurationRange[];
+}
+
+export interface PaginationParams extends PrintFilters {
+  page: number;
+  limit: number;
+  sort?: PrintSortOption;
+}
+
+function buildWhere(userId: string, filters: PrintFilters): Prisma.PrintWhereInput {
+  const where: Prisma.PrintWhereInput = { userId };
+
+  if (filters.search) {
+    where.name = { contains: filters.search, mode: 'insensitive' };
+  }
+  if (filters.categoryIds?.length) {
+    where.categoryId = { in: filters.categoryIds };
+  }
+  if (filters.statuses?.length) {
+    where.status = { in: filters.statuses };
+  }
+  if (filters.results?.length) {
+    where.result = { in: filters.results };
+  }
+  if (filters.durationRanges?.length) {
+    where.OR = filters.durationRanges.map((range) => {
+      const bounds = printDurationRangeBounds[range];
+      return {
+        durationMinutes: {
+          gte: bounds.min,
+          ...(bounds.max != null ? { lte: bounds.max } : {}),
+        },
+      };
+    });
+  }
+
+  return where;
+}
+
+const sortToOrderBy: Record<PrintSortOption, Prisma.PrintOrderByWithRelationInput[]> = {
+  newest: [{ printDate: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }],
+  oldest: [{ printDate: { sort: 'asc', nulls: 'last' } }, { createdAt: 'asc' }],
+  name_asc: [{ name: 'asc' }],
+  name_desc: [{ name: 'desc' }],
+  duration_desc: [{ durationMinutes: { sort: 'desc', nulls: 'last' } }],
+  duration_asc: [{ durationMinutes: { sort: 'asc', nulls: 'last' } }],
+  sale_value_desc: [{ saleValue: { sort: 'desc', nulls: 'last' } }],
+  sale_value_asc: [{ saleValue: { sort: 'asc', nulls: 'last' } }],
+};
+
+export interface PaginatedResult<T> {
+  items: T[];
+  total: number;
+}
+
 export interface IPrintsRepository {
-  findAll(userId: string): Promise<Print[]>;
+  findAll(userId: string, pagination: PaginationParams): Promise<PaginatedResult<Print>>;
   findById(id: number, userId: string): Promise<Print | undefined>;
   save(print: Print): Promise<Print>;
   update(id: number, userId: string, print: Print): Promise<Print | undefined>;
@@ -50,13 +116,23 @@ export interface IPrintsRepository {
 
 @singleton()
 export class PrintsRepository implements IPrintsRepository {
-  async findAll(userId: string): Promise<Print[]> {
-    const rows = await prisma.print.findMany({
-      where: { userId },
-      orderBy: { id: 'asc' },
-      select: printSelect,
-    });
-    return rows.map((row) => Print.fromPersistence(row));
+  async findAll(
+    userId: string,
+    { page, limit, sort, ...filters }: PaginationParams,
+  ): Promise<PaginatedResult<Print>> {
+    const where = buildWhere(userId, filters);
+
+    const [rows, total] = await Promise.all([
+      prisma.print.findMany({
+        where,
+        orderBy: sortToOrderBy[sort ?? 'newest'],
+        skip: (page - 1) * limit,
+        take: limit,
+        select: printSelect,
+      }),
+      prisma.print.count({ where }),
+    ]);
+    return { items: rows.map((row) => Print.fromPersistence(row)), total };
   }
 
   async findById(id: number, userId: string): Promise<Print | undefined> {

@@ -3,7 +3,11 @@
 import { refresh } from "next/cache";
 
 import { backendFetch } from "@/lib/backend-fetch";
-import { NEW_CATEGORY_VALUE } from "@/lib/schemas/print";
+import {
+  NEW_CATEGORY_VALUE,
+  type PrintDurationRange,
+  type PrintSortOption,
+} from "@/lib/schemas/print";
 import type { PrintCategory, PrintWithFilaments } from "@/lib/types/print";
 
 type ApiPrintFilament = {
@@ -236,13 +240,49 @@ async function uploadPhoto(printId: number, file: File) {
   }
 }
 
-export async function getPrints(): Promise<PrintWithFilaments[]> {
-  const response = await backendFetch("/prints", { cache: "no-store" });
+export type PrintsPageResult = {
+  items: PrintWithFilaments[];
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+};
+
+export async function getPrints(params?: {
+  page?: number;
+  limit?: number;
+  sort?: PrintSortOption;
+  search?: string;
+  categoryIds?: number[];
+  statuses?: string[];
+  results?: string[];
+  durationRanges?: PrintDurationRange[];
+}): Promise<PrintsPageResult> {
+  const query = new URLSearchParams();
+  if (params?.page) query.set("page", String(params.page));
+  if (params?.limit) query.set("limit", String(params.limit));
+  if (params?.sort) query.set("sort", params.sort);
+  if (params?.search) query.set("search", params.search);
+  params?.categoryIds?.forEach((id) => query.append("categoryId", String(id)));
+  params?.statuses?.forEach((status) => query.append("status", status));
+  params?.results?.forEach((result) => query.append("result", result));
+  params?.durationRanges?.forEach((range) => query.append("duration", range));
+  const queryString = query.toString();
+
+  const response = await backendFetch(`/prints${queryString ? `?${queryString}` : ""}`, {
+    cache: "no-store",
+  });
   if (!response.ok) {
     throw new Error("Não foi possível carregar as impressões");
   }
   const body = await response.json();
-  return (body.data as ApiPrint[]).map(toDomain);
+  return {
+    items: (body.data as ApiPrint[]).map(toDomain),
+    page: body.meta.page,
+    limit: body.meta.limit,
+    total: body.meta.total,
+    totalPages: body.meta.totalPages,
+  };
 }
 
 export async function getPrint(id: number): Promise<PrintWithFilaments | null> {

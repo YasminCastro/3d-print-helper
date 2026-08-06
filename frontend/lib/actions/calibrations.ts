@@ -114,6 +114,42 @@ export async function updateCalibrationAction(id: number, values: CalibrationFor
   refresh();
 }
 
+export async function cloneCalibrationAction(id: number): Promise<Calibration> {
+  const source = await getCalibration(id);
+  if (!source) {
+    throw new Error("Calibração não encontrada");
+  }
+
+  const response = await backendFetch("/calibrations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      slicer: source.slicer,
+      filamentId: source.filament_id,
+      status: source.status,
+      calibrationDate: source.calibration_date,
+      bedTempFirstLayer: source.bed_temp_first_layer,
+      bedTempOtherLayers: source.bed_temp_other_layers,
+      nozzleTempInitial: source.nozzle_temp_initial,
+      nozzleTempFinal: source.nozzle_temp_final,
+      maxVolumetricSpeed: source.max_volumetric_speed,
+      pressureAdvance: source.pressure_advance,
+      flowRatio: source.flow_ratio,
+      retractionDistance: source.retraction_distance,
+      purchaseBatch: source.purchase_batch,
+      notes: source.notes,
+    }),
+  });
+
+  if (!response.ok) {
+    throw new Error("Não foi possível clonar a calibração");
+  }
+
+  const body = await response.json();
+  refresh();
+  return toDomain(body.data);
+}
+
 export async function deleteCalibrationAction(id: number) {
   const response = await backendFetch(`/calibrations/${id}`, { method: "DELETE" });
 

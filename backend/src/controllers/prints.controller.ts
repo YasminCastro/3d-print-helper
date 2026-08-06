@@ -5,10 +5,14 @@ import {
   type PrintCategoryCreateData,
   type PrintCategoryUpdateData,
 } from '@entities/print-category.entity';
+import { listPrintsQuerySchema } from '@dtos/prints.dto';
 import { HttpException } from '@exceptions/httpException';
 import { RequestWithUser } from '@interfaces/auth.interface';
 import { PrintsService } from '@services/prints.service';
 import { asyncHandler } from '@utils/asyncHandler';
+
+const DEFAULT_PRINTS_PAGE = 1;
+const DEFAULT_PRINTS_LIMIT = 24;
 
 function parseId(rawId: unknown, label: string): number {
   const id = Number(rawId);
@@ -55,8 +59,26 @@ export class PrintsController {
 
   getPrints = asyncHandler(async (req: Request, res: Response) => {
     const { user } = req as RequestWithUser;
-    const prints = await this.printsService.getAllPrints(user.id);
-    res.json({ data: prints.map((print) => print.toResponse()), message: 'findAll' });
+    const query = listPrintsQuerySchema.parse(req.query);
+    const page = query.page ?? DEFAULT_PRINTS_PAGE;
+    const limit = query.limit ?? DEFAULT_PRINTS_LIMIT;
+
+    const { items, total } = await this.printsService.getAllPrints(user.id, {
+      page,
+      limit,
+      sort: query.sort,
+      search: query.search,
+      categoryIds: query.categoryId,
+      statuses: query.status,
+      results: query.result,
+      durationRanges: query.duration,
+    });
+
+    res.json({
+      data: items.map((print) => print.toResponse()),
+      meta: { page, limit, total, totalPages: Math.max(1, Math.ceil(total / limit)) },
+      message: 'findAll',
+    });
   });
 
   getPrintById = asyncHandler(async (req: Request, res: Response) => {

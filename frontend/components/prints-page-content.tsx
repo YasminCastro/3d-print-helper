@@ -1,139 +1,157 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { ChevronDownIcon, FilterIcon, SearchIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, FilterIcon, SearchIcon } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { PrintCard } from "@/components/print-card";
 import { printResultLabels, printStatusLabels } from "@/components/print-form-fields";
 import { categoryDotColorClass } from "@/lib/category-colors";
 import { cn } from "@/lib/utils";
-import { printResultOptions, printStatusOptions } from "@/lib/schemas/print";
+import {
+  printDurationRangeOptions,
+  printResultOptions,
+  printStatusOptions,
+  type PrintSortOption,
+} from "@/lib/schemas/print";
 import type { PrintCategory, PrintWithDetails } from "@/lib/types/print";
 
-const durationRanges = [
-  { value: "ate_1h", label: "Até 1h", min: 0, max: 60 },
-  { value: "1h_3h", label: "1h - 3h", min: 61, max: 180 },
-  { value: "3h_6h", label: "3h - 6h", min: 181, max: 360 },
-  { value: "6h_mais", label: "6h+", min: 361, max: Infinity },
+const sortOptions: { value: PrintSortOption; label: string }[] = [
+  { value: "newest", label: "Novidades" },
+  { value: "oldest", label: "Mais antigos" },
+  { value: "name_asc", label: "Ordem alfabética (A-Z)" },
+  { value: "name_desc", label: "Ordem alfabética (Z-A)" },
+  { value: "duration_desc", label: "Maior tempo de impressão" },
+  { value: "duration_asc", label: "Menor tempo de impressão" },
+  { value: "sale_value_desc", label: "Maior valor de venda" },
+  { value: "sale_value_asc", label: "Menor valor de venda" },
 ];
 
-const sortOptions = [
-  { value: "novidades", label: "Novidades" },
-  { value: "mais_antigos", label: "Mais antigos" },
-  { value: "nome", label: "Ordem alfabética (A-Z)" },
-  { value: "nome_desc", label: "Ordem alfabética (Z-A)" },
-  { value: "tempo_maior", label: "Maior tempo de impressão" },
-  { value: "tempo_menor", label: "Menor tempo de impressão" },
-  { value: "venda_maior", label: "Maior valor de venda" },
-  { value: "venda_menor", label: "Menor valor de venda" },
-] as const;
+const DEFAULT_SORT: PrintSortOption = "newest";
+const SEARCH_DEBOUNCE_MS = 400;
 
-const DEFAULT_SORT = "novidades";
+type ParamOverrides = Record<string, string | string[] | null>;
 
-function toggleInSet(set: Set<string>, value: string) {
-  const next = new Set(set);
-  if (next.has(value)) next.delete(value);
-  else next.add(value);
-  return next;
+function withParams(current: URLSearchParams, overrides: ParamOverrides) {
+  const params = new URLSearchParams(current.toString());
+  for (const [key, value] of Object.entries(overrides)) {
+    params.delete(key);
+    if (value === null) continue;
+    if (Array.isArray(value)) {
+      value.forEach((v) => params.append(key, v));
+    } else {
+      params.set(key, value);
+    }
+  }
+  return params;
+}
+
+function toggleInArray(values: string[], value: string) {
+  return values.includes(value) ? values.filter((v) => v !== value) : [...values, value];
+}
+
+function getPageNumbers(current: number, total: number): (number | "ellipsis")[] {
+  const show = new Set([1, total, current - 1, current, current + 1]);
+  const sorted = [...show].filter((page) => page >= 1 && page <= total).sort((a, b) => a - b);
+
+  const pages: (number | "ellipsis")[] = [];
+  let previous = 0;
+  for (const page of sorted) {
+    if (previous && page - previous > 1) pages.push("ellipsis");
+    pages.push(page);
+    previous = page;
+  }
+  return pages;
 }
 
 export function PrintsPageContent({
   prints,
   categoryOptions,
+  pagination,
 }: {
   prints: PrintWithDetails[];
   categoryOptions: PrintCategory[];
+  pagination: { page: number; totalPages: number; total: number };
 }) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [sortOpen, setSortOpen] = useState(false);
-  const [search, setSearch] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState<Set<string>>(new Set());
-  const [durationFilter, setDurationFilter] = useState<Set<string>>(new Set());
-  const [statusFilter, setStatusFilter] = useState<Set<string>>(new Set());
-  const [resultFilter, setResultFilter] = useState<Set<string>>(new Set());
-  const [sort, setSort] = useState<(typeof sortOptions)[number]["value"]>(DEFAULT_SORT);
+
+  const sort = (searchParams.get("sort") as PrintSortOption | null) ?? DEFAULT_SORT;
+  const urlSearch = searchParams.get("search") ?? "";
+  const categoryFilter = searchParams.getAll("categoryId");
+  const durationFilter = searchParams.getAll("duration");
+  const statusFilter = searchParams.getAll("status");
+  const resultFilter = searchParams.getAll("result");
+
+  const [searchInput, setSearchInput] = useState(urlSearch);
+  const [syncedSearch, setSyncedSearch] = useState(urlSearch);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  if (urlSearch !== syncedSearch) {
+    setSyncedSearch(urlSearch);
+    setSearchInput(urlSearch);
+  }
+
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   const activeFilterCount =
-    categoryFilter.size + durationFilter.size + statusFilter.size + resultFilter.size;
+    categoryFilter.length + durationFilter.length + statusFilter.length + resultFilter.length;
 
-  const filtered = useMemo(() => {
-    const query = search.trim().toLowerCase();
-    const selectedRanges = durationRanges.filter((range) => durationFilter.has(range.value));
+  function navigate(overrides: ParamOverrides) {
+    const params = withParams(searchParams, { ...overrides, page: null });
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }
 
-    const result = prints.filter((print) => {
-      if (query && !print.name.toLowerCase().includes(query)) return false;
+  function handleSearchChange(value: string) {
+    setSearchInput(value);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      navigate({ search: value.trim() || null });
+    }, SEARCH_DEBOUNCE_MS);
+  }
 
-      if (
-        categoryFilter.size > 0 &&
-        (!print.category_id || !categoryFilter.has(String(print.category_id)))
-      )
-        return false;
+  function toggleCategory(value: string) {
+    navigate({ categoryId: toggleInArray(categoryFilter, value) });
+  }
 
-      if (selectedRanges.length > 0) {
-        if (print.duration_minutes == null) return false;
-        const matches = selectedRanges.some(
-          (range) =>
-            print.duration_minutes! >= range.min && print.duration_minutes! <= range.max
-        );
-        if (!matches) return false;
-      }
+  function toggleDuration(value: string) {
+    navigate({ duration: toggleInArray(durationFilter, value) });
+  }
 
-      if (statusFilter.size > 0 && (!print.status || !statusFilter.has(print.status))) {
-        return false;
-      }
+  function toggleStatus(value: string) {
+    navigate({ status: toggleInArray(statusFilter, value) });
+  }
 
-      if (resultFilter.size > 0 && (!print.result || !resultFilter.has(print.result))) {
-        return false;
-      }
+  function toggleResult(value: string) {
+    navigate({ result: toggleInArray(resultFilter, value) });
+  }
 
-      return true;
-    });
+  function sortHref(value: PrintSortOption) {
+    const params = withParams(searchParams, { sort: value === DEFAULT_SORT ? null : value, page: null });
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }
 
-    const sorted = [...result];
-    switch (sort) {
-      case "nome":
-        sorted.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      case "nome_desc":
-        sorted.sort((a, b) => b.name.localeCompare(a.name));
-        break;
-      case "tempo_maior":
-        sorted.sort((a, b) => (b.duration_minutes ?? -1) - (a.duration_minutes ?? -1));
-        break;
-      case "tempo_menor":
-        sorted.sort(
-          (a, b) =>
-            (a.duration_minutes ?? Infinity) - (b.duration_minutes ?? Infinity)
-        );
-        break;
-      case "venda_maior":
-        sorted.sort((a, b) => (b.sale_value ?? 0) - (a.sale_value ?? 0));
-        break;
-      case "venda_menor":
-        sorted.sort((a, b) => (a.sale_value ?? 0) - (b.sale_value ?? 0));
-        break;
-      case "mais_antigos":
-        sorted.sort((a, b) => {
-          const dateA = a.print_date ? new Date(a.print_date).getTime() : new Date(a.created_at).getTime();
-          const dateB = b.print_date ? new Date(b.print_date).getTime() : new Date(b.created_at).getTime();
-          return dateA - dateB;
-        });
-        break;
-      default:
-        sorted.sort((a, b) => {
-          const dateA = a.print_date ? new Date(a.print_date).getTime() : new Date(a.created_at).getTime();
-          const dateB = b.print_date ? new Date(b.print_date).getTime() : new Date(b.created_at).getTime();
-          return dateB - dateA;
-        });
-    }
-
-    return sorted;
-  }, [prints, search, categoryFilter, durationFilter, statusFilter, resultFilter, sort]);
+  function pageHref(page: number) {
+    const params = withParams(searchParams, { page: page > 1 ? String(page) : null });
+    const qs = params.toString();
+    return qs ? `${pathname}?${qs}` : pathname;
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -142,8 +160,8 @@ export function PrintsPageContent({
           <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Pesquisar por nome..."
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
+            value={searchInput}
+            onChange={(event) => handleSearchChange(event.target.value)}
             className="pl-8"
           />
         </div>
@@ -168,16 +186,17 @@ export function PrintsPageContent({
           </span>
           <div className="mt-2 flex flex-wrap gap-2">
             {sortOptions.map((option) => (
-              <Button
+              <Link
                 key={option.value}
-                type="button"
-                variant={sort === option.value ? "default" : "outline"}
-                size="sm"
-                className="rounded-full"
-                onClick={() => setSort(option.value)}
+                href={sortHref(option.value)}
+                className={buttonVariants({
+                  variant: sort === option.value ? "default" : "outline",
+                  size: "sm",
+                  className: "rounded-full",
+                })}
               >
                 {option.label}
-              </Button>
+              </Link>
             ))}
           </div>
         </div>
@@ -196,10 +215,8 @@ export function PrintsPageContent({
                   className="flex items-center gap-1.5 text-sm"
                 >
                   <Checkbox
-                    checked={categoryFilter.has(String(category.id))}
-                    onCheckedChange={() =>
-                      setCategoryFilter((prev) => toggleInSet(prev, String(category.id)))
-                    }
+                    checked={categoryFilter.includes(String(category.id))}
+                    onCheckedChange={() => toggleCategory(String(category.id))}
                   />
                   <span
                     className={`size-2.5 shrink-0 rounded-full ${categoryDotColorClass(category.name)}`}
@@ -215,13 +232,11 @@ export function PrintsPageContent({
               Tempo de impressão
             </span>
             <div className="mt-2 flex flex-wrap gap-3">
-              {durationRanges.map((range) => (
+              {printDurationRangeOptions.map((range) => (
                 <label key={range.value} className="flex items-center gap-1.5 text-sm">
                   <Checkbox
-                    checked={durationFilter.has(range.value)}
-                    onCheckedChange={() =>
-                      setDurationFilter((prev) => toggleInSet(prev, range.value))
-                    }
+                    checked={durationFilter.includes(range.value)}
+                    onCheckedChange={() => toggleDuration(range.value)}
                   />
                   {range.label}
                 </label>
@@ -237,8 +252,8 @@ export function PrintsPageContent({
               {printStatusOptions.map((option) => (
                 <label key={option} className="flex items-center gap-1.5 text-sm">
                   <Checkbox
-                    checked={statusFilter.has(option)}
-                    onCheckedChange={() => setStatusFilter((prev) => toggleInSet(prev, option))}
+                    checked={statusFilter.includes(option)}
+                    onCheckedChange={() => toggleStatus(option)}
                   />
                   {printStatusLabels[option]}
                 </label>
@@ -254,8 +269,8 @@ export function PrintsPageContent({
               {printResultOptions.map((option) => (
                 <label key={option} className="flex items-center gap-1.5 text-sm">
                   <Checkbox
-                    checked={resultFilter.has(option)}
-                    onCheckedChange={() => setResultFilter((prev) => toggleInSet(prev, option))}
+                    checked={resultFilter.includes(option)}
+                    onCheckedChange={() => toggleResult(option)}
                   />
                   {printResultLabels[option]}
                 </label>
@@ -265,7 +280,7 @@ export function PrintsPageContent({
         </div>
       )}
 
-      {filtered.length === 0 ? (
+      {prints.length === 0 ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-sm font-normal text-muted-foreground">
@@ -275,9 +290,60 @@ export function PrintsPageContent({
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {filtered.map((print) => (
+          {prints.map((print) => (
             <PrintCard key={print.id} print={print} />
           ))}
+        </div>
+      )}
+
+      {pagination.totalPages > 1 && (
+        <div className="flex items-center justify-center gap-1">
+          <Link
+            href={pageHref(pagination.page - 1)}
+            aria-disabled={pagination.page <= 1}
+            tabIndex={pagination.page <= 1 ? -1 : undefined}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "icon-sm" }),
+              pagination.page <= 1 && "pointer-events-none opacity-50"
+            )}
+          >
+            <ChevronLeftIcon />
+          </Link>
+
+          {getPageNumbers(pagination.page, pagination.totalPages).map((page, index) =>
+            page === "ellipsis" ? (
+              <span
+                key={`ellipsis-${index}`}
+                className="px-1 text-sm text-muted-foreground"
+              >
+                …
+              </span>
+            ) : (
+              <Link
+                key={page}
+                href={pageHref(page)}
+                aria-current={page === pagination.page ? "page" : undefined}
+                className={buttonVariants({
+                  variant: page === pagination.page ? "default" : "outline",
+                  size: "icon-sm",
+                })}
+              >
+                {page}
+              </Link>
+            )
+          )}
+
+          <Link
+            href={pageHref(pagination.page + 1)}
+            aria-disabled={pagination.page >= pagination.totalPages}
+            tabIndex={pagination.page >= pagination.totalPages ? -1 : undefined}
+            className={cn(
+              buttonVariants({ variant: "outline", size: "icon-sm" }),
+              pagination.page >= pagination.totalPages && "pointer-events-none opacity-50"
+            )}
+          >
+            <ChevronRightIcon />
+          </Link>
         </div>
       )}
     </div>

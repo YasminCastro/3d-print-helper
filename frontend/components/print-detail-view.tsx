@@ -35,6 +35,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { LoadingImage } from "@/components/loading-image";
 import { categoryColorClass } from "@/lib/category-colors";
 import { colorSwatch, filamentBannerStyle, filamentIconStyle } from "@/lib/filament-accent";
 import { cn } from "@/lib/utils";
@@ -627,12 +628,7 @@ export function PrintDetailView({
                 onClick={() => setPhotoOpen(true)}
                 className="min-h-0 flex-1 cursor-zoom-in"
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={photoUrl}
-                  alt=""
-                  className="size-full rounded-xl object-contain"
-                />
+                <LoadingImage src={photoUrl} className="size-full rounded-xl" imgClassName="object-contain" />
               </button>
             )}
           </div>

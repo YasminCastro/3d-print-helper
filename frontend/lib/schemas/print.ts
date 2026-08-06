@@ -11,6 +11,28 @@ export const printResultOptions = ["ruim", "razoavel", "bom", "perfeito"] as con
 
 export const NEW_CATEGORY_VALUE = "__new__";
 
+export const printSortOptions = [
+  "newest",
+  "oldest",
+  "name_asc",
+  "name_desc",
+  "duration_desc",
+  "duration_asc",
+  "sale_value_desc",
+  "sale_value_asc",
+] as const;
+
+export type PrintSortOption = (typeof printSortOptions)[number];
+
+export const printDurationRangeOptions = [
+  { value: "ate_1h", label: "Até 1h" },
+  { value: "1h_3h", label: "1h - 3h" },
+  { value: "3h_6h", label: "3h - 6h" },
+  { value: "6h_mais", label: "6h+" },
+] as const;
+
+export type PrintDurationRange = (typeof printDurationRangeOptions)[number]["value"];
+
 export const printFilamentSchema = z.object({
   filamentId: z.string().trim().optional(),
   grams: optionalNumberInput,
