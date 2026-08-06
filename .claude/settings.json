@@ -33,7 +33,9 @@
       "Bash(powershell -Command \"Get-Process node -ErrorAction SilentlyContinue | Select-Object Id,ProcessName\")",
       "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\\\\n\" http://localhost:3000/)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:3000/login)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\\\\n\" -b \"Authorization=fake\" http://localhost:3000/login)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code} -> %{redirect_url}\\\\n\" -b \"Authorization=fake\" http://localhost:3000/login)",
+      "Bash(cp tsconfig.json /tmp/tsconfig.json.bak)",
+      "Bash(sed -i 's/\"moduleResolution\": \"node\",/\"moduleResolution\": \"node16\",/' tsconfig.json)"
     ]
   },
   "hooks": {
