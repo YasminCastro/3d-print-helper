@@ -54,7 +54,7 @@ import { FieldIcon } from "@/components/field-icon";
 
 type FilamentComboItem = { value: string; label: string };
 
-function filamentOptionLabel(filament: FilamentOption) {
+export function filamentOptionLabel(filament: FilamentOption) {
   const parts = [filament.name];
   if (filament.material) {
     parts.push(
