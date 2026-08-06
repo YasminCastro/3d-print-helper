@@ -1,0 +1,20 @@
+{
+	admin off
+}
+
+# HTTP -> HTTPS redirect
+http://192.168.100.13 {
+	redir https://{host}{uri} permanent
+}
+
+# Frontend (browser-facing) — Next.js on :3000
+https://192.168.100.13 {
+	tls /etc/caddy/certs/lan.pem /etc/caddy/certs/lan-key.pem
+	reverse_proxy localhost:3000
+}
+
+# Backend API (direct access — Swagger, Postman, future mobile app) — Express on :4000
+https://192.168.100.13:8443 {
+	tls /etc/caddy/certs/lan.pem /etc/caddy/certs/lan-key.pem
+	reverse_proxy localhost:4000
+}
