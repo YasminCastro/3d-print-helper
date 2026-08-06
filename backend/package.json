@@ -2,6 +2,7 @@
   "name": "default",
   "version": "1.0.0",
   "description": "default template",
+  "type": "commonjs",
   "scripts": {
     "start": "cross-env NODE_ENV=production node dist/server.js",
     "dev": "cross-env NODE_ENV=development nodemon",
