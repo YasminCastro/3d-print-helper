@@ -15,7 +15,7 @@
     "test": "jest --config jest.config.cjs --watch",
     "test:e2e": "jest --config jest.config.cjs --testPathPatterns=e2e --watch",
     "test:unit": "jest --config jest.config.cjs --testPathPatterns=unit --watch",
-    "deploy:prod": "pm2 start ecosystem.config.js --only prod",
+    "deploy:prod": "pm2 start ecosystem.config.js --only backend",
     "deploy:dev": "pm2 start ecosystem.config.js --only dev",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",

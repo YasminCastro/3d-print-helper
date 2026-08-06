@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "deploy:prod": "pm2 start ecosystem.config.js --only frontend"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",

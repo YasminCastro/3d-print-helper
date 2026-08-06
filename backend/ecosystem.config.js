@@ -2,13 +2,16 @@ module.exports = {
   apps: [
     // --- PRODUCTION ---
     {
-      name: 'prod',
+      name: 'backend',
       script: 'dist/server.js',
-      exec_mode: 'cluster',
-      instances: 'max',
+      exec_mode: 'fork', // servidor fraco/instável: fork+1 instância é mais previsível que cluster
+      instances: 1,
       autorestart: true,
       watch: false,
-      max_memory_restart: '1G',
+      max_memory_restart: '512M',
+      min_uptime: '30s', // só conta como "up" após 30s, evita loop de restart em falha rápida
+      max_restarts: 10,
+      restart_delay: 5000,
       output: './logs/access.log',
       error: './logs/error.log',
       merge_logs: true,
@@ -16,10 +19,9 @@ module.exports = {
       log_date_format: 'YYYY-MM-DD HH:mm:ss.SSS',
       node_args: '--enable-source-maps', // 소스맵 스택트레이스
       env: {
-        PORT: 3000,
+        PORT: 4000,
         NODE_ENV: 'production',
       },
-      // env_production: { ... } // 필요 시 분리도 가능
     },
 
     // --- DEVELOPMENT ---
@@ -45,15 +47,4 @@ module.exports = {
       },
     },
   ],
-
-  deploy: {
-    production: {
-      user: 'user',
-      host: '0.0.0.0',
-      ref: 'origin/master',
-      repo: 'git@github.com:repo.git',
-      path: '/home/user/app',
-      'post-deploy': 'npm install && npm run build && pm2 reload ecosystem.config.js --env production',
-    },
-  },
 };
