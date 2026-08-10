@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type { LucideIcon } from "lucide-react";
@@ -65,10 +65,16 @@ import {
 import { FieldIcon } from "@/components/field-icon";
 import { DatePickerField } from "@/components/date-picker-field";
 import {
+  Questionnaire,
+  QuestionnaireItem,
+  QuestionnaireProgress,
+} from "@/components/ui/questionnaire";
+import {
   calibrationStatusLabels,
   filamentOptionLabel,
   slicerLabels,
 } from "@/components/calibration-form-fields";
+import { cn } from "@/lib/utils";
 
 type FilamentComboItem = { value: string; label: string };
 
@@ -155,7 +161,16 @@ export function CalibrationWizardDialog({
   const totalSteps = guideSteps.length + 1; // general + guide steps (last one doubles as review)
   const isGeneralStep = stepIndex === 0;
   const isLastStep = stepIndex === totalSteps - 1;
-  const currentGuideStep = !isGeneralStep ? guideSteps[stepIndex - 1] : null;
+
+  const questionnaireItemNames = useMemo(
+    () => ["general", ...guideSteps.map((step) => `step-${step.number}`)],
+    [guideSteps]
+  );
+  const questionnaireItems = useMemo(
+    () => questionnaireItemNames.map((name) => ({ name, required: false })),
+    [questionnaireItemNames]
+  );
+  const activeQuestionnaireItem = questionnaireItemNames[stepIndex] ?? questionnaireItemNames[0];
 
   const defaultValues = buildDefaultValues(slicer);
 
@@ -228,27 +243,35 @@ export function CalibrationWizardDialog({
           <DialogTitle>Calibração passo a passo — {slicerLabels[slicer]}</DialogTitle>
         </DialogHeader>
 
-        <div className="flex items-center gap-1.5">
-          {Array.from({ length: totalSteps }).map((_, index) => (
-            <span
-              key={index}
-              className={
-                "h-1.5 flex-1 rounded-full " +
-                (index <= stepIndex ? "bg-primary" : "bg-muted")
-              }
-            />
-          ))}
-        </div>
-
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
+        <Questionnaire
+          item={activeQuestionnaireItem}
+          items={questionnaireItems}
+          onItemChange={() => {}}
+          onSubmit={(event) => event.preventDefault()}
           className="flex flex-col gap-4"
         >
+          <QuestionnaireProgress
+            className="flex items-center gap-1.5"
+            render={(props, state) => (
+              <div {...props}>
+                {Array.from({ length: state.total }).map((_, index) => (
+                  <span
+                    key={index}
+                    className={cn(
+                      "h-1.5 flex-1 rounded-full",
+                      index < state.current ? "bg-primary" : "bg-muted"
+                    )}
+                  />
+                ))}
+              </div>
+            )}
+          />
+
           <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
             Passo {stepIndex + 1} de {totalSteps}
           </p>
 
-          {isGeneralStep && (
+          <QuestionnaireItem name="general">
             <FieldGroup>
               <Field data-invalid={!!form.formState.errors.filamentId}>
                 <FieldLabel htmlFor="wizard-filament">
@@ -359,141 +382,147 @@ export function CalibrationWizardDialog({
                 </FieldContent>
               </Field>
             </FieldGroup>
-          )}
+          </QuestionnaireItem>
 
-          {currentGuideStep && (
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col gap-3 text-sm">
-                <h3 className="flex items-center gap-2 text-base font-semibold">
-                  <currentGuideStep.icon className="size-4 shrink-0 text-muted-foreground" />
-                  {currentGuideStep.title}
-                </h3>
-                <p className="text-muted-foreground">{currentGuideStep.goal}</p>
+          {guideSteps.map((step, index) => {
+            const isLastGuideStep = index === guideSteps.length - 1;
 
-                <div className="flex flex-col gap-2">
-                  <h4 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    Como fazer
-                  </h4>
-                  <ol className="list-decimal space-y-1 pl-4">
-                    {currentGuideStep.howTo.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ol>
-                </div>
+            return (
+              <QuestionnaireItem key={step.number} name={`step-${step.number}`}>
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-3 text-sm">
+                    <h3 className="flex items-center gap-2 text-base font-semibold">
+                      <step.icon className="size-4 shrink-0 text-muted-foreground" />
+                      {step.title}
+                    </h3>
+                    <p className="text-muted-foreground">{step.goal}</p>
 
-                <div className="flex flex-col gap-2">
-                  <h4 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                    Como analisar o resultado
-                  </h4>
-                  <ul className="list-disc space-y-1 pl-4">
-                    {currentGuideStep.analysis.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ul>
-                </div>
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                        Como fazer
+                      </h4>
+                      <ol className="list-decimal space-y-1 pl-4">
+                        {step.howTo.map((item, itemIndex) => (
+                          <li key={itemIndex}>{item}</li>
+                        ))}
+                      </ol>
+                    </div>
 
-                <div className="flex items-start gap-2 rounded-md bg-muted/50 p-3">
-                  <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                  <p>
-                    <span className="font-medium">O que fazer:</span> {currentGuideStep.action}
-                  </p>
-                </div>
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                        Como analisar o resultado
+                      </h4>
+                      <ul className="list-disc space-y-1 pl-4">
+                        {step.analysis.map((item, itemIndex) => (
+                          <li key={itemIndex}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
 
-                {currentGuideStep.tip && (
-                  <div className="flex items-start gap-2 rounded-md bg-muted/50 p-3">
-                    <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
-                    <p>
-                      <span className="font-medium">Dica de Ouro:</span> {currentGuideStep.tip}
-                    </p>
+                    <div className="flex items-start gap-2 rounded-md bg-muted/50 p-3">
+                      <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                      <p>
+                        <span className="font-medium">O que fazer:</span> {step.action}
+                      </p>
+                    </div>
+
+                    {step.tip && (
+                      <div className="flex items-start gap-2 rounded-md bg-muted/50 p-3">
+                        <Info className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+                        <p>
+                          <span className="font-medium">Dica de Ouro:</span> {step.tip}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                )}
-              </div>
 
-              <FieldGroup>
-                <h4 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                  Valores encontrados
-                </h4>
+                  <FieldGroup>
+                    <h4 className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+                      Valores encontrados
+                    </h4>
 
-                <div className="grid grid-cols-2 gap-4">
-                  {currentGuideStep.fieldKeys.map((key) => {
-                    const definition = FIELD_DEFINITIONS[key];
-                    return (
-                      <Field key={key} data-invalid={!!form.formState.errors[key]}>
-                        <FieldLabel htmlFor={`wizard-${key}`}>
-                          <FieldIcon icon={definition.icon} color="chart-2" />
-                          {definition.label}
+                    <div className="grid grid-cols-2 gap-4">
+                      {step.fieldKeys.map((key) => {
+                        const definition = FIELD_DEFINITIONS[key];
+                        return (
+                          <Field key={key} data-invalid={!!form.formState.errors[key]}>
+                            <FieldLabel htmlFor={`wizard-${key}`}>
+                              <FieldIcon icon={definition.icon} color="chart-2" />
+                              {definition.label}
+                            </FieldLabel>
+                            <FieldContent>
+                              <Input
+                                id={`wizard-${key}`}
+                                type="number"
+                                step="any"
+                                placeholder={definition.placeholder}
+                                {...form.register(key, { valueAsNumber: true })}
+                              />
+                              <FieldError errors={[form.formState.errors[key]]} />
+                            </FieldContent>
+                          </Field>
+                        );
+                      })}
+                    </div>
+
+                    <p className="text-xs text-muted-foreground">
+                      Não sabe esse valor ainda? Deixe em branco e continue — você pode preencher
+                      depois editando a calibração.
+                    </p>
+                  </FieldGroup>
+
+                  {isLastGuideStep && (
+                    <FieldGroup>
+                      <div className="flex flex-col gap-1">
+                        <h3 className="text-base font-semibold">Resumo da calibração</h3>
+                        <p className="text-sm text-muted-foreground">
+                          Confira os valores preenchidos e salve a calibração.
+                        </p>
+                      </div>
+
+                      <div className="flex flex-col gap-1.5 rounded-md bg-muted/50 p-3 text-sm">
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Filamento</span>
+                          <span className="font-medium">
+                            {selectedFilament ? filamentOptionLabel(selectedFilament) : "—"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-muted-foreground">Status</span>
+                          <span className="font-medium">
+                            {watchedValues.status
+                              ? calibrationStatusLabels[watchedValues.status]
+                              : "—"}
+                          </span>
+                        </div>
+                        {reviewFieldEntries.map(({ key, definition, value }) => (
+                          <div key={key} className="flex items-center justify-between">
+                            <span className="text-muted-foreground">{definition.label}</span>
+                            <span className="font-medium">{value}</span>
+                          </div>
+                        ))}
+                      </div>
+
+                      <Field data-invalid={!!form.formState.errors.notes}>
+                        <FieldLabel htmlFor="wizard-notes">
+                          <FieldIcon icon={NotebookTextIcon} color="chart-1" />
+                          Notas
                         </FieldLabel>
                         <FieldContent>
-                          <Input
-                            id={`wizard-${key}`}
-                            type="number"
-                            step="any"
-                            placeholder={definition.placeholder}
-                            {...form.register(key, { valueAsNumber: true })}
+                          <Textarea
+                            id="wizard-notes"
+                            placeholder="Observações sobre a calibração..."
+                            {...form.register("notes")}
                           />
-                          <FieldError errors={[form.formState.errors[key]]} />
+                          <FieldError errors={[form.formState.errors.notes]} />
                         </FieldContent>
                       </Field>
-                    );
-                  })}
+                    </FieldGroup>
+                  )}
                 </div>
-
-                <p className="text-xs text-muted-foreground">
-                  Não sabe esse valor ainda? Deixe em branco e continue — você pode preencher
-                  depois editando a calibração.
-                </p>
-              </FieldGroup>
-
-              {isLastStep && (
-                <FieldGroup>
-                  <div className="flex flex-col gap-1">
-                    <h3 className="text-base font-semibold">Resumo da calibração</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Confira os valores preenchidos e salve a calibração.
-                    </p>
-                  </div>
-
-                  <div className="flex flex-col gap-1.5 rounded-md bg-muted/50 p-3 text-sm">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Filamento</span>
-                      <span className="font-medium">
-                        {selectedFilament ? filamentOptionLabel(selectedFilament) : "—"}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Status</span>
-                      <span className="font-medium">
-                        {watchedValues.status
-                          ? calibrationStatusLabels[watchedValues.status]
-                          : "—"}
-                      </span>
-                    </div>
-                    {reviewFieldEntries.map(({ key, definition, value }) => (
-                      <div key={key} className="flex items-center justify-between">
-                        <span className="text-muted-foreground">{definition.label}</span>
-                        <span className="font-medium">{value}</span>
-                      </div>
-                    ))}
-                  </div>
-
-                  <Field data-invalid={!!form.formState.errors.notes}>
-                    <FieldLabel htmlFor="wizard-notes">
-                      <FieldIcon icon={NotebookTextIcon} color="chart-1" />
-                      Notas
-                    </FieldLabel>
-                    <FieldContent>
-                      <Textarea
-                        id="wizard-notes"
-                        placeholder="Observações sobre a calibração..."
-                        {...form.register("notes")}
-                      />
-                      <FieldError errors={[form.formState.errors.notes]} />
-                    </FieldContent>
-                  </Field>
-                </FieldGroup>
-              )}
-            </div>
-          )}
+              </QuestionnaireItem>
+            );
+          })}
 
           <DialogFooter className="mt-2">
             {!isGeneralStep && (
@@ -508,13 +537,17 @@ export function CalibrationWizardDialog({
                 <ChevronRightIcon />
               </Button>
             ) : (
-              <Button type="submit" disabled={isPending}>
+              <Button
+                type="button"
+                disabled={isPending}
+                onClick={form.handleSubmit(onSubmit)}
+              >
                 {isPending ? <Spinner /> : <CheckIcon />}
                 {isPending ? "Salvando..." : "Salvar"}
               </Button>
             )}
           </DialogFooter>
-        </form>
+        </Questionnaire>
       </DialogContent>
     </Dialog>
   );
