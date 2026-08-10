@@ -1,12 +1,14 @@
 export interface PrintCategoryPersistenceData {
   id: number;
   name: string;
+  color?: string | null;
   createdAt?: Date;
   userId: string;
 }
 
 export interface PrintCategoryCreateData {
   name: string;
+  color?: string | null;
   userId: string;
 }
 
@@ -16,16 +18,23 @@ export class PrintCategory {
   private constructor(
     private readonly _id: number,
     private _name: string,
+    private _color: string | null,
     private readonly _userId: string,
     private readonly _createdAt: Date = new Date(),
   ) {}
 
   static create(data: PrintCategoryCreateData): PrintCategory {
-    return new PrintCategory(0, PrintCategory.validateName(data.name), data.userId);
+    return new PrintCategory(0, PrintCategory.validateName(data.name), data.color ?? null, data.userId);
   }
 
   static fromPersistence(data: PrintCategoryPersistenceData): PrintCategory {
-    return new PrintCategory(data.id, data.name, data.userId, data.createdAt || new Date());
+    return new PrintCategory(
+      data.id,
+      data.name,
+      data.color ?? null,
+      data.userId,
+      data.createdAt || new Date(),
+    );
   }
 
   private static validateName(name: string): string {
@@ -44,6 +53,7 @@ export class PrintCategory {
 
   update(data: PrintCategoryUpdateData): void {
     if (data.name !== undefined) this._name = PrintCategory.validateName(data.name);
+    if (data.color !== undefined) this._color = data.color;
   }
 
   get id(): number {
@@ -51,6 +61,9 @@ export class PrintCategory {
   }
   get name(): string {
     return this._name;
+  }
+  get color(): string | null {
+    return this._color;
   }
   get userId(): string {
     return this._userId;
@@ -62,14 +75,16 @@ export class PrintCategory {
   toPersistence(): Omit<PrintCategoryPersistenceData, 'id' | 'createdAt'> {
     return {
       name: this._name,
+      color: this._color,
       userId: this._userId,
     };
   }
 
-  toResponse(): { id: number; name: string; createdAt: Date } {
+  toResponse(): { id: number; name: string; color: string | null; createdAt: Date } {
     return {
       id: this._id,
       name: this._name,
+      color: this._color,
       createdAt: this._createdAt,
     };
   }

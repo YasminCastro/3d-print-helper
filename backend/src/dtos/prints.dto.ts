@@ -8,6 +8,12 @@ const optionalText = z.string().trim().nullable().optional();
 
 export const createPrintCategorySchema = z.object({
   name: z.string().trim().min(1, { message: 'Name is required' }),
+  color: z
+    .string()
+    .trim()
+    .regex(/^#[0-9a-fA-F]{6}$/, { message: 'Invalid color' })
+    .nullable()
+    .optional(),
 });
 
 export type CreatePrintCategoryDto = z.infer<typeof createPrintCategorySchema>;

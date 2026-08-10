@@ -12,6 +12,7 @@ import {
   Images,
   ShoppingBag,
   SlidersHorizontal,
+  Tags,
 } from "lucide-react";
 
 import {
@@ -31,6 +32,7 @@ import { LogoutButton } from "@/components/logout-button";
 const NAV_ITEMS = [
   { title: "Início", url: "/", icon: LayoutDashboard },
   { title: "Impressões", url: "/prints", icon: Images },
+  { title: "Categorias", url: "/print-categories", icon: Tags },
   { title: "Filamentos", url: "/filaments", icon: Layers },
   { title: "Itens Extras", url: "/extra-items", icon: ShoppingBag },
   { title: "Diário", url: "/journal", icon: NotebookText },
