@@ -8,6 +8,7 @@ import { PlusIcon } from "lucide-react";
 import { createExtraItemAction } from "@/lib/actions/extra-items";
 import { extraItemFormSchema, type ExtraItemFormInput } from "@/lib/schemas/extra-item";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -65,6 +66,7 @@ export function ExtraItemFormDialog() {
           <ExtraItemFormFields form={form} />
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={isPending}>
+              {isPending && <Spinner />}
               {isPending ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>

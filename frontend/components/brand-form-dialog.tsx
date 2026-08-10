@@ -8,6 +8,7 @@ import { PlusIcon } from "lucide-react";
 import { createBrandAction } from "@/lib/actions/brands";
 import { brandFormSchema, type BrandFormInput } from "@/lib/schemas/brand";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -71,6 +72,7 @@ export function BrandFormDialog() {
           <BrandFormFields form={form} />
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={isPending}>
+              {isPending && <Spinner />}
               {isPending ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>

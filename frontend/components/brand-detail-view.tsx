@@ -26,6 +26,7 @@ import { deleteBrandAction, updateBrandAction } from "@/lib/actions/brands";
 import { brandFormSchema, type BrandFormInput } from "@/lib/schemas/brand";
 import type { FilamentBrand } from "@/lib/types/brand";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -208,6 +209,7 @@ export function BrandDetailView({
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={isPending}>
+                    {isPending && <Spinner />}
                     {isPending ? "Salvando..." : "Salvar"}
                   </Button>
                 </div>

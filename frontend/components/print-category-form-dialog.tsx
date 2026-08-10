@@ -8,6 +8,7 @@ import { PlusIcon } from "lucide-react";
 import { createPrintCategoryAction } from "@/lib/actions/print-categories";
 import { printCategoryFormSchema, type PrintCategoryFormInput } from "@/lib/schemas/print-category";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -64,6 +65,7 @@ export function PrintCategoryFormDialog() {
           <PrintCategoryFormFields form={form} />
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={isPending}>
+              {isPending && <Spinner />}
               {isPending ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>

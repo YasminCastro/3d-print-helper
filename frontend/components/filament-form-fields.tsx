@@ -3,7 +3,6 @@
 import type { UseFormReturn } from "react-hook-form";
 import {
   Building2Icon,
-  CalendarIcon,
   CircleCheckIcon,
   LayersIcon,
   LinkIcon,
@@ -33,6 +32,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { FieldIcon } from "@/components/field-icon";
+import { DatePickerField } from "@/components/date-picker-field";
 import { availabilityOptions, type FilamentFormInput } from "@/lib/schemas/filament";
 import { filamentTypeOptions } from "@/lib/schemas/brand";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
@@ -142,20 +142,13 @@ export function FilamentFormFields({
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <Field data-invalid={!!form.formState.errors.lastPurchaseDate}>
-          <FieldLabel htmlFor="filament-last-purchase-date">
-            <FieldIcon icon={CalendarIcon} color="chart-3" />
-            Data da última compra
-          </FieldLabel>
-          <FieldContent>
-            <Input
-              id="filament-last-purchase-date"
-              type="date"
-              {...form.register("lastPurchaseDate")}
-            />
-            <FieldError errors={[form.formState.errors.lastPurchaseDate]} />
-          </FieldContent>
-        </Field>
+        <DatePickerField
+          id="filament-last-purchase-date"
+          label="Data da última compra"
+          value={form.watch("lastPurchaseDate") ?? ""}
+          onChange={(value) => form.setValue("lastPurchaseDate", value)}
+          errors={[form.formState.errors.lastPurchaseDate]}
+        />
 
         <Field data-invalid={!!form.formState.errors.material}>
           <FieldLabel htmlFor="filament-material">

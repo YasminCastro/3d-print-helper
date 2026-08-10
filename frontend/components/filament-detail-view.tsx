@@ -29,6 +29,7 @@ import type { FilamentWithBrand } from "@/lib/types/filament";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import type { availabilityOptions } from "@/lib/schemas/filament";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -224,6 +225,7 @@ export function FilamentDetailView({
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={isPending}>
+                    {isPending && <Spinner />}
                     {isPending ? "Salvando..." : "Salvar"}
                   </Button>
                 </div>

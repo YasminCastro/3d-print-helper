@@ -8,6 +8,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { getCurrentUser } from "@/lib/actions/auth";
 
 export default async function AppLayout({
   children,
@@ -21,9 +22,11 @@ export default async function AppLayout({
     redirect("/login");
   }
 
+  const user = await getCurrentUser();
+
   return (
     <SidebarProvider>
-      <AppSidebar isLoggedIn={isLoggedIn} />
+      <AppSidebar user={user} />
       <SidebarInset>
         <header className="flex h-14 shrink-0 items-center gap-2 border-b px-4">
           <SidebarTrigger />

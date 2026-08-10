@@ -11,6 +11,7 @@ import { Printer } from "lucide-react";
 import { loginAction } from "@/lib/actions/auth";
 import { loginFormSchema, type LoginFormInput } from "@/lib/schemas/auth";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Card,
   CardContent,
@@ -123,6 +124,7 @@ export function LoginForm() {
             )}
 
             <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+              {isPending && <Spinner />}
               {isPending ? "Entrando..." : "Entrar"}
             </Button>
           </form>

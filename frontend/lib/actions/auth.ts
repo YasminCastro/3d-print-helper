@@ -9,6 +9,7 @@ import {
   type SignupFormInput,
 } from "@/lib/schemas/auth";
 import { backendUrl } from "@/lib/backend-url";
+import { backendFetch } from "@/lib/backend-fetch";
 
 type SignupResult =
   | { success: true }
@@ -117,4 +118,41 @@ export async function logoutAction(): Promise<void> {
   }
 
   cookieStore.delete("Authorization");
+}
+
+type CurrentUser = { name: string; email: string };
+
+export async function getCurrentUser(): Promise<CurrentUser | null> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("Authorization")?.value;
+  if (!token) return null;
+
+  const userId = decodeTokenUserId(token);
+  if (!userId) return null;
+
+  let response: Response;
+  try {
+    response = await backendFetch(`/users/${userId}`);
+  } catch {
+    return null;
+  }
+  if (!response.ok) return null;
+
+  const body = await response.json().catch(() => null);
+  const { email, name } = body?.data ?? {};
+  if (!email || !name) return null;
+
+  return { email, name };
+}
+
+function decodeTokenUserId(token: string): string | null {
+  const payloadSegment = token.split(".")[1];
+  if (!payloadSegment) return null;
+
+  try {
+    const payload = JSON.parse(Buffer.from(payloadSegment, "base64url").toString("utf-8"));
+    return payload?.id ? String(payload.id) : null;
+  } catch {
+    return null;
+  }
 }

@@ -3,7 +3,6 @@
 import type { UseFormReturn } from "react-hook-form";
 import {
   ActivityIcon,
-  CalendarIcon,
   CircleCheckIcon,
   DropletIcon,
   Gauge,
@@ -51,6 +50,7 @@ import type { FilamentOption } from "@/lib/types/filament";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import { FieldIcon } from "@/components/field-icon";
+import { DatePickerField } from "@/components/date-picker-field";
 
 type FilamentComboItem = { value: string; label: string };
 
@@ -239,20 +239,13 @@ export function CalibrationFormFields({
           </FieldContent>
         </Field>
 
-        <Field data-invalid={!!form.formState.errors.calibrationDate}>
-          <FieldLabel htmlFor="calibration-date">
-            <FieldIcon icon={CalendarIcon} color="chart-3" />
-            Data de calibração
-          </FieldLabel>
-          <FieldContent>
-            <Input
-              id="calibration-date"
-              type="date"
-              {...form.register("calibrationDate")}
-            />
-            <FieldError errors={[form.formState.errors.calibrationDate]} />
-          </FieldContent>
-        </Field>
+        <DatePickerField
+          id="calibration-date"
+          label="Data de calibração"
+          value={form.watch("calibrationDate") ?? ""}
+          onChange={(value) => form.setValue("calibrationDate", value)}
+          errors={[form.formState.errors.calibrationDate]}
+        />
       </div>
 
       {form.watch("slicer") === "orca" && (

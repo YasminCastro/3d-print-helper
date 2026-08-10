@@ -3,7 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { ImagePlusIcon, XIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentMedia,
+  AttachmentTitle,
+  AttachmentTrigger,
+} from "@/components/ui/attachment";
 
 export function PrintPhotoPicker({
   file,
@@ -37,41 +46,44 @@ export function PrintPhotoPicker({
 
   return (
     <div className="flex flex-col gap-3">
-      {displayUrl && (
-        <div className="group relative aspect-video w-full max-w-xs overflow-hidden rounded-md border">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={displayUrl} alt="" className="size-full object-cover" />
-          {file && (
-            <Button
-              type="button"
-              variant="destructive"
-              size="icon-sm"
-              className="absolute top-1 right-1 opacity-0 transition group-hover:opacity-100"
-              onClick={() => onFileChange(null)}
-            >
-              <XIcon />
-            </Button>
-          )}
-        </div>
-      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileSelected}
+      />
 
-      <div>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          className="hidden"
-          onChange={handleFileSelected}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => inputRef.current?.click()}
-        >
-          <ImagePlusIcon />
-          {displayUrl ? "Trocar foto" : "Adicionar foto"}
-        </Button>
-      </div>
+      <Attachment
+        orientation="vertical"
+        state={displayUrl ? "done" : "idle"}
+        className="w-40"
+      >
+        <AttachmentMedia variant={displayUrl ? "image" : "icon"}>
+          {displayUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={displayUrl} alt="" />
+          ) : (
+            <ImagePlusIcon />
+          )}
+        </AttachmentMedia>
+        <AttachmentContent>
+          <AttachmentTitle>
+            {displayUrl ? "Trocar foto" : "Adicionar foto"}
+          </AttachmentTitle>
+          {!displayUrl && (
+            <AttachmentDescription>PNG, JPG</AttachmentDescription>
+          )}
+        </AttachmentContent>
+        <AttachmentTrigger onClick={() => inputRef.current?.click()} />
+        {file && (
+          <AttachmentActions>
+            <AttachmentAction onClick={() => onFileChange(null)}>
+              <XIcon />
+            </AttachmentAction>
+          </AttachmentActions>
+        )}
+      </Attachment>
     </div>
   );
 }

@@ -12,6 +12,7 @@ import {
   type FilamentFormInput,
 } from "@/lib/schemas/filament";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -89,6 +90,7 @@ export function FilamentFormDialog({
           <FilamentFormFields form={form} brandOptions={brandOptions} />
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={isPending}>
+              {isPending && <Spinner />}
               {isPending ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>

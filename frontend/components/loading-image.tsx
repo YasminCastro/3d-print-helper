@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Loader2Icon } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 
 export function LoadingImage({
   src,
@@ -22,7 +22,7 @@ export function LoadingImage({
     <div className={cn("relative overflow-hidden", className)}>
       {!loaded && (
         <div className="absolute inset-0 flex items-center justify-center bg-muted">
-          <Loader2Icon className="size-5 animate-spin text-muted-foreground" />
+          <Spinner className="size-5 text-muted-foreground" />
         </div>
       )}
       {/* eslint-disable-next-line @next/next/no-img-element */}

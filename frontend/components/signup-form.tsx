@@ -11,6 +11,7 @@ import { Printer } from "lucide-react";
 import { signupAction } from "@/lib/actions/auth";
 import { signupFormSchema, type SignupFormInput } from "@/lib/schemas/auth";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Card,
   CardContent,
@@ -131,6 +132,7 @@ export function SignupForm() {
             </Field>
 
             <Button type="submit" className="mt-2 w-full" disabled={isPending}>
+              {isPending && <Spinner />}
               {isPending ? "Criando conta..." : "Criar conta"}
             </Button>
           </form>

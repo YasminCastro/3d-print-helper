@@ -2,7 +2,6 @@
 
 import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import {
-  CalendarIcon,
   CircleCheckIcon,
   LayersIcon,
   LightbulbIcon,
@@ -41,6 +40,7 @@ import type { FilamentOption } from "@/lib/types/filament";
 import { filamentTypeLabels } from "@/components/brand-form-fields";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import { FieldIcon } from "@/components/field-icon";
+import { DatePickerField } from "@/components/date-picker-field";
 
 function filamentOptionLabel(filament: FilamentOption) {
   const parts = [filament.name];
@@ -102,20 +102,13 @@ export function JournalFormFields({
       </Field>
 
       <div className="grid grid-cols-2 gap-4">
-        <Field data-invalid={!!form.formState.errors.entryDate}>
-          <FieldLabel htmlFor="journal-date">
-            <FieldIcon icon={CalendarIcon} color="chart-3" />
-            Data
-          </FieldLabel>
-          <FieldContent>
-            <Input
-              id="journal-date"
-              type="date"
-              {...form.register("entryDate")}
-            />
-            <FieldError errors={[form.formState.errors.entryDate]} />
-          </FieldContent>
-        </Field>
+        <DatePickerField
+          id="journal-date"
+          label="Data"
+          value={form.watch("entryDate") ?? ""}
+          onChange={(value) => form.setValue("entryDate", value)}
+          errors={[form.formState.errors.entryDate]}
+        />
 
         <Field data-invalid={!!form.formState.errors.status}>
           <FieldLabel htmlFor="journal-status">

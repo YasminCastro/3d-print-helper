@@ -6,7 +6,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { LucideIcon } from "lucide-react";
 import {
   ActivityIcon,
-  CalendarIcon,
   CheckIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -33,6 +32,7 @@ import {
   type ParamFieldKey,
 } from "@/lib/slicer-calibration-guides";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -63,6 +63,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { FieldIcon } from "@/components/field-icon";
+import { DatePickerField } from "@/components/date-picker-field";
 import {
   calibrationStatusLabels,
   filamentOptionLabel,
@@ -334,16 +335,13 @@ export function CalibrationWizardDialog({
                   </FieldContent>
                 </Field>
 
-                <Field data-invalid={!!form.formState.errors.calibrationDate}>
-                  <FieldLabel htmlFor="wizard-date">
-                    <FieldIcon icon={CalendarIcon} color="chart-3" />
-                    Data de calibração
-                  </FieldLabel>
-                  <FieldContent>
-                    <Input id="wizard-date" type="date" {...form.register("calibrationDate")} />
-                    <FieldError errors={[form.formState.errors.calibrationDate]} />
-                  </FieldContent>
-                </Field>
+                <DatePickerField
+                  id="wizard-date"
+                  label="Data de calibração"
+                  value={form.watch("calibrationDate") ?? ""}
+                  onChange={(value) => form.setValue("calibrationDate", value)}
+                  errors={[form.formState.errors.calibrationDate]}
+                />
               </div>
 
               <Field data-invalid={!!form.formState.errors.purchaseBatch}>
@@ -511,7 +509,7 @@ export function CalibrationWizardDialog({
               </Button>
             ) : (
               <Button type="submit" disabled={isPending}>
-                <CheckIcon />
+                {isPending ? <Spinner /> : <CheckIcon />}
                 {isPending ? "Salvando..." : "Salvar"}
               </Button>
             )}

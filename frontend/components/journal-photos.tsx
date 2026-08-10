@@ -8,6 +8,7 @@ import {
   deleteJournalPhotoAction,
 } from "@/lib/actions/journal";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import type { JournalPhoto } from "@/lib/types/journal";
 
 export function JournalPhotos({
@@ -92,7 +93,7 @@ export function JournalPhotos({
           disabled={isPending}
           onClick={() => inputRef.current?.click()}
         >
-          <ImagePlusIcon />
+          {isPending ? <Spinner /> : <ImagePlusIcon />}
           {isPending ? "Enviando..." : "Adicionar fotos"}
         </Button>
       </div>

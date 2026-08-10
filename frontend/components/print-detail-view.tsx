@@ -33,6 +33,7 @@ import { printFormSchema, type PrintFormInput } from "@/lib/schemas/print";
 import type { PrintCategory, PrintWithDetails } from "@/lib/types/print";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { LoadingImage } from "@/components/loading-image";
@@ -376,6 +377,7 @@ export function PrintDetailView({
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={isPending}>
+                    {isPending && <Spinner />}
                     {isPending ? "Salvando..." : "Salvar"}
                   </Button>
                 </div>

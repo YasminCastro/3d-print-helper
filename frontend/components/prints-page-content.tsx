@@ -3,13 +3,22 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, FilterIcon, SearchIcon } from "lucide-react";
+import { ChevronDownIcon, FilterIcon, SearchIcon } from "lucide-react";
 
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { PrintCard } from "@/components/print-card";
 import { printResultLabels, printStatusLabels } from "@/components/print-form-fields";
 import { categoryDotColorClass } from "@/lib/category-colors";
@@ -297,54 +306,51 @@ export function PrintsPageContent({
       )}
 
       {pagination.totalPages > 1 && (
-        <div className="flex items-center justify-center gap-1">
-          <Link
-            href={pageHref(pagination.page - 1)}
-            aria-disabled={pagination.page <= 1}
-            tabIndex={pagination.page <= 1 ? -1 : undefined}
-            className={cn(
-              buttonVariants({ variant: "outline", size: "icon-sm" }),
-              pagination.page <= 1 && "pointer-events-none opacity-50"
-            )}
-          >
-            <ChevronLeftIcon />
-          </Link>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                size="icon-sm"
+                text=""
+                aria-disabled={pagination.page <= 1}
+                tabIndex={pagination.page <= 1 ? -1 : undefined}
+                className={cn(pagination.page <= 1 && "pointer-events-none opacity-50")}
+                render={<Link href={pageHref(pagination.page - 1)} />}
+              />
+            </PaginationItem>
 
-          {getPageNumbers(pagination.page, pagination.totalPages).map((page, index) =>
-            page === "ellipsis" ? (
-              <span
-                key={`ellipsis-${index}`}
-                className="px-1 text-sm text-muted-foreground"
-              >
-                …
-              </span>
-            ) : (
-              <Link
-                key={page}
-                href={pageHref(page)}
-                aria-current={page === pagination.page ? "page" : undefined}
-                className={buttonVariants({
-                  variant: page === pagination.page ? "default" : "outline",
-                  size: "icon-sm",
-                })}
-              >
-                {page}
-              </Link>
-            )
-          )}
-
-          <Link
-            href={pageHref(pagination.page + 1)}
-            aria-disabled={pagination.page >= pagination.totalPages}
-            tabIndex={pagination.page >= pagination.totalPages ? -1 : undefined}
-            className={cn(
-              buttonVariants({ variant: "outline", size: "icon-sm" }),
-              pagination.page >= pagination.totalPages && "pointer-events-none opacity-50"
+            {getPageNumbers(pagination.page, pagination.totalPages).map((page, index) =>
+              page === "ellipsis" ? (
+                <PaginationItem key={`ellipsis-${index}`}>
+                  <PaginationEllipsis />
+                </PaginationItem>
+              ) : (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    size="icon-sm"
+                    isActive={page === pagination.page}
+                    render={<Link href={pageHref(page)} />}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              )
             )}
-          >
-            <ChevronRightIcon />
-          </Link>
-        </div>
+
+            <PaginationItem>
+              <PaginationNext
+                size="icon-sm"
+                text=""
+                aria-disabled={pagination.page >= pagination.totalPages}
+                tabIndex={pagination.page >= pagination.totalPages ? -1 : undefined}
+                className={cn(
+                  pagination.page >= pagination.totalPages && "pointer-events-none opacity-50"
+                )}
+                render={<Link href={pageHref(pagination.page + 1)} />}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       )}
     </div>
   );

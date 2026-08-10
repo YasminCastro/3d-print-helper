@@ -36,6 +36,7 @@ import {
 import type { CalibrationWithFilament } from "@/lib/types/calibration";
 import type { FilamentOption } from "@/lib/types/filament";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -229,6 +230,7 @@ export function CalibrationDetailView({
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={isPending}>
+                    {isPending && <Spinner />}
                     {isPending ? "Salvando..." : "Salvar"}
                   </Button>
                 </div>

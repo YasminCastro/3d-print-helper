@@ -3,7 +3,16 @@
 import { useEffect, useRef, useState } from "react";
 import { ImagePlusIcon, XIcon } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
+import {
+  Attachment,
+  AttachmentAction,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentGroup,
+  AttachmentMedia,
+  AttachmentTitle,
+  AttachmentTrigger,
+} from "@/components/ui/attachment";
 
 export function JournalPhotoPicker({
   files,
@@ -36,51 +45,49 @@ export function JournalPhotoPicker({
 
   return (
     <div className="flex flex-col gap-3">
-      {files.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-          {previews.map((preview, index) => (
-            <div
-              key={preview}
-              className="group relative aspect-square overflow-hidden rounded-md border"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={preview}
-                alt=""
-                className="size-full object-cover"
-              />
-              <Button
-                type="button"
-                variant="destructive"
-                size="icon-sm"
-                className="absolute top-1 right-1 opacity-0 transition group-hover:opacity-100"
-                onClick={() => handleRemove(index)}
-              >
-                <XIcon />
-              </Button>
-            </div>
-          ))}
-        </div>
-      )}
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        onChange={handleFilesSelected}
+      />
 
-      <div>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={handleFilesSelected}
-        />
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => inputRef.current?.click()}
-        >
-          <ImagePlusIcon />
-          Adicionar fotos
-        </Button>
-      </div>
+      <AttachmentGroup>
+        {files.map((file, index) => (
+          <Attachment
+            key={`${file.name}-${file.lastModified}-${index}`}
+            orientation="vertical"
+            state="done"
+          >
+            <AttachmentMedia variant="image">
+              {previews[index] && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={previews[index]} alt="" />
+              )}
+            </AttachmentMedia>
+            <AttachmentContent>
+              <AttachmentTitle>{file.name}</AttachmentTitle>
+            </AttachmentContent>
+            <AttachmentActions>
+              <AttachmentAction onClick={() => handleRemove(index)}>
+                <XIcon />
+              </AttachmentAction>
+            </AttachmentActions>
+          </Attachment>
+        ))}
+
+        <Attachment orientation="vertical" state="idle">
+          <AttachmentMedia variant="icon">
+            <ImagePlusIcon />
+          </AttachmentMedia>
+          <AttachmentContent>
+            <AttachmentTitle>Adicionar fotos</AttachmentTitle>
+          </AttachmentContent>
+          <AttachmentTrigger onClick={() => inputRef.current?.click()} />
+        </Attachment>
+      </AttachmentGroup>
     </div>
   );
 }

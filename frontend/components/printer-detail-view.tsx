@@ -25,6 +25,7 @@ import {
 import { printerFormSchema, type PrinterFormInput } from "@/lib/schemas/printer";
 import type { Printer } from "@/lib/types/printer";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -163,6 +164,7 @@ export function PrinterDetailView({ printer }: { printer: Printer }) {
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={isPending}>
+                    {isPending && <Spinner />}
                     {isPending ? "Salvando..." : "Salvar"}
                   </Button>
                 </div>

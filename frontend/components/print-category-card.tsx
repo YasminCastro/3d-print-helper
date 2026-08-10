@@ -13,6 +13,7 @@ import { printCategoryFormSchema, type PrintCategoryFormInput } from "@/lib/sche
 import type { PrintCategory } from "@/lib/types/print-category";
 import { Card, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   Dialog,
   DialogContent,
@@ -128,6 +129,7 @@ export function PrintCategoryCard({ category }: { category: PrintCategory }) {
               </AlertDialogContent>
             </AlertDialog>
             <Button type="submit" disabled={isPending}>
+              {isPending && <Spinner />}
               {isPending ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>

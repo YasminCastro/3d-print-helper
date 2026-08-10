@@ -34,6 +34,7 @@ import type { JournalEntryWithDetails } from "@/lib/types/journal";
 import { cn } from "@/lib/utils";
 import type { FilamentOption } from "@/lib/types/filament";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   AlertDialog,
@@ -203,6 +204,7 @@ export function JournalDetailView({
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={isPending}>
+                    {isPending && <Spinner />}
                     {isPending ? "Salvando..." : "Salvar"}
                   </Button>
                 </div>

@@ -2,7 +2,6 @@
 
 import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import {
-  CalendarIcon,
   CircleCheckIcon,
   ClockIcon,
   CoinsIcon,
@@ -42,6 +41,7 @@ import {
   ComboboxTrigger,
 } from "@/components/ui/combobox";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { DatePickerField, toISODate } from "@/components/date-picker-field";
 import { PrintPhotoPicker } from "@/components/print-photo-picker";
 import {
   NEW_CATEGORY_VALUE,
@@ -233,27 +233,22 @@ export function PrintFormFields({
       </div>
 
       <div className="grid grid-cols-2 gap-4">
-        <Field data-invalid={!!form.formState.errors.printDate}>
-          <FieldLabel htmlFor="print-date">
-            <FieldIcon icon={CalendarIcon} color="chart-3" />
-            Data da impressão
-          </FieldLabel>
-          <FieldContent>
-            <div className="flex items-center gap-2">
-              <Input id="print-date" type="date" {...form.register("printDate")} />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() =>
-                  form.setValue("printDate", new Date().toISOString().slice(0, 10))
-                }
-              >
-                Hoje
-              </Button>
-            </div>
-            <FieldError errors={[form.formState.errors.printDate]} />
-          </FieldContent>
-        </Field>
+        <DatePickerField
+          id="print-date"
+          label="Data da impressão"
+          value={form.watch("printDate") ?? ""}
+          onChange={(value) => form.setValue("printDate", value)}
+          errors={[form.formState.errors.printDate]}
+          action={
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => form.setValue("printDate", toISODate(new Date()))}
+            >
+              Hoje
+            </Button>
+          }
+        />
 
         <Field data-invalid={!!form.formState.errors.status}>
           <FieldLabel htmlFor="print-status">
