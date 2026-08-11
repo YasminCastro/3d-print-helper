@@ -71,6 +71,8 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     ],
     action:
       "Vá em Filament Settings > Max Volumetric Speed > insira o novo valor e salve.",
+    tip: "Antes de salvar, feche e abra o Orca Slicer novamente para não salvar com os valores usados no teste.",
+    videoUrl: "https://youtu.be/gVU5If1VsAM?si=hSAZkIeJMtqT_Dac&t=254",
     fieldKeys: ["maxVolumetricSpeed"],
   },
   {
@@ -232,6 +234,7 @@ export const CREALITY_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     ],
     action:
       "Abra o perfil do filamento (ícone do lápis), ative a opção Advance e insira o resultado no campo Max Volumetric Speed. Salvar.",
+    videoUrl: "https://youtu.be/gVU5If1VsAM?si=hSAZkIeJMtqT_Dac&t=254",
     fieldKeys: ["maxVolumetricSpeed"],
   },
 ];
