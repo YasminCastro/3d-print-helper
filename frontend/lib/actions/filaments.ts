@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendFetch } from "@/lib/backend-fetch";
+import { backendErrorMessage, backendFetch } from "@/lib/backend-fetch";
 import { filamentFormSchema, type FilamentFormInput } from "@/lib/schemas/filament";
 import { getBrands } from "@/lib/actions/brands";
 import type { Filament, FilamentOption, FilamentWithBrand } from "@/lib/types/filament";
@@ -101,7 +101,7 @@ export async function createFilamentAction(values: FilamentFormInput) {
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível criar o filamento");
+    throw new Error(await backendErrorMessage(response, "Não foi possível criar o filamento"));
   }
 
   refresh();
@@ -115,7 +115,7 @@ export async function updateFilamentAction(id: number, values: FilamentFormInput
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível atualizar o filamento");
+    throw new Error(await backendErrorMessage(response, "Não foi possível atualizar o filamento"));
   }
 
   refresh();

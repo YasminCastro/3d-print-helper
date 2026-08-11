@@ -15,7 +15,14 @@ export const filamentFormSchema = z.object({
   lastPurchaseDate: z.string().trim().optional(),
   material: z.enum(filamentTypeOptions).optional(),
   brandId: z.string().trim().optional(),
-  purchaseLink: z.string().trim().optional(),
+  purchaseLink: z
+    .string()
+    .trim()
+    .max(350, "Link de compra é muito longo (máx. 350 caracteres)")
+    .refine((value) => value === "" || z.string().url().safeParse(value).success, {
+      message: "Informe uma URL válida",
+    })
+    .optional(),
   saleName: z.string().trim().optional(),
   minPricePaid: optionalNumberInput,
   maxPricePaid: optionalNumberInput,

@@ -13,3 +13,13 @@ export async function backendFetch(path: string, init: RequestInit = {}): Promis
 
   return fetch(backendUrl(path), { ...init, headers });
 }
+
+export async function backendErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const body = await response.json();
+    const message = body?.error?.message;
+    return typeof message === "string" && message.length > 0 ? message : fallback;
+  } catch {
+    return fallback;
+  }
+}

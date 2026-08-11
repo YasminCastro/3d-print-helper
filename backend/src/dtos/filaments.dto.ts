@@ -22,7 +22,13 @@ export const createFilamentSchema = z.object({
   lastPurchaseDate: optionalText,
   material: z.enum(filamentTypeOptions).nullable().optional(),
   brandId: z.number().int().positive().nullable().optional(),
-  purchaseLink: optionalText,
+  purchaseLink: z
+    .string()
+    .trim()
+    .url({ message: 'Link de compra deve ser uma URL válida' })
+    .max(350, { message: 'Link de compra é muito longo (máx. 350 caracteres)' })
+    .nullable()
+    .optional(),
   saleName: optionalText,
   minPricePaid: optionalNumber,
   maxPricePaid: optionalNumber,
