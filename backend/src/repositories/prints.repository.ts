@@ -42,6 +42,7 @@ export interface PrintPhotoBinary {
 export interface PrintFilters {
   search?: string;
   categoryIds?: number[];
+  printerIds?: number[];
   statuses?: string[];
   results?: string[];
   durationRanges?: PrintDurationRange[];
@@ -61,6 +62,9 @@ function buildWhere(userId: string, filters: PrintFilters): Prisma.PrintWhereInp
   }
   if (filters.categoryIds?.length) {
     where.categoryId = { in: filters.categoryIds };
+  }
+  if (filters.printerIds?.length) {
+    where.printerId = { in: filters.printerIds };
   }
   if (filters.statuses?.length) {
     where.status = { in: filters.statuses };

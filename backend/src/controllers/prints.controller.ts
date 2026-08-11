@@ -69,6 +69,7 @@ export class PrintsController {
       sort: query.sort,
       search: query.search,
       categoryIds: query.categoryId,
+      printerIds: query.printerId,
       statuses: query.status,
       results: query.result,
       durationRanges: query.duration,

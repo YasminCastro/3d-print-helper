@@ -27,6 +27,7 @@ import {
   TrendingDownIcon,
   WalletIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import { deletePrintAction, updatePrintAction } from "@/lib/actions/prints";
 import { printFormSchema, type PrintFormInput } from "@/lib/schemas/print";
@@ -197,7 +198,12 @@ export function PrintDetailView({
         formData.append("saleValueActual", String(values.saleValueActual));
       if (photoFile) formData.append("photo", photoFile);
 
-      await updatePrintAction(print.id, formData);
+      try {
+        await updatePrintAction(print.id, formData);
+      } catch {
+        toast.error("Não foi possível salvar a impressão. Tente novamente.");
+        return;
+      }
       setIsEditing(false);
       setPhotoFile(null);
     });
@@ -205,7 +211,12 @@ export function PrintDetailView({
 
   function onDelete() {
     startTransition(async () => {
-      await deletePrintAction(print.id);
+      try {
+        await deletePrintAction(print.id);
+      } catch {
+        toast.error("Não foi possível excluir a impressão. Tente novamente.");
+        return;
+      }
       router.push("/prints");
     });
   }

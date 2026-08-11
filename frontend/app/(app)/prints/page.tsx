@@ -48,6 +48,7 @@ export default async function PrintsPage({
     sort?: string;
     search?: string;
     categoryId?: string | string[];
+    printerId?: string | string[];
     duration?: string | string[];
     status?: string | string[];
     result?: string | string[];
@@ -58,6 +59,7 @@ export default async function PrintsPage({
     sort: sortParam,
     search: searchParam,
     categoryId: categoryIdParam,
+    printerId: printerIdParam,
     duration: durationParam,
     status: statusParam,
     result: resultParam,
@@ -67,6 +69,9 @@ export default async function PrintsPage({
   const sort = parseSort(sortParam);
   const search = searchParam?.trim() || undefined;
   const categoryIds = toArray(categoryIdParam)
+    .map((value) => Number(value))
+    .filter((value) => Number.isInteger(value) && value > 0);
+  const printerIds = toArray(printerIdParam)
     .map((value) => Number(value))
     .filter((value) => Number.isInteger(value) && value > 0);
   const durationRanges = parseEnumArray<PrintDurationRange>(
@@ -79,6 +84,7 @@ export default async function PrintsPage({
   const hasActiveFilters =
     Boolean(search) ||
     categoryIds.length > 0 ||
+    printerIds.length > 0 ||
     durationRanges.length > 0 ||
     statuses.length > 0 ||
     results.length > 0;
@@ -87,7 +93,7 @@ export default async function PrintsPage({
     getPrinters(),
     getFilaments(),
     getExtraItems(),
-    getPrints({ page, sort, search, categoryIds, durationRanges, statuses, results }),
+    getPrints({ page, sort, search, categoryIds, printerIds, durationRanges, statuses, results }),
     getPrintCategories(),
   ]);
 
@@ -158,6 +164,7 @@ export default async function PrintsPage({
           <PrintsPageContent
             prints={printsWithDetails}
             categoryOptions={categoryOptions}
+            printerOptions={printerOptions}
             pagination={{
               page: printsResult.page,
               totalPages: printsResult.totalPages,

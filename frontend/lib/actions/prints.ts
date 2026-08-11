@@ -254,6 +254,7 @@ export async function getPrints(params?: {
   sort?: PrintSortOption;
   search?: string;
   categoryIds?: number[];
+  printerIds?: number[];
   statuses?: string[];
   results?: string[];
   durationRanges?: PrintDurationRange[];
@@ -264,6 +265,7 @@ export async function getPrints(params?: {
   if (params?.sort) query.set("sort", params.sort);
   if (params?.search) query.set("search", params.search);
   params?.categoryIds?.forEach((id) => query.append("categoryId", String(id)));
+  params?.printerIds?.forEach((id) => query.append("printerId", String(id)));
   params?.statuses?.forEach((status) => query.append("status", status));
   params?.results?.forEach((result) => query.append("result", result));
   params?.durationRanges?.forEach((range) => query.append("duration", range));

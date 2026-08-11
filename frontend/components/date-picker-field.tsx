@@ -37,6 +37,13 @@ function formatDisplayDate(date: Date | undefined) {
   });
 }
 
+function formatDateInput(raw: string): string {
+  const digits = raw.replace(/\D/g, "").slice(0, 8);
+  if (digits.length > 4) return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+  if (digits.length > 2) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return digits;
+}
+
 function parseTypedDate(text: string): Date | undefined {
   const match = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(text.trim());
   if (!match) return undefined;
@@ -92,12 +99,13 @@ export function DatePickerField({
               value={inputValue}
               placeholder="dd/mm/aaaa"
               onChange={(event) => {
-                setInputValue(event.target.value);
-                if (!event.target.value) {
+                const formatted = formatDateInput(event.target.value);
+                setInputValue(formatted);
+                if (!formatted) {
                   onChange("");
                   return;
                 }
-                const date = parseTypedDate(event.target.value);
+                const date = parseTypedDate(formatted);
                 if (date) {
                   setMonth(date);
                   onChange(toISODate(date));

@@ -82,10 +82,12 @@ function getPageNumbers(current: number, total: number): (number | "ellipsis")[]
 export function PrintsPageContent({
   prints,
   categoryOptions,
+  printerOptions,
   pagination,
 }: {
   prints: PrintWithDetails[];
   categoryOptions: PrintCategory[];
+  printerOptions: { id: number; name: string }[];
   pagination: { page: number; totalPages: number; total: number };
 }) {
   const router = useRouter();
@@ -98,6 +100,7 @@ export function PrintsPageContent({
   const sort = (searchParams.get("sort") as PrintSortOption | null) ?? DEFAULT_SORT;
   const urlSearch = searchParams.get("search") ?? "";
   const categoryFilter = searchParams.getAll("categoryId");
+  const printerFilter = searchParams.getAll("printerId");
   const durationFilter = searchParams.getAll("duration");
   const statusFilter = searchParams.getAll("status");
   const resultFilter = searchParams.getAll("result");
@@ -118,7 +121,11 @@ export function PrintsPageContent({
   }, []);
 
   const activeFilterCount =
-    categoryFilter.length + durationFilter.length + statusFilter.length + resultFilter.length;
+    categoryFilter.length +
+    printerFilter.length +
+    durationFilter.length +
+    statusFilter.length +
+    resultFilter.length;
 
   function navigate(overrides: ParamOverrides) {
     const params = withParams(searchParams, { ...overrides, page: null });
@@ -136,6 +143,10 @@ export function PrintsPageContent({
 
   function toggleCategory(value: string) {
     navigate({ categoryId: toggleInArray(categoryFilter, value) });
+  }
+
+  function togglePrinter(value: string) {
+    navigate({ printerId: toggleInArray(printerFilter, value) });
   }
 
   function toggleDuration(value: string) {
@@ -231,6 +242,23 @@ export function PrintsPageContent({
                     className={`size-2.5 shrink-0 rounded-full ${categoryDotColorClass(category.name)}`}
                   />
                   {category.name}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <span className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
+              Impressora
+            </span>
+            <div className="mt-2 flex flex-wrap gap-3">
+              {printerOptions.map((printer) => (
+                <label key={printer.id} className="flex items-center gap-1.5 text-sm">
+                  <Checkbox
+                    checked={printerFilter.includes(String(printer.id))}
+                    onCheckedChange={() => togglePrinter(String(printer.id))}
+                  />
+                  {printer.name}
                 </label>
               ))}
             </div>

@@ -121,7 +121,7 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     title: "Distância de Retração (Retraction Distance)",
     goal: 'Evita a "teia de aranha" (stringing) e pequenos relevos na superfície.',
     howTo: [
-      "Vá em Calibration > Retraction Test.",
+      "Vá em Calibration > Retraction.",
       "Para impressoras Direct Drive, mantenha os padrões. Para Bowden, defina o limite final para 6 mm.",
       "Imprima o teste.",
     ],
@@ -132,6 +132,7 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     action:
       "Em Filament Settings > aba Setting Override > ative e ajuste o Retraction Length.",
     fieldKeys: ["retractionDistance"],
+    videoUrl: "https://youtu.be/gVU5If1VsAM?si=SEdCxTMz2GI5NQKQ&t=912",
   },
 ];
 

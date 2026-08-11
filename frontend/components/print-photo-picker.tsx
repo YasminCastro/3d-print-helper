@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ImagePlusIcon, XIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   Attachment,
@@ -13,6 +14,9 @@ import {
   AttachmentTitle,
   AttachmentTrigger,
 } from "@/components/ui/attachment";
+
+const ACCEPTED_PHOTO_TYPES = ["image/png", "image/jpeg", "image/webp"];
+const ACCEPTED_PHOTO_LABEL = "PNG, JPG ou WEBP";
 
 export function PrintPhotoPicker({
   file,
@@ -40,8 +44,15 @@ export function PrintPhotoPicker({
 
   function handleFileSelected(event: React.ChangeEvent<HTMLInputElement>) {
     const selected = event.target.files?.[0];
-    if (selected) onFileChange(selected);
     event.target.value = "";
+    if (!selected) return;
+
+    if (!ACCEPTED_PHOTO_TYPES.includes(selected.type)) {
+      toast.error(`Tipo de arquivo não suportado. Envie uma imagem ${ACCEPTED_PHOTO_LABEL}.`);
+      return;
+    }
+
+    onFileChange(selected);
   }
 
   return (
@@ -49,7 +60,7 @@ export function PrintPhotoPicker({
       <input
         ref={inputRef}
         type="file"
-        accept="image/*"
+        accept={ACCEPTED_PHOTO_TYPES.join(",")}
         className="hidden"
         onChange={handleFileSelected}
       />
@@ -72,7 +83,7 @@ export function PrintPhotoPicker({
             {displayUrl ? "Trocar foto" : "Adicionar foto"}
           </AttachmentTitle>
           {!displayUrl && (
-            <AttachmentDescription>PNG, JPG</AttachmentDescription>
+            <AttachmentDescription>{ACCEPTED_PHOTO_LABEL}</AttachmentDescription>
           )}
         </AttachmentContent>
         <AttachmentTrigger onClick={() => inputRef.current?.click()} />

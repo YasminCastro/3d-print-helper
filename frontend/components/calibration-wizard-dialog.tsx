@@ -202,12 +202,16 @@ export function CalibrationWizardDialog({
   const [isPending, startTransition] = useTransition();
 
   const guideSteps = GUIDE_STEPS_BY_SLICER[slicer];
-  const totalSteps = guideSteps.length + 1; // general + guide steps (last one doubles as review)
+  const totalSteps = guideSteps.length + 2; // general + guide steps + review
   const isGeneralStep = stepIndex === 0;
   const isLastStep = stepIndex === totalSteps - 1;
 
   const questionnaireItemNames = useMemo(
-    () => ["general", ...guideSteps.map((step) => `step-${step.number}`)],
+    () => [
+      "general",
+      ...guideSteps.map((step) => `step-${step.number}`),
+      "review",
+    ],
     [guideSteps],
   );
   const questionnaireItems = useMemo(
@@ -482,8 +486,7 @@ export function CalibrationWizardDialog({
             </FieldGroup>
           </QuestionnaireItem>
 
-          {guideSteps.map((step, index) => {
-            const isLastGuideStep = index === guideSteps.length - 1;
+          {guideSteps.map((step) => {
             const howToLines = step.howTo.map((line) =>
               fillHowToTokens(line, selectedFilament),
             );
@@ -602,72 +605,65 @@ export function CalibrationWizardDialog({
                       </p>
                     </FieldGroup>
                   </div>
-
-                  {isLastGuideStep && (
-                    <FieldGroup>
-                      <div className="flex flex-col gap-1">
-                        <h3 className="text-base font-semibold">
-                          Resumo da calibração
-                        </h3>
-                        <p className="text-sm text-muted-foreground">
-                          Confira os valores preenchidos e salve a calibração.
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col gap-1.5 rounded-md bg-muted/50 p-3 text-sm">
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">
-                            Filamento
-                          </span>
-                          <span className="font-medium">
-                            {selectedFilament
-                              ? filamentOptionLabel(selectedFilament)
-                              : "—"}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <span className="text-muted-foreground">Status</span>
-                          <span className="font-medium">
-                            {watchedValues.status
-                              ? calibrationStatusLabels[watchedValues.status]
-                              : "—"}
-                          </span>
-                        </div>
-                        {reviewFieldEntries.map(
-                          ({ key, definition, value }) => (
-                            <div
-                              key={key}
-                              className="flex items-center justify-between"
-                            >
-                              <span className="text-muted-foreground">
-                                {definition.label}
-                              </span>
-                              <span className="font-medium">{value}</span>
-                            </div>
-                          ),
-                        )}
-                      </div>
-
-                      <Field data-invalid={!!form.formState.errors.notes}>
-                        <FieldLabel htmlFor="wizard-notes">
-                          <FieldIcon icon={NotebookTextIcon} color="chart-1" />
-                          Notas
-                        </FieldLabel>
-                        <FieldContent>
-                          <Textarea
-                            id="wizard-notes"
-                            placeholder="Observações sobre a calibração..."
-                            {...form.register("notes")}
-                          />
-                          <FieldError errors={[form.formState.errors.notes]} />
-                        </FieldContent>
-                      </Field>
-                    </FieldGroup>
-                  )}
                 </div>
               </QuestionnaireItem>
             );
           })}
+
+          <QuestionnaireItem name="review">
+            <FieldGroup>
+              <div className="flex flex-col gap-1">
+                <h3 className="text-base font-semibold">
+                  Resumo da calibração
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Confira os valores preenchidos e salve a calibração.
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-1.5 rounded-md bg-muted/50 p-3 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Filamento</span>
+                  <span className="font-medium">
+                    {selectedFilament
+                      ? filamentOptionLabel(selectedFilament)
+                      : "—"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Status</span>
+                  <span className="font-medium">
+                    {watchedValues.status
+                      ? calibrationStatusLabels[watchedValues.status]
+                      : "—"}
+                  </span>
+                </div>
+                {reviewFieldEntries.map(({ key, definition, value }) => (
+                  <div key={key} className="flex items-center justify-between">
+                    <span className="text-muted-foreground">
+                      {definition.label}
+                    </span>
+                    <span className="font-medium">{value}</span>
+                  </div>
+                ))}
+              </div>
+
+              <Field data-invalid={!!form.formState.errors.notes}>
+                <FieldLabel htmlFor="wizard-notes">
+                  <FieldIcon icon={NotebookTextIcon} color="chart-1" />
+                  Notas
+                </FieldLabel>
+                <FieldContent>
+                  <Textarea
+                    id="wizard-notes"
+                    placeholder="Observações sobre a calibração..."
+                    {...form.register("notes")}
+                  />
+                  <FieldError errors={[form.formState.errors.notes]} />
+                </FieldContent>
+              </Field>
+            </FieldGroup>
+          </QuestionnaireItem>
 
           <DialogFooter className="mt-2">
             {!isGeneralStep && (

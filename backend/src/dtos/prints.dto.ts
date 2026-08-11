@@ -99,6 +99,7 @@ export const listPrintsQuerySchema = z.object({
   sort: z.enum(printSortOptions).optional(),
   search: z.string().trim().min(1).optional(),
   categoryId: arrayQueryParam(z.coerce.number().int().positive()),
+  printerId: arrayQueryParam(z.coerce.number().int().positive()),
   status: arrayQueryParam(z.enum(printStatusOptions)),
   result: arrayQueryParam(z.enum(printResultOptions)),
   duration: arrayQueryParam(z.enum(printDurationRangeValues)),

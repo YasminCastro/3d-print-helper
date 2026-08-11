@@ -5,6 +5,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import { createPrintAction } from "@/lib/actions/prints";
 import { printFormSchema, type PrintFormInput } from "@/lib/schemas/print";
@@ -98,7 +99,12 @@ export function PrintFormDialog({
         formData.append("saleValueActual", String(values.saleValueActual));
       if (photoFile) formData.append("photo", photoFile);
 
-      await createPrintAction(formData);
+      try {
+        await createPrintAction(formData);
+      } catch {
+        toast.error("Não foi possível salvar a impressão. Tente novamente.");
+        return;
+      }
 
       form.reset(defaultValues);
       setPhotoFile(null);
