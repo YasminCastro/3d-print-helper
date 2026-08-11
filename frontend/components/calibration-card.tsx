@@ -104,7 +104,7 @@ export function CalibrationCard({ calibration }: { calibration: CalibrationWithF
           </div>
         </CardHeader>
 
-        {(status || material || date) && (
+        {(status || material || date || calibration.printer_name) && (
           <CardContent className="mt-auto flex flex-wrap items-center gap-1.5">
             {status && (
               <Badge variant="outline" className={STATUS_BADGE_CLASSES[status]}>
@@ -115,6 +115,9 @@ export function CalibrationCard({ calibration }: { calibration: CalibrationWithF
               <Badge variant="outline" className={filamentTypeColors[material]}>
                 {filamentTypeLabels[material] ?? material}
               </Badge>
+            )}
+            {calibration.printer_name && (
+              <Badge variant="outline">{calibration.printer_name}</Badge>
             )}
             {date && <Badge variant="secondary">{date}</Badge>}
           </CardContent>

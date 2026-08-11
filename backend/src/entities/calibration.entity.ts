@@ -2,6 +2,7 @@ export interface CalibrationPersistenceData {
   id: number;
   slicer: string;
   filamentId?: number | null;
+  printerId?: number | null;
   status?: string | null;
   calibrationDate?: string | null;
   bedTempFirstLayer?: number | null;
@@ -21,6 +22,7 @@ export interface CalibrationPersistenceData {
 export interface CalibrationCreateData {
   slicer: string;
   filamentId?: number | null;
+  printerId?: number | null;
   status?: string | null;
   calibrationDate?: string | null;
   bedTempFirstLayer?: number | null;
@@ -43,6 +45,7 @@ export class Calibration {
     private readonly _id: number,
     private _slicer: string,
     private _filamentId: number | null,
+    private _printerId: number | null,
     private _status: string | null,
     private _calibrationDate: string | null,
     private _bedTempFirstLayer: number | null,
@@ -62,11 +65,13 @@ export class Calibration {
   static create(data: CalibrationCreateData): Calibration {
     const validatedSlicer = Calibration.validateSlicer(data.slicer);
     const validatedFilamentId = Calibration.validateFilamentId(data.filamentId);
+    const validatedPrinterId = Calibration.validatePrinterId(data.printerId);
 
     return new Calibration(
       0,
       validatedSlicer,
       validatedFilamentId,
+      validatedPrinterId,
       data.status ?? null,
       data.calibrationDate ?? null,
       data.bedTempFirstLayer ?? null,
@@ -88,6 +93,7 @@ export class Calibration {
       data.id,
       data.slicer,
       data.filamentId ?? null,
+      data.printerId ?? null,
       data.status ?? null,
       data.calibrationDate ?? null,
       data.bedTempFirstLayer ?? null,
@@ -129,10 +135,22 @@ export class Calibration {
     return filamentId;
   }
 
+  private static validatePrinterId(printerId?: number | null): number | null {
+    if (printerId === undefined || printerId === null) return null;
+
+    if (!Number.isInteger(printerId) || printerId <= 0) {
+      throw new Error('Printer id must be a positive integer');
+    }
+
+    return printerId;
+  }
+
   update(data: CalibrationUpdateData): void {
     if (data.slicer !== undefined) this._slicer = Calibration.validateSlicer(data.slicer);
     if (data.filamentId !== undefined)
       this._filamentId = Calibration.validateFilamentId(data.filamentId);
+    if (data.printerId !== undefined)
+      this._printerId = Calibration.validatePrinterId(data.printerId);
     if (data.status !== undefined) this._status = data.status;
     if (data.calibrationDate !== undefined) this._calibrationDate = data.calibrationDate;
     if (data.bedTempFirstLayer !== undefined) this._bedTempFirstLayer = data.bedTempFirstLayer;
@@ -157,6 +175,9 @@ export class Calibration {
   }
   get filamentId(): number | null {
     return this._filamentId;
+  }
+  get printerId(): number | null {
+    return this._printerId;
   }
   get status(): string | null {
     return this._status;
@@ -205,6 +226,7 @@ export class Calibration {
     return {
       slicer: this._slicer,
       filamentId: this._filamentId,
+      printerId: this._printerId,
       status: this._status,
       calibrationDate: this._calibrationDate,
       bedTempFirstLayer: this._bedTempFirstLayer,
@@ -225,6 +247,7 @@ export class Calibration {
     id: number;
     slicer: string;
     filamentId: number | null;
+    printerId: number | null;
     status: string | null;
     calibrationDate: string | null;
     bedTempFirstLayer: number | null;
@@ -243,6 +266,7 @@ export class Calibration {
       id: this._id,
       slicer: this._slicer,
       filamentId: this._filamentId,
+      printerId: this._printerId,
       status: this._status,
       calibrationDate: this._calibrationDate,
       bedTempFirstLayer: this._bedTempFirstLayer,

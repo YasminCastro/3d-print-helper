@@ -12,6 +12,7 @@ const optionalNumberInput = z
 export const calibrationFormSchema = z.object({
   slicer: z.enum(slicerOptions, { message: "Selecione o fatiador" }),
   filamentId: z.string().trim().min(1, "Selecione o filamento"),
+  printerId: z.string().trim().optional(),
   status: z.enum(calibrationStatusOptions).optional(),
   calibrationDate: z.string().trim().optional(),
   bedTempFirstLayer: optionalNumberInput,

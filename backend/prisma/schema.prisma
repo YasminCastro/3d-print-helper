@@ -44,6 +44,7 @@ model Printer {
   userId                 String   @map("user_id")
   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   prints                 Print[]
+  calibrations           Calibration[]
 
   @@map("printers")
 }
@@ -103,6 +104,8 @@ model Calibration {
   slicer             String
   filamentId         Int?      @map("filament_id")
   filament           Filament? @relation(fields: [filamentId], references: [id], onDelete: Cascade)
+  printerId          Int?      @map("printer_id")
+  printer            Printer?  @relation(fields: [printerId], references: [id], onDelete: SetNull)
   status             String?
   calibrationDate    String?   @map("calibration_date")
   bedTempFirstLayer  Float?    @map("bed_temp_first_layer")

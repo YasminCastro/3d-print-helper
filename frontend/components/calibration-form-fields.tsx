@@ -10,6 +10,7 @@ import {
   Layers,
   MoveHorizontalIcon,
   NotebookTextIcon,
+  Printer as PrinterIcon,
   ThermometerIcon,
 } from "lucide-react";
 
@@ -92,9 +93,11 @@ export const calibrationStatusColors: Record<
 export function CalibrationFormFields({
   form,
   filamentOptions,
+  printerOptions,
 }: {
   form: UseFormReturn<CalibrationFormInput>;
   filamentOptions: FilamentOption[];
+  printerOptions: { id: number; name: string }[];
 }) {
   const sortedFilamentOptions = [...filamentOptions].sort((a, b) =>
     a.name.localeCompare(b.name, "pt-BR")
@@ -107,36 +110,67 @@ export function CalibrationFormFields({
 
   return (
     <FieldGroup>
-      <Field data-invalid={!!form.formState.errors.slicer}>
-        <FieldLabel htmlFor="calibration-slicer">
-          <FieldIcon icon={Gauge} color="chart-2" />
-          Fatiador
-        </FieldLabel>
-        <FieldContent>
-          <Select
-            items={slicerOptions.map((option) => ({
-              value: option,
-              label: slicerLabels[option],
-            }))}
-            value={form.watch("slicer") ?? ""}
-            onValueChange={(value) =>
-              form.setValue("slicer", value as CalibrationFormInput["slicer"])
-            }
-          >
-            <SelectTrigger id="calibration-slicer" className="w-full">
-              <SelectValue placeholder="Selecione o fatiador" />
-            </SelectTrigger>
-            <SelectContent>
-              {slicerOptions.map((option) => (
-                <SelectItem key={option} value={option}>
-                  {slicerLabels[option]}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <FieldError errors={[form.formState.errors.slicer]} />
-        </FieldContent>
-      </Field>
+      <div className="grid grid-cols-2 gap-4">
+        <Field data-invalid={!!form.formState.errors.slicer}>
+          <FieldLabel htmlFor="calibration-slicer">
+            <FieldIcon icon={Gauge} color="chart-2" />
+            Fatiador
+          </FieldLabel>
+          <FieldContent>
+            <Select
+              items={slicerOptions.map((option) => ({
+                value: option,
+                label: slicerLabels[option],
+              }))}
+              value={form.watch("slicer") ?? ""}
+              onValueChange={(value) =>
+                form.setValue("slicer", value as CalibrationFormInput["slicer"])
+              }
+            >
+              <SelectTrigger id="calibration-slicer" className="w-full">
+                <SelectValue placeholder="Selecione o fatiador" />
+              </SelectTrigger>
+              <SelectContent>
+                {slicerOptions.map((option) => (
+                  <SelectItem key={option} value={option}>
+                    {slicerLabels[option]}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError errors={[form.formState.errors.slicer]} />
+          </FieldContent>
+        </Field>
+
+        <Field data-invalid={!!form.formState.errors.printerId}>
+          <FieldLabel htmlFor="calibration-printer">
+            <FieldIcon icon={PrinterIcon} color="chart-2" />
+            Impressora
+          </FieldLabel>
+          <FieldContent>
+            <Select
+              items={printerOptions.map((printer) => ({
+                value: String(printer.id),
+                label: printer.name,
+              }))}
+              value={form.watch("printerId") ?? ""}
+              onValueChange={(value) => form.setValue("printerId", value ?? "")}
+            >
+              <SelectTrigger id="calibration-printer" className="w-full">
+                <SelectValue placeholder="Selecione a impressora" />
+              </SelectTrigger>
+              <SelectContent>
+                {printerOptions.map((printer) => (
+                  <SelectItem key={printer.id} value={String(printer.id)}>
+                    {printer.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <FieldError errors={[form.formState.errors.printerId]} />
+          </FieldContent>
+        </Field>
+      </div>
 
       <div className="grid grid-cols-3 gap-4">
         <Field

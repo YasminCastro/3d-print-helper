@@ -26,6 +26,7 @@ import { filamentDenormalizedFields } from "@/lib/filament-helpers";
 import { getExtraItems } from "@/lib/actions/extra-items";
 import { extraItemDenormalizedFields } from "@/lib/extra-item-helpers";
 import { getPrintCategories, getPrints } from "@/lib/actions/prints";
+import { getCalibrations } from "@/lib/actions/calibrations";
 import type { filamentTypeOptions } from "@/lib/schemas/brand";
 import type { PrintWithDetails } from "@/lib/types/print";
 
@@ -80,6 +81,11 @@ export default async function Home() {
   const printerOptions = [...printers]
     .sort((a, b) => a.name.localeCompare(b.name))
     .map((printer) => ({ id: printer.id, name: printer.name }));
+
+  const calibrations = await getCalibrations();
+  const lastCalibrationPrinterId = [...calibrations]
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .find((calibration) => calibration.printer_id != null)?.printer_id;
 
   const printsByCreatedDesc = [...printsRaw].sort((a, b) =>
     b.created_at.localeCompare(a.created_at)
@@ -148,6 +154,8 @@ export default async function Home() {
           />
           <CalibrationFormDialog
             filamentOptions={filamentOptions}
+            printerOptions={printerOptions}
+            lastPrinterId={lastCalibrationPrinterId}
             trigger={
               <ShortcutTile
                 icon={Gauge}

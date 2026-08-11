@@ -10,6 +10,7 @@ type ApiCalibration = {
   id: number;
   slicer: string;
   filamentId: number | null;
+  printerId: number | null;
   status: string | null;
   calibrationDate: string | null;
   bedTempFirstLayer: number | null;
@@ -30,6 +31,7 @@ function toDomain(api: ApiCalibration): Calibration {
     id: api.id,
     slicer: api.slicer,
     filament_id: api.filamentId,
+    printer_id: api.printerId,
     status: api.status,
     calibration_date: api.calibrationDate,
     bed_temp_first_layer: api.bedTempFirstLayer,
@@ -52,6 +54,7 @@ function toPayload(values: CalibrationFormInput) {
   return {
     slicer: parsed.slicer,
     filamentId: Number(parsed.filamentId),
+    printerId: parsed.printerId ? Number(parsed.printerId) : null,
     status: parsed.status ?? null,
     calibrationDate: parsed.calibrationDate || null,
     bedTempFirstLayer: parsed.bedTempFirstLayer ?? null,
@@ -126,6 +129,7 @@ export async function cloneCalibrationAction(id: number): Promise<Calibration> {
     body: JSON.stringify({
       slicer: source.slicer,
       filamentId: source.filament_id,
+      printerId: source.printer_id,
       status: source.status,
       calibrationDate: source.calibration_date,
       bedTempFirstLayer: source.bed_temp_first_layer,

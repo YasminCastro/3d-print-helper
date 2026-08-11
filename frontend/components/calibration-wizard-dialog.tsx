@@ -17,6 +17,7 @@ import {
   MoveHorizontalIcon,
   NotebookTextIcon,
   PlayIcon,
+  Printer as PrinterIcon,
   ThermometerIcon,
 } from "lucide-react";
 
@@ -162,10 +163,14 @@ function fillHowToTokens(line: string, filament: FilamentOption | undefined) {
   });
 }
 
-function buildDefaultValues(slicer: "orca" | "creality"): CalibrationFormInput {
+function buildDefaultValues(
+  slicer: "orca" | "creality",
+  lastPrinterId?: number | null,
+): CalibrationFormInput {
   return {
     slicer,
     filamentId: "",
+    printerId: lastPrinterId ? String(lastPrinterId) : "",
     status: undefined,
     calibrationDate: "",
     bedTempFirstLayer: undefined,
@@ -184,9 +189,13 @@ function buildDefaultValues(slicer: "orca" | "creality"): CalibrationFormInput {
 export function CalibrationWizardDialog({
   slicer,
   filamentOptions,
+  printerOptions,
+  lastPrinterId,
 }: {
   slicer: "orca" | "creality";
   filamentOptions: FilamentOption[];
+  printerOptions: { id: number; name: string }[];
+  lastPrinterId?: number | null;
 }) {
   const [open, setOpen] = useState(false);
   const [stepIndex, setStepIndex] = useState(0);
@@ -208,7 +217,7 @@ export function CalibrationWizardDialog({
   const activeQuestionnaireItem =
     questionnaireItemNames[stepIndex] ?? questionnaireItemNames[0];
 
-  const defaultValues = buildDefaultValues(slicer);
+  const defaultValues = buildDefaultValues(slicer, lastPrinterId);
 
   const form = useForm<CalibrationFormInput>({
     resolver: zodResolver(calibrationFormSchema),
@@ -378,6 +387,37 @@ export function CalibrationWizardDialog({
                     </ComboboxContent>
                   </Combobox>
                   <FieldError errors={[form.formState.errors.filamentId]} />
+                </FieldContent>
+              </Field>
+
+              <Field data-invalid={!!form.formState.errors.printerId}>
+                <FieldLabel htmlFor="wizard-printer">
+                  <FieldIcon icon={PrinterIcon} color="chart-2" />
+                  Impressora
+                </FieldLabel>
+                <FieldContent>
+                  <Select
+                    items={printerOptions.map((printer) => ({
+                      value: String(printer.id),
+                      label: printer.name,
+                    }))}
+                    value={form.watch("printerId") ?? ""}
+                    onValueChange={(value) =>
+                      form.setValue("printerId", value ?? "")
+                    }
+                  >
+                    <SelectTrigger id="wizard-printer" className="w-full">
+                      <SelectValue placeholder="Selecione a impressora" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {printerOptions.map((printer) => (
+                        <SelectItem key={printer.id} value={String(printer.id)}>
+                          {printer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FieldError errors={[form.formState.errors.printerId]} />
                 </FieldContent>
               </Field>
 

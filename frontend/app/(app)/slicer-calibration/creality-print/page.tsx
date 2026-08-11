@@ -5,12 +5,22 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalibrationWizardDialog } from "@/components/calibration-wizard-dialog";
 import { getFilamentOptions } from "@/lib/actions/filaments";
+import { getPrinters } from "@/lib/actions/printers";
+import { getCalibrations } from "@/lib/actions/calibrations";
 import { CREALITY_CALIBRATION_GUIDE } from "@/lib/slicer-calibration-guides";
 
 const STEPS = CREALITY_CALIBRATION_GUIDE;
 
 export default async function CrealityPrintCalibrationPage() {
-  const filamentOptions = await getFilamentOptions();
+  const [filamentOptions, printers, calibrations] = await Promise.all([
+    getFilamentOptions(),
+    getPrinters(),
+    getCalibrations(),
+  ]);
+  const printerOptions = printers.map((printer) => ({ id: printer.id, name: printer.name }));
+  const lastPrinterId = [...calibrations]
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .find((calibration) => calibration.printer_id != null)?.printer_id;
 
   return (
     <div className="flex flex-col gap-4">
@@ -28,7 +38,12 @@ export default async function CrealityPrintCalibrationPage() {
       </div>
 
       <div className="flex justify-end">
-        <CalibrationWizardDialog slicer="creality" filamentOptions={filamentOptions} />
+        <CalibrationWizardDialog
+          slicer="creality"
+          filamentOptions={filamentOptions}
+          printerOptions={printerOptions}
+          lastPrinterId={lastPrinterId}
+        />
       </div>
 
       <Card>

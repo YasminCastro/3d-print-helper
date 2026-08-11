@@ -24,32 +24,40 @@ import {
 import { CalibrationFormFields } from "@/components/calibration-form-fields";
 import type { FilamentOption } from "@/lib/types/filament";
 
-const defaultValues: CalibrationFormInput = {
-  slicer: undefined as unknown as CalibrationFormInput["slicer"],
-  filamentId: "",
-  status: undefined,
-  calibrationDate: "",
-  bedTempFirstLayer: undefined,
-  bedTempOtherLayers: undefined,
-  nozzleTempInitial: undefined,
-  nozzleTempFinal: undefined,
-  maxVolumetricSpeed: undefined,
-  pressureAdvance: undefined,
-  flowRatio: undefined,
-  retractionDistance: undefined,
-  purchaseBatch: "",
-  notes: "",
-};
+function buildDefaultValues(lastPrinterId?: number | null): CalibrationFormInput {
+  return {
+    slicer: undefined as unknown as CalibrationFormInput["slicer"],
+    filamentId: "",
+    printerId: lastPrinterId ? String(lastPrinterId) : "",
+    status: undefined,
+    calibrationDate: "",
+    bedTempFirstLayer: undefined,
+    bedTempOtherLayers: undefined,
+    nozzleTempInitial: undefined,
+    nozzleTempFinal: undefined,
+    maxVolumetricSpeed: undefined,
+    pressureAdvance: undefined,
+    flowRatio: undefined,
+    retractionDistance: undefined,
+    purchaseBatch: "",
+    notes: "",
+  };
+}
 
 export function CalibrationFormDialog({
   filamentOptions,
+  printerOptions,
+  lastPrinterId,
   trigger,
 }: {
   filamentOptions: FilamentOption[];
+  printerOptions: { id: number; name: string }[];
+  lastPrinterId?: number | null;
   trigger?: ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const defaultValues = buildDefaultValues(lastPrinterId);
 
   const form = useForm<CalibrationFormInput>({
     resolver: zodResolver(calibrationFormSchema),
@@ -85,7 +93,11 @@ export function CalibrationFormDialog({
           <DialogTitle>Nova Calibração</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <CalibrationFormFields form={form} filamentOptions={filamentOptions} />
+          <CalibrationFormFields
+            form={form}
+            filamentOptions={filamentOptions}
+            printerOptions={printerOptions}
+          />
           <DialogFooter className="mt-4">
             <Button type="submit" disabled={isPending}>
               {isPending && <Spinner />}

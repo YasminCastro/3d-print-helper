@@ -16,6 +16,7 @@ const optionalText = z
 export const createCalibrationSchema = z.object({
   slicer: z.enum(slicerOptions, { message: 'Slicer is required' }),
   filamentId: z.number().int().positive({ message: 'Filament is required' }),
+  printerId: z.number().int().positive().nullable().optional(),
   status: z.enum(calibrationStatusOptions).nullable().optional(),
   calibrationDate: optionalText,
   bedTempFirstLayer: optionalNumber,

@@ -4,10 +4,17 @@ import { CalibrationsPageContent } from "@/components/calibrations-page-content"
 import { getFilamentOptions, getFilaments } from "@/lib/actions/filaments";
 import { filamentDenormalizedFields } from "@/lib/filament-helpers";
 import { getCalibrations } from "@/lib/actions/calibrations";
+import { getPrinters } from "@/lib/actions/printers";
+import { printerNameDenormalizedField } from "@/lib/printer-helpers";
 
 export default async function CalibrationsPage() {
-  const [filaments, calibrationsRaw] = await Promise.all([getFilaments(), getCalibrations()]);
+  const [filaments, printers, calibrationsRaw] = await Promise.all([
+    getFilaments(),
+    getPrinters(),
+    getCalibrations(),
+  ]);
   const filamentsById = new Map(filaments.map((filament) => [filament.id, filament]));
+  const printersById = new Map(printers.map((printer) => [printer.id, printer]));
 
   const calibrations = [...calibrationsRaw]
     .sort((a, b) => b.created_at.localeCompare(a.created_at))
@@ -16,15 +23,25 @@ export default async function CalibrationsPage() {
       ...filamentDenormalizedFields(
         calibration.filament_id != null ? filamentsById.get(calibration.filament_id) : null
       ),
+      ...printerNameDenormalizedField(
+        calibration.printer_id != null ? printersById.get(calibration.printer_id) : null
+      ),
     }));
 
   const filamentOptions = await getFilamentOptions();
+  const printerOptions = printers.map((printer) => ({ id: printer.id, name: printer.name }));
+  const lastPrinterId = calibrations.find((calibration) => calibration.printer_id != null)
+    ?.printer_id;
 
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-semibold">Calibrações</h1>
-        <CalibrationFormDialog filamentOptions={filamentOptions} />
+        <CalibrationFormDialog
+          filamentOptions={filamentOptions}
+          printerOptions={printerOptions}
+          lastPrinterId={lastPrinterId}
+        />
       </div>
 
       {calibrations.length === 0 ? (

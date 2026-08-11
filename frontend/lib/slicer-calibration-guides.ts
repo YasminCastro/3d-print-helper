@@ -83,8 +83,8 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     howTo: [
       "Vá em Calibration > Pressure Advance.",
       "Selecione o seu tipo de extrusor (Direct Drive ou Bowden).",
-      "Escolha o teste no formato PA Pattern (mais confiável).",
-      "Importante: defina no teste a mesma velocidade e aceleração que você costuma usar para paredes externas (ex: 200 mm/s e 5000 mm/s²).",
+      "Escolha o teste no formato PA Pattern.",
+      "Defina no teste a mesma velocidade e aceleração que você costuma usar para paredes externas (ex: 200 mm/s e 5000 mm/s²).",
       "Imprima o teste.",
     ],
     analysis: [
@@ -94,6 +94,7 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     ],
     action:
       "Em Filament Settings, ative a opção Pressure Advance > insira o valor e salve.",
+    videoUrl: "https://youtu.be/gVU5If1VsAM?si=XWzB3VwDzrCERmy1&t=454",
     fieldKeys: ["pressureAdvance"],
   },
   {
@@ -102,7 +103,7 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     title: "Taxa de Fluxo (Flow Ratio)",
     goal: "Garante que a espessura de cada linha seja exata, evitando que a peça fique superdimensionada ou com lacunas.",
     howTo: [
-      "Vá em Calibration > Flow Rate > Pass 1.",
+      "Vá em Calibration > Flow Rate > YOLO (Recommended)",
       "Imprima as amostras numéricas.",
     ],
     analysis: [
@@ -112,6 +113,7 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     action:
       "Atualize o campo Flow Ratio nas configurações do filamento e salve.",
     fieldKeys: ["flowRatio"],
+    videoUrl: "https://youtu.be/gVU5If1VsAM?si=-sZ1JDlwO1PqMtcG&t=785",
   },
   {
     number: 5,
@@ -198,6 +200,7 @@ export const CREALITY_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     ],
     action:
       "No perfil do filamento (ícone do lápis), marque Enable Pressure Advance, insira o número da linha escolhida (ex.: 0.044) e salve.",
+    videoUrl: "https://youtu.be/gVU5If1VsAM?si=XWzB3VwDzrCERmy1&t=454",
     fieldKeys: ["pressureAdvance"],
   },
   {

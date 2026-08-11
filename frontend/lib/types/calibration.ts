@@ -2,6 +2,7 @@ export type Calibration = {
   id: number;
   slicer: string;
   filament_id: number | null;
+  printer_id: number | null;
   status: string | null;
   calibration_date: string | null;
   bed_temp_first_layer: number | null;
@@ -21,4 +22,5 @@ export type CalibrationWithFilament = Calibration & {
   filament_name: string | null;
   filament_color: string | null;
   filament_material: string | null;
+  printer_name: string | null;
 };

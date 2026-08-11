@@ -18,6 +18,7 @@ import {
   MoveHorizontalIcon,
   NotebookTextIcon,
   PencilIcon,
+  Printer as PrinterIcon,
   SlidersHorizontalIcon,
   ThermometerIcon,
   Trash2Icon,
@@ -84,6 +85,8 @@ function toFormValues(
     slicer: calibration.slicer as CalibrationFormInput["slicer"],
     filamentId:
       calibration.filament_id != null ? String(calibration.filament_id) : "",
+    printerId:
+      calibration.printer_id != null ? String(calibration.printer_id) : "",
     status: (calibration.status as CalibrationFormInput["status"]) ?? undefined,
     calibrationDate: calibration.calibration_date ?? "",
     bedTempFirstLayer: calibration.bed_temp_first_layer ?? undefined,
@@ -109,9 +112,11 @@ function formatDate(value: string | null) {
 export function CalibrationDetailView({
   calibration,
   filamentOptions,
+  printerOptions,
 }: {
   calibration: CalibrationWithFilament;
   filamentOptions: FilamentOption[];
+  printerOptions: { id: number; name: string }[];
 }) {
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
@@ -217,6 +222,7 @@ export function CalibrationDetailView({
                 <CalibrationFormFields
                   form={form}
                   filamentOptions={filamentOptions}
+                  printerOptions={printerOptions}
                 />
                 <div className="mt-4 flex justify-end gap-2">
                   <Button
@@ -309,6 +315,12 @@ export function CalibrationDetailView({
               label="Lote do filamento"
               color="chart-1"
               value={calibration.purchase_batch ?? "—"}
+            />
+            <PrinterStatCard
+              icon={PrinterIcon}
+              label="Impressora"
+              color="chart-2"
+              value={calibration.printer_name ?? "—"}
             />
           </div>
 

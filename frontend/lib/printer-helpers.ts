@@ -8,3 +8,9 @@ export function printerDenormalizedFields(printer: Printer | null | undefined) {
     printer_maintenance_cost_per_hour: printer?.maintenanceCostPerHour ?? null,
   };
 }
+
+export function printerNameDenormalizedField(printer: Printer | null | undefined) {
+  return {
+    printer_name: printer?.name ?? null,
+  };
+}

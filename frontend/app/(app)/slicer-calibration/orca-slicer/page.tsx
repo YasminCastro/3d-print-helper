@@ -5,13 +5,23 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CalibrationWizardDialog } from "@/components/calibration-wizard-dialog";
 import { getFilamentOptions } from "@/lib/actions/filaments";
+import { getPrinters } from "@/lib/actions/printers";
+import { getCalibrations } from "@/lib/actions/calibrations";
 import { ORCA_CALIBRATION_GUIDE, ORCA_FINAL_TIPS } from "@/lib/slicer-calibration-guides";
 
 const STEPS = ORCA_CALIBRATION_GUIDE;
 const FINAL_TIPS = ORCA_FINAL_TIPS;
 
 export default async function SlicerCalibrationPage() {
-  const filamentOptions = await getFilamentOptions();
+  const [filamentOptions, printers, calibrations] = await Promise.all([
+    getFilamentOptions(),
+    getPrinters(),
+    getCalibrations(),
+  ]);
+  const printerOptions = printers.map((printer) => ({ id: printer.id, name: printer.name }));
+  const lastPrinterId = [...calibrations]
+    .sort((a, b) => b.created_at.localeCompare(a.created_at))
+    .find((calibration) => calibration.printer_id != null)?.printer_id;
 
   return (
     <div className="flex flex-col gap-4">
@@ -29,7 +39,12 @@ export default async function SlicerCalibrationPage() {
       </div>
 
       <div className="flex justify-end">
-        <CalibrationWizardDialog slicer="orca" filamentOptions={filamentOptions} />
+        <CalibrationWizardDialog
+          slicer="orca"
+          filamentOptions={filamentOptions}
+          printerOptions={printerOptions}
+          lastPrinterId={lastPrinterId}
+        />
       </div>
 
       <Card>
