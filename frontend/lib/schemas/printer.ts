@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+export const extrusionTypeOptions = ["direct_drive", "bowden"] as const;
+
 const optionalNumberInput = z
   .union([z.number(), z.nan()])
   .optional()
@@ -13,6 +15,7 @@ export const printerFormSchema = z.object({
   purchasePrice: optionalNumberInput,
   lifespanHours: optionalNumberInput,
   energyCostPerKwh: optionalNumberInput,
+  extrusionType: z.enum(extrusionTypeOptions).optional(),
   color: z
     .string()
     .trim()

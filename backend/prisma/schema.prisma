@@ -39,6 +39,7 @@ model Printer {
   lifespanHours          Int?     @map("lifespan_hours")
   energyCostPerKwh       Float?   @map("energy_cost_per_kwh")
   color                  String?
+  extrusionType          String?  @map("extrusion_type")
   createdAt              DateTime @default(now()) @map("created_at")
   userId                 String   @map("user_id")
   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)

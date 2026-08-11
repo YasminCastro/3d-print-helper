@@ -17,6 +17,7 @@ function toPayload(values: PrinterFormInput) {
     purchasePrice: parsed.purchasePrice ?? null,
     lifespanHours: parsed.lifespanHours ?? null,
     energyCostPerKwh: parsed.energyCostPerKwh ?? null,
+    extrusionType: parsed.extrusionType ?? null,
     color: parsed.color || null,
   };
 }

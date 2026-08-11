@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ArrowLeftIcon,
+  CableIcon,
   ClockIcon,
   PencilIcon,
   PlugZapIcon,
@@ -39,7 +40,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { PrinterFormFields } from "@/components/printer-form-fields";
+import { PrinterFormFields, extrusionTypeLabels } from "@/components/printer-form-fields";
 import { PrinterStatCard } from "@/components/printer-stat-card";
 import { accentFor, accentGradientFor, cn } from "@/lib/utils";
 
@@ -58,6 +59,7 @@ function toFormValues(printer: Printer): PrinterFormInput {
     lifespanHours: printer.lifespanHours ?? undefined,
     energyCostPerKwh: printer.energyCostPerKwh ?? undefined,
     color: printer.color ?? "",
+    extrusionType: printer.extrusionType ?? undefined,
   };
 }
 
@@ -270,6 +272,16 @@ export function PrinterDetailView({ printer }: { printer: Printer }) {
                   : "—"
               }
               color="chart-1"
+            />
+            <PrinterStatCard
+              icon={CableIcon}
+              label="Extrusão"
+              value={
+                printer.extrusionType
+                  ? extrusionTypeLabels[printer.extrusionType]
+                  : "—"
+              }
+              color="chart-2"
             />
           </div>
         </>

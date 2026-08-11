@@ -9,6 +9,7 @@ export interface PrinterPersistenceData {
   lifespanHours?: number | null;
   energyCostPerKwh?: number | null;
   color?: string | null;
+  extrusionType?: string | null;
   createdAt?: Date;
   userId: string;
 }
@@ -23,6 +24,7 @@ export interface PrinterCreateData {
   lifespanHours?: number | null;
   energyCostPerKwh?: number | null;
   color?: string | null;
+  extrusionType?: string | null;
   userId: string;
 }
 
@@ -40,6 +42,7 @@ export class Printer {
     private _lifespanHours: number | null,
     private _energyCostPerKwh: number | null,
     private _color: string | null,
+    private _extrusionType: string | null,
     private readonly _userId: string,
     private readonly _createdAt: Date = new Date(),
   ) {}
@@ -58,6 +61,7 @@ export class Printer {
       data.lifespanHours ?? null,
       data.energyCostPerKwh ?? null,
       data.color ?? null,
+      data.extrusionType ?? null,
       data.userId,
     );
   }
@@ -74,6 +78,7 @@ export class Printer {
       data.lifespanHours ?? null,
       data.energyCostPerKwh ?? null,
       data.color ?? null,
+      data.extrusionType ?? null,
       data.userId,
       data.createdAt || new Date(),
     );
@@ -108,6 +113,7 @@ export class Printer {
     if (data.lifespanHours !== undefined) this._lifespanHours = data.lifespanHours;
     if (data.energyCostPerKwh !== undefined) this._energyCostPerKwh = data.energyCostPerKwh;
     if (data.color !== undefined) this._color = data.color;
+    if (data.extrusionType !== undefined) this._extrusionType = data.extrusionType;
   }
 
   get id(): number {
@@ -140,6 +146,9 @@ export class Printer {
   get color(): string | null {
     return this._color;
   }
+  get extrusionType(): string | null {
+    return this._extrusionType;
+  }
   get userId(): string {
     return this._userId;
   }
@@ -158,6 +167,7 @@ export class Printer {
       lifespanHours: this._lifespanHours,
       energyCostPerKwh: this._energyCostPerKwh,
       color: this._color,
+      extrusionType: this._extrusionType,
       userId: this._userId,
     };
   }
@@ -173,6 +183,7 @@ export class Printer {
     lifespanHours: number | null;
     energyCostPerKwh: number | null;
     color: string | null;
+    extrusionType: string | null;
     createdAt: Date;
   } {
     return {
@@ -186,6 +197,7 @@ export class Printer {
       lifespanHours: this._lifespanHours,
       energyCostPerKwh: this._energyCostPerKwh,
       color: this._color,
+      extrusionType: this._extrusionType,
       createdAt: this._createdAt,
     };
   }

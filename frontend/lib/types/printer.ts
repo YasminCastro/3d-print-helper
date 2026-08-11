@@ -9,5 +9,6 @@ export type Printer = {
   lifespanHours: number | null;
   energyCostPerKwh: number | null;
   color: string | null;
+  extrusionType: "direct_drive" | "bowden" | null;
   createdAt: string;
 };

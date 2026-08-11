@@ -27,6 +27,7 @@ const defaultValues: PrinterFormInput = {
   maintenanceCostPerHour: undefined,
   purchasePrice: undefined,
   lifespanHours: undefined,
+  extrusionType: undefined,
 };
 
 export function PrinterFormDialog() {

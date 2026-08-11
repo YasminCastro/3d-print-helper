@@ -3,6 +3,7 @@
 import { useEffect, useRef } from "react";
 import type { UseFormReturn } from "react-hook-form";
 import {
+  CableIcon,
   ClockIcon,
   PaintbrushIcon,
   PlugZapIcon,
@@ -16,6 +17,13 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Field,
   FieldContent,
   FieldDescription,
@@ -24,7 +32,12 @@ import {
   FieldLabel,
 } from "@/components/ui/field";
 import { FieldIcon } from "@/components/field-icon";
-import type { PrinterFormInput } from "@/lib/schemas/printer";
+import { extrusionTypeOptions, type PrinterFormInput } from "@/lib/schemas/printer";
+
+export const extrusionTypeLabels: Record<(typeof extrusionTypeOptions)[number], string> = {
+  direct_drive: "Direct Drive",
+  bowden: "Bowden",
+};
 
 function calculateMaintenanceCost(price: number, lifespanHours: number) {
   return Math.round((price / lifespanHours) * 100) / 100;
@@ -90,6 +103,37 @@ export function PrinterFormFields({
             {...form.register("brand")}
           />
           <FieldError errors={[form.formState.errors.brand]} />
+        </FieldContent>
+      </Field>
+
+      <Field data-invalid={!!form.formState.errors.extrusionType}>
+        <FieldLabel htmlFor="printer-extrusion-type">
+          <FieldIcon icon={CableIcon} color="chart-2" />
+          Tipo de extrusão
+        </FieldLabel>
+        <FieldContent>
+          <Select
+            items={extrusionTypeOptions.map((option) => ({
+              value: option,
+              label: extrusionTypeLabels[option],
+            }))}
+            value={form.watch("extrusionType") ?? ""}
+            onValueChange={(value) =>
+              form.setValue("extrusionType", value as PrinterFormInput["extrusionType"])
+            }
+          >
+            <SelectTrigger id="printer-extrusion-type" className="w-full">
+              <SelectValue placeholder="Selecione" />
+            </SelectTrigger>
+            <SelectContent>
+              {extrusionTypeOptions.map((option) => (
+                <SelectItem key={option} value={option}>
+                  {extrusionTypeLabels[option]}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <FieldError errors={[form.formState.errors.extrusionType]} />
         </FieldContent>
       </Field>
 
