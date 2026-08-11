@@ -20,6 +20,7 @@ export type SlicerGuideStep = {
   analysis: string[];
   action: string;
   tip?: string;
+  videoUrl?: string;
   fieldKeys: ParamFieldKey[];
 };
 
@@ -30,18 +31,26 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     title: "Temperatura do Bico (Temperature Tower)",
     goal: "Determina a melhor temperatura para equilibrar acabamento visual e resistência mecânica.",
     howTo: [
-      "No Orca Slicer, selecione a marca/tipo de filamento correto ou um perfil genérico.",
+      "No Orca Slicer, selecione um perfil genérico do mesmo material do filamento a ser calibrado.",
       "Vá no menu superior em Calibration > Temperature.",
-      "Selecione o tipo de material para gerar a Torre de Temperatura.",
-      "Fatie (Slice) e envie para impressão.",
+      "Selecione o tipo de filamento como {{material}}.",
+      "Preencha as configurações com a recomendação do fabricante: Start Temp {{startTemp}} e End Temp {{endTemp}}.",
+      "Fatie e envie para impressão.",
     ],
     analysis: [
       "Observe: pontes (bridging), cantos, fiapos (stringing) e paredes externas.",
       "Escolha a temperatura que entregar a melhor combinação de acabamento.",
       "Em caso de dúvida entre duas temperaturas, prefira a mais alta — isso garante melhor fusão entre camadas e peças mais resistentes.",
     ],
-    action: "Vá em Filament Settings > altere a temperatura > salve com um novo nome.",
-    fieldKeys: ["bedTempFirstLayer", "bedTempOtherLayers", "nozzleTempInitial", "nozzleTempFinal"],
+    action:
+      "Vá em Filament Settings > altere a temperatura > salve com um novo nome.",
+    videoUrl: "https://youtu.be/gVU5If1VsAM?si=FOX9w7_4hiMinQAt&t=132",
+    fieldKeys: [
+      "bedTempFirstLayer",
+      "bedTempOtherLayers",
+      "nozzleTempInitial",
+      "nozzleTempFinal",
+    ],
   },
   {
     number: 2,
@@ -60,7 +69,8 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
       "Arraste a barra vertical até a altura medida para ver a vazão referente àquele ponto.",
       "Subtraia de 10% a 20% desse valor para ter uma margem de segurança.",
     ],
-    action: "Vá em Filament Settings > Max Volumetric Speed > insira o novo valor e salve.",
+    action:
+      "Vá em Filament Settings > Max Volumetric Speed > insira o novo valor e salve.",
     fieldKeys: ["maxVolumetricSpeed"],
   },
   {
@@ -80,7 +90,8 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
       "Encontre a linha onde a quina está o mais reta e afiada possível, sem falhas ou excesso de plástico.",
       "Identifique o número (PA Value) correspondente a essa linha.",
     ],
-    action: "Em Filament Settings, ative a opção Pressure Advance > insira o valor e salve.",
+    action:
+      "Em Filament Settings, ative a opção Pressure Advance > insira o valor e salve.",
     fieldKeys: ["pressureAdvance"],
   },
   {
@@ -88,12 +99,16 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     icon: Ruler,
     title: "Taxa de Fluxo (Flow Ratio)",
     goal: "Garante que a espessura de cada linha seja exata, evitando que a peça fique superdimensionada ou com lacunas.",
-    howTo: ["Vá em Calibration > Flow Rate > Pass 1.", "Imprima as amostras numéricas."],
+    howTo: [
+      "Vá em Calibration > Flow Rate > Pass 1.",
+      "Imprima as amostras numéricas.",
+    ],
     analysis: [
       "Procure o quadrado com a superfície superior mais lisa e uniforme, sem ranhuras (excesso) e sem frestas entre as linhas (falta).",
       "Some/subtraia o valor escolhido ao seu Flow Ratio atual (ex.: se o atual é 1.0 e a melhor amostra foi -0.02, o novo valor será 0.98).",
     ],
-    action: "Atualize o campo Flow Ratio nas configurações do filamento e salve.",
+    action:
+      "Atualize o campo Flow Ratio nas configurações do filamento e salve.",
     fieldKeys: ["flowRatio"],
   },
   {
@@ -110,7 +125,8 @@ export const ORCA_CALIBRATION_GUIDE: SlicerGuideStep[] = [
       "O teste imprime anéis empilhados. Identifique a altura do primeiro anel onde o stringing desaparece completamente.",
       "Verifique no fatiador qual comprimento de retração corresponde àquela altura.",
     ],
-    action: "Em Filament Settings > aba Setting Override > ative e ajuste o Retraction Length.",
+    action:
+      "Em Filament Settings > aba Setting Override > ative e ajuste o Retraction Length.",
     fieldKeys: ["retractionDistance"],
   },
 ];
@@ -129,7 +145,8 @@ export const CREALITY_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     goal: "Ajusta a temperatura ideal do bico para o seu filamento.",
     howTo: [
       "No menu do Creality Print, vá em Calibração > Temperatura.",
-      "Escolha o seu tipo de filamento (ex: PLA).",
+      "Selecione o tipo de filamento como {{material}}.",
+      "Preencha as configurações com a recomendação do fabricante: Start Temp {{startTemp}} e End Temp {{endTemp}}.",
       "Clique em OK para gerar o modelo da Torre de Temperatura e clique em Fatiar / Imprimir.",
     ],
     analysis: [
@@ -138,7 +155,13 @@ export const CREALITY_CALIBRATION_GUIDE: SlicerGuideStep[] = [
     ],
     action:
       "Na aba lateral, clique no ícone de lápis ao lado do seu filamento, procure por Print Temperature e insira o valor encontrado na torre. Salvar.",
-    fieldKeys: ["bedTempFirstLayer", "bedTempOtherLayers", "nozzleTempInitial", "nozzleTempFinal"],
+    videoUrl: "https://youtu.be/gVU5If1VsAM?si=FOX9w7_4hiMinQAt&t=132",
+    fieldKeys: [
+      "bedTempFirstLayer",
+      "bedTempOtherLayers",
+      "nozzleTempInitial",
+      "nozzleTempFinal",
+    ],
   },
   {
     number: 2,
@@ -213,7 +236,10 @@ export const CREALITY_CALIBRATION_GUIDE: SlicerGuideStep[] = [
   },
 ];
 
-export const GUIDE_STEPS_BY_SLICER: Record<"orca" | "creality", SlicerGuideStep[]> = {
+export const GUIDE_STEPS_BY_SLICER: Record<
+  "orca" | "creality",
+  SlicerGuideStep[]
+> = {
   orca: ORCA_CALIBRATION_GUIDE,
   creality: CREALITY_CALIBRATION_GUIDE,
 };

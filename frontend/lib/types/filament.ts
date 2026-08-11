@@ -28,4 +28,8 @@ export type FilamentOption = {
   color2: string | null;
   material: string | null;
   brand_name: string | null;
+  nozzle_temp_min: number | null;
+  nozzle_temp_max: number | null;
+  bed_temp_min: number | null;
+  bed_temp_max: number | null;
 };

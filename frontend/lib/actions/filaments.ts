@@ -151,6 +151,10 @@ export async function getFilamentOptions(): Promise<FilamentOption[]> {
     color2: filament.color2,
     material: filament.material,
     brand_name: filament.brand_name,
+    nozzle_temp_min: filament.nozzle_temp_min,
+    nozzle_temp_max: filament.nozzle_temp_max,
+    bed_temp_min: filament.bed_temp_min,
+    bed_temp_max: filament.bed_temp_max,
   }));
 }
 
