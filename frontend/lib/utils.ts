@@ -28,3 +28,7 @@ const ACCENT_GRADIENT_CLASSES = [
 export function accentGradientFor(id: number) {
   return ACCENT_GRADIENT_CLASSES[id % ACCENT_GRADIENT_CLASSES.length]
 }
+
+export function getErrorMessage(error: unknown, fallback: string): string {
+  return error instanceof Error && error.message ? error.message : fallback
+}

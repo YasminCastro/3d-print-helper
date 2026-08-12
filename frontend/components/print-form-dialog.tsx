@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { createPrintAction } from "@/lib/actions/prints";
 import { printFormSchema, type PrintFormInput } from "@/lib/schemas/print";
 import type { PrintCategory } from "@/lib/types/print";
+import { getErrorMessage } from "@/lib/utils";
 import type { FilamentOption } from "@/lib/types/filament";
 import type { ExtraItem } from "@/lib/types/extra-item";
 import { Button } from "@/components/ui/button";
@@ -101,8 +102,8 @@ export function PrintFormDialog({
 
       try {
         await createPrintAction(formData);
-      } catch {
-        toast.error("Não foi possível salvar a impressão. Tente novamente.");
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível salvar a impressão"));
         return;
       }
 

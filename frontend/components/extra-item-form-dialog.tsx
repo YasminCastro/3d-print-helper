@@ -4,9 +4,11 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import { createExtraItemAction } from "@/lib/actions/extra-items";
 import { extraItemFormSchema, type ExtraItemFormInput } from "@/lib/schemas/extra-item";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -36,7 +38,12 @@ export function ExtraItemFormDialog() {
 
   function onSubmit(values: ExtraItemFormInput) {
     startTransition(async () => {
-      await createExtraItemAction(values);
+      try {
+        await createExtraItemAction(values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível salvar o item extra"));
+        return;
+      }
       form.reset();
       setOpen(false);
     });

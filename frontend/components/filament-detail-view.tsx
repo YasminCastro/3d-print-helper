@@ -21,8 +21,9 @@ import {
   WalletIcon,
   XCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 import { deleteFilamentAction, updateFilamentAction } from "@/lib/actions/filaments";
 import { filamentFormSchema, type FilamentFormInput } from "@/lib/schemas/filament";
 import type { FilamentWithBrand } from "@/lib/types/filament";
@@ -128,14 +129,24 @@ export function FilamentDetailView({
 
   function onSubmit(values: FilamentFormInput) {
     startTransition(async () => {
-      await updateFilamentAction(filament.id, values);
+      try {
+        await updateFilamentAction(filament.id, values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível atualizar o filamento"));
+        return;
+      }
       setIsEditing(false);
     });
   }
 
   function onDelete() {
     startTransition(async () => {
-      await deleteFilamentAction(filament.id);
+      try {
+        await deleteFilamentAction(filament.id);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível excluir o filamento"));
+        return;
+      }
       router.push("/filaments");
     });
   }

@@ -2,6 +2,7 @@
 
 import { useRef, useTransition } from "react";
 import { ImagePlusIcon, XIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   addJournalPhotosAction,
@@ -10,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import type { JournalPhoto } from "@/lib/types/journal";
+import { getErrorMessage } from "@/lib/utils";
 
 export function JournalPhotos({
   entryId,
@@ -31,14 +33,23 @@ export function JournalPhotos({
     }
 
     startTransition(async () => {
-      await addJournalPhotosAction(entryId, formData);
+      try {
+        await addJournalPhotosAction(entryId, formData);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível enviar a foto"));
+        return;
+      }
       if (inputRef.current) inputRef.current.value = "";
     });
   }
 
   function handleDelete(photoId: number) {
     startTransition(async () => {
-      await deleteJournalPhotoAction(photoId);
+      try {
+        await deleteJournalPhotoAction(photoId);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível excluir a foto"));
+      }
     });
   }
 

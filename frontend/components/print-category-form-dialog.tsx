@@ -4,9 +4,11 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import { createPrintCategoryAction } from "@/lib/actions/print-categories";
 import { printCategoryFormSchema, type PrintCategoryFormInput } from "@/lib/schemas/print-category";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -36,7 +38,12 @@ export function PrintCategoryFormDialog() {
 
   function onSubmit(values: PrintCategoryFormInput) {
     startTransition(async () => {
-      await createPrintCategoryAction(values);
+      try {
+        await createPrintCategoryAction(values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível salvar a categoria"));
+        return;
+      }
       form.reset();
       setOpen(false);
     });

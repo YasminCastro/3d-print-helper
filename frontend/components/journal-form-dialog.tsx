@@ -5,12 +5,14 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import { addJournalPhotosAction, createJournalEntryAction } from "@/lib/actions/journal";
 import {
   journalFormSchema,
   type JournalFormInput,
 } from "@/lib/schemas/journal";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -55,14 +57,19 @@ export function JournalFormDialog({
 
   function onSubmit(values: JournalFormInput) {
     startTransition(async () => {
-      const entryId = await createJournalEntryAction(values);
+      try {
+        const entryId = await createJournalEntryAction(values);
 
-      if (photoFiles.length > 0) {
-        const formData = new FormData();
-        for (const file of photoFiles) {
-          formData.append("photos", file);
+        if (photoFiles.length > 0) {
+          const formData = new FormData();
+          for (const file of photoFiles) {
+            formData.append("photos", file);
+          }
+          await addJournalPhotosAction(entryId, formData);
         }
-        await addJournalPhotosAction(entryId, formData);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível salvar a entrada do diário"));
+        return;
       }
 
       form.reset(defaultValues);

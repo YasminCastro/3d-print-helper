@@ -20,8 +20,9 @@ import {
   TrendingUpIcon,
   WalletIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 import { deleteBrandAction, updateBrandAction } from "@/lib/actions/brands";
 import { brandFormSchema, type BrandFormInput } from "@/lib/schemas/brand";
 import type { FilamentBrand } from "@/lib/types/brand";
@@ -118,14 +119,24 @@ export function BrandDetailView({
 
   function onSubmit(values: BrandFormInput) {
     startTransition(async () => {
-      await updateBrandAction(brand.id, values);
+      try {
+        await updateBrandAction(brand.id, values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível atualizar a marca"));
+        return;
+      }
       setIsEditing(false);
     });
   }
 
   function onDelete() {
     startTransition(async () => {
-      await deleteBrandAction(brand.id);
+      try {
+        await deleteBrandAction(brand.id);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível excluir a marca"));
+        return;
+      }
       router.push("/brands");
     });
   }

@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeftIcon, PencilIcon, ShoppingBagIcon, Trash2Icon } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   deleteExtraItemAction,
@@ -13,6 +14,7 @@ import {
 } from "@/lib/actions/extra-items";
 import { extraItemFormSchema, type ExtraItemFormInput } from "@/lib/schemas/extra-item";
 import type { ExtraItem } from "@/lib/types/extra-item";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -55,14 +57,24 @@ export function ExtraItemDetailView({ extraItem }: { extraItem: ExtraItem }) {
 
   function onSubmit(values: ExtraItemFormInput) {
     startTransition(async () => {
-      await updateExtraItemAction(extraItem.id, values);
+      try {
+        await updateExtraItemAction(extraItem.id, values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível atualizar o item extra"));
+        return;
+      }
       setIsEditing(false);
     });
   }
 
   function onDelete() {
     startTransition(async () => {
-      await deleteExtraItemAction(extraItem.id);
+      try {
+        await deleteExtraItemAction(extraItem.id);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível excluir o item extra"));
+        return;
+      }
       router.push("/extra-items");
     });
   }

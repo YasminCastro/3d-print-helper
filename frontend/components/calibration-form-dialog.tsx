@@ -5,12 +5,14 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import { createCalibrationAction } from "@/lib/actions/calibrations";
 import {
   calibrationFormSchema,
   type CalibrationFormInput,
 } from "@/lib/schemas/calibration";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -66,7 +68,12 @@ export function CalibrationFormDialog({
 
   function onSubmit(values: CalibrationFormInput) {
     startTransition(async () => {
-      await createCalibrationAction(values);
+      try {
+        await createCalibrationAction(values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível salvar a calibração"));
+        return;
+      }
       form.reset(defaultValues);
       setOpen(false);
     });

@@ -4,8 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { CopyIcon, Gauge } from "lucide-react";
+import { toast } from "sonner";
 
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,8 +67,12 @@ export function CalibrationCard({ calibration }: { calibration: CalibrationWithF
     event.preventDefault();
     event.stopPropagation();
     startClone(async () => {
-      const cloned = await cloneCalibrationAction(calibration.id);
-      router.push(`/calibrations/${cloned.id}`);
+      try {
+        const cloned = await cloneCalibrationAction(calibration.id);
+        router.push(`/calibrations/${cloned.id}`);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível clonar a calibração"));
+      }
     });
   }
 

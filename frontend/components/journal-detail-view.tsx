@@ -21,6 +21,7 @@ import {
   Trash2Icon,
   XCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   deleteJournalEntryAction,
@@ -31,7 +32,7 @@ import {
   type JournalFormInput,
 } from "@/lib/schemas/journal";
 import type { JournalEntryWithDetails } from "@/lib/types/journal";
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 import type { FilamentOption } from "@/lib/types/filament";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -110,14 +111,24 @@ export function JournalDetailView({
 
   function onSubmit(values: JournalFormInput) {
     startTransition(async () => {
-      await updateJournalEntryAction(entry.id, values);
+      try {
+        await updateJournalEntryAction(entry.id, values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível atualizar a entrada do diário"));
+        return;
+      }
       setIsEditing(false);
     });
   }
 
   function onDelete() {
     startTransition(async () => {
-      await deleteJournalEntryAction(entry.id);
+      try {
+        await deleteJournalEntryAction(entry.id);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível excluir a entrada do diário"));
+        return;
+      }
       router.push("/journal");
     });
   }

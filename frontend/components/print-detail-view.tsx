@@ -32,6 +32,7 @@ import { toast } from "sonner";
 import { deletePrintAction, updatePrintAction } from "@/lib/actions/prints";
 import { printFormSchema, type PrintFormInput } from "@/lib/schemas/print";
 import type { PrintCategory, PrintWithDetails } from "@/lib/types/print";
+import { getErrorMessage } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
@@ -200,8 +201,8 @@ export function PrintDetailView({
 
       try {
         await updatePrintAction(print.id, formData);
-      } catch {
-        toast.error("Não foi possível salvar a impressão. Tente novamente.");
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível salvar a impressão"));
         return;
       }
       setIsEditing(false);
@@ -213,8 +214,8 @@ export function PrintDetailView({
     startTransition(async () => {
       try {
         await deletePrintAction(print.id);
-      } catch {
-        toast.error("Não foi possível excluir a impressão. Tente novamente.");
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível excluir a impressão"));
         return;
       }
       router.push("/prints");

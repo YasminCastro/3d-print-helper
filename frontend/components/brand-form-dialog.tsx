@@ -4,9 +4,11 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon } from "lucide-react";
+import { toast } from "sonner";
 
 import { createBrandAction } from "@/lib/actions/brands";
 import { brandFormSchema, type BrandFormInput } from "@/lib/schemas/brand";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import {
@@ -43,7 +45,12 @@ export function BrandFormDialog() {
 
   function onSubmit(values: BrandFormInput) {
     startTransition(async () => {
-      await createBrandAction(values);
+      try {
+        await createBrandAction(values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível salvar a marca"));
+        return;
+      }
       form.reset(defaultValues);
       setOpen(false);
     });

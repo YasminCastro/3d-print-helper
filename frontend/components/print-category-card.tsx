@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { TagIcon, Trash2Icon } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   deletePrintCategoryAction,
@@ -35,7 +36,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { PrintCategoryFormFields } from "@/components/print-category-form-fields";
-import { accentFor } from "@/lib/utils";
+import { accentFor, getErrorMessage } from "@/lib/utils";
 
 function toFormValues(category: PrintCategory): PrintCategoryFormInput {
   return {
@@ -55,14 +56,24 @@ export function PrintCategoryCard({ category }: { category: PrintCategory }) {
 
   function onSubmit(values: PrintCategoryFormInput) {
     startTransition(async () => {
-      await updatePrintCategoryAction(category.id, values);
+      try {
+        await updatePrintCategoryAction(category.id, values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível atualizar a categoria"));
+        return;
+      }
       setOpen(false);
     });
   }
 
   function onDelete() {
     startTransition(async () => {
-      await deletePrintCategoryAction(category.id);
+      try {
+        await deletePrintCategoryAction(category.id);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível excluir a categoria"));
+        return;
+      }
       setOpen(false);
     });
   }

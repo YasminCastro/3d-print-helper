@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendFetch } from "@/lib/backend-fetch";
+import { backendErrorMessage, backendFetch } from "@/lib/backend-fetch";
 import { printerFormSchema, type PrinterFormInput } from "@/lib/schemas/printer";
 import type { Printer } from "@/lib/types/printer";
 
@@ -49,7 +49,7 @@ export async function createPrinterAction(values: PrinterFormInput) {
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível criar a impressora");
+    throw new Error(await backendErrorMessage(response, "Não foi possível criar a impressora"));
   }
 
   refresh();
@@ -63,7 +63,9 @@ export async function updatePrinterAction(id: number, values: PrinterFormInput) 
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível atualizar a impressora");
+    throw new Error(
+      await backendErrorMessage(response, "Não foi possível atualizar a impressora"),
+    );
   }
 
   refresh();

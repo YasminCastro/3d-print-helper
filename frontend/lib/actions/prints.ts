@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendFetch } from "@/lib/backend-fetch";
+import { backendErrorMessage, backendFetch } from "@/lib/backend-fetch";
 import {
   NEW_CATEGORY_VALUE,
   type PrintDurationRange,
@@ -108,7 +108,7 @@ async function resolveCategoryId(categoryId: string | null, newCategoryName: str
     });
 
     if (!response.ok) {
-      throw new Error("Não foi possível criar a categoria");
+      throw new Error(await backendErrorMessage(response, "Não foi possível criar a categoria"));
     }
 
     const body = await response.json();
@@ -236,7 +236,7 @@ async function uploadPhoto(printId: number, file: File) {
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível enviar a foto");
+    throw new Error(await backendErrorMessage(response, "Não foi possível enviar a foto"));
   }
 }
 
@@ -317,7 +317,7 @@ export async function createPrintAction(formData: FormData) {
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível criar a impressão");
+    throw new Error(await backendErrorMessage(response, "Não foi possível criar a impressão"));
   }
 
   const body = await response.json();
@@ -341,7 +341,9 @@ export async function updatePrintAction(id: number, formData: FormData) {
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível atualizar a impressão");
+    throw new Error(
+      await backendErrorMessage(response, "Não foi possível atualizar a impressão"),
+    );
   }
 
   if (photo instanceof File && photo.size > 0) {

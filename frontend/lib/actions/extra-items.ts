@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendFetch } from "@/lib/backend-fetch";
+import { backendErrorMessage, backendFetch } from "@/lib/backend-fetch";
 import { extraItemFormSchema, type ExtraItemFormInput } from "@/lib/schemas/extra-item";
 import type { ExtraItem } from "@/lib/types/extra-item";
 
@@ -58,7 +58,7 @@ export async function createExtraItemAction(values: ExtraItemFormInput) {
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível criar o item extra");
+    throw new Error(await backendErrorMessage(response, "Não foi possível criar o item extra"));
   }
 
   refresh();
@@ -72,7 +72,9 @@ export async function updateExtraItemAction(id: number, values: ExtraItemFormInp
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível atualizar o item extra");
+    throw new Error(
+      await backendErrorMessage(response, "Não foi possível atualizar o item extra"),
+    );
   }
 
   refresh();

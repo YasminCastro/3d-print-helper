@@ -24,8 +24,9 @@ import {
   Trash2Icon,
   XCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 import {
   deleteCalibrationAction,
   updateCalibrationAction,
@@ -129,14 +130,24 @@ export function CalibrationDetailView({
 
   function onSubmit(values: CalibrationFormInput) {
     startTransition(async () => {
-      await updateCalibrationAction(calibration.id, values);
+      try {
+        await updateCalibrationAction(calibration.id, values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível atualizar a calibração"));
+        return;
+      }
       setIsEditing(false);
     });
   }
 
   function onDelete() {
     startTransition(async () => {
-      await deleteCalibrationAction(calibration.id);
+      try {
+        await deleteCalibrationAction(calibration.id);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível excluir a calibração"));
+        return;
+      }
       router.push("/calibrations");
     });
   }

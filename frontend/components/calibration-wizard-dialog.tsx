@@ -3,6 +3,7 @@
 import { useMemo, useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 import type { LucideIcon } from "lucide-react";
 import {
   ActivityIcon,
@@ -81,7 +82,7 @@ import {
   filamentOptionLabel,
   slicerLabels,
 } from "@/components/calibration-form-fields";
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 
 type FilamentComboItem = { value: string; label: string };
 
@@ -257,7 +258,12 @@ export function CalibrationWizardDialog({
 
   function onSubmit(values: CalibrationFormInput) {
     startTransition(async () => {
-      await createCalibrationAction(values);
+      try {
+        await createCalibrationAction(values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível salvar a calibração"));
+        return;
+      }
       resetWizard();
       setOpen(false);
     });

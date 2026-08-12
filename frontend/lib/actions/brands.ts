@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendFetch } from "@/lib/backend-fetch";
+import { backendErrorMessage, backendFetch } from "@/lib/backend-fetch";
 import { brandFormSchema, type BrandFormInput } from "@/lib/schemas/brand";
 import type { FilamentBrand } from "@/lib/types/brand";
 
@@ -49,7 +49,7 @@ export async function createBrandAction(values: BrandFormInput) {
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível criar a marca");
+    throw new Error(await backendErrorMessage(response, "Não foi possível criar a marca"));
   }
 
   refresh();
@@ -63,7 +63,7 @@ export async function updateBrandAction(id: number, values: BrandFormInput) {
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível atualizar a marca");
+    throw new Error(await backendErrorMessage(response, "Não foi possível atualizar a marca"));
   }
 
   refresh();

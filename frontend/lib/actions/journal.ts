@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendFetch } from "@/lib/backend-fetch";
+import { backendErrorMessage, backendFetch } from "@/lib/backend-fetch";
 import { journalFormSchema, type JournalFormInput } from "@/lib/schemas/journal";
 import type { JournalEntryWithAttempts } from "@/lib/types/journal";
 
@@ -107,7 +107,9 @@ export async function createJournalEntryAction(values: JournalFormInput): Promis
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível criar a entrada do diário");
+    throw new Error(
+      await backendErrorMessage(response, "Não foi possível criar a entrada do diário"),
+    );
   }
 
   const body = await response.json();
@@ -126,7 +128,9 @@ export async function updateJournalEntryAction(id: number, values: JournalFormIn
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível atualizar a entrada do diário");
+    throw new Error(
+      await backendErrorMessage(response, "Não foi possível atualizar a entrada do diário"),
+    );
   }
 
   refresh();
@@ -163,7 +167,7 @@ export async function addJournalPhotosAction(entryId: number, formData: FormData
     });
 
     if (!response.ok) {
-      throw new Error("Não foi possível enviar a foto");
+      throw new Error(await backendErrorMessage(response, "Não foi possível enviar a foto"));
     }
   }
 

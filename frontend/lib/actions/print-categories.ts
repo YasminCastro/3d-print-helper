@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendFetch } from "@/lib/backend-fetch";
+import { backendErrorMessage, backendFetch } from "@/lib/backend-fetch";
 import { printCategoryFormSchema, type PrintCategoryFormInput } from "@/lib/schemas/print-category";
 import type { PrintCategory } from "@/lib/types/print-category";
 
@@ -48,7 +48,7 @@ export async function createPrintCategoryAction(values: PrintCategoryFormInput) 
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível criar a categoria");
+    throw new Error(await backendErrorMessage(response, "Não foi possível criar a categoria"));
   }
 
   refresh();
@@ -62,7 +62,9 @@ export async function updatePrintCategoryAction(id: number, values: PrintCategor
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível atualizar a categoria");
+    throw new Error(
+      await backendErrorMessage(response, "Não foi possível atualizar a categoria"),
+    );
   }
 
   refresh();

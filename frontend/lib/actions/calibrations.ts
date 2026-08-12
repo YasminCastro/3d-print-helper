@@ -2,7 +2,7 @@
 
 import { refresh } from "next/cache";
 
-import { backendFetch } from "@/lib/backend-fetch";
+import { backendErrorMessage, backendFetch } from "@/lib/backend-fetch";
 import { calibrationFormSchema, type CalibrationFormInput } from "@/lib/schemas/calibration";
 import type { Calibration } from "@/lib/types/calibration";
 
@@ -97,7 +97,7 @@ export async function createCalibrationAction(values: CalibrationFormInput) {
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível criar a calibração");
+    throw new Error(await backendErrorMessage(response, "Não foi possível criar a calibração"));
   }
 
   refresh();
@@ -111,7 +111,9 @@ export async function updateCalibrationAction(id: number, values: CalibrationFor
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível atualizar a calibração");
+    throw new Error(
+      await backendErrorMessage(response, "Não foi possível atualizar a calibração"),
+    );
   }
 
   refresh();
@@ -146,7 +148,7 @@ export async function cloneCalibrationAction(id: number): Promise<Calibration> {
   });
 
   if (!response.ok) {
-    throw new Error("Não foi possível clonar a calibração");
+    throw new Error(await backendErrorMessage(response, "Não foi possível clonar a calibração"));
   }
 
   const body = await response.json();

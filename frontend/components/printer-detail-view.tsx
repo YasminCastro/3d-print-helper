@@ -18,6 +18,7 @@ import {
   WrenchIcon,
   ZapIcon,
 } from "lucide-react";
+import { toast } from "sonner";
 
 import {
   deletePrinterAction,
@@ -25,6 +26,7 @@ import {
 } from "@/lib/actions/printers";
 import { printerFormSchema, type PrinterFormInput } from "@/lib/schemas/printer";
 import type { Printer } from "@/lib/types/printer";
+import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent } from "@/components/ui/card";
@@ -75,14 +77,24 @@ export function PrinterDetailView({ printer }: { printer: Printer }) {
 
   function onSubmit(values: PrinterFormInput) {
     startTransition(async () => {
-      await updatePrinterAction(printer.id, values);
+      try {
+        await updatePrinterAction(printer.id, values);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível atualizar a impressora"));
+        return;
+      }
       setIsEditing(false);
     });
   }
 
   function onDelete() {
     startTransition(async () => {
-      await deletePrinterAction(printer.id);
+      try {
+        await deletePrinterAction(printer.id);
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Não foi possível excluir a impressora"));
+        return;
+      }
       router.push("/printers");
     });
   }
