@@ -19,7 +19,7 @@ export class AuthService {
     }
 
     const dataStoredInToken: DataStoredInToken = { id: user.id };
-    const expiresIn = 60 * 60; // 1h
+    const expiresIn = 60 * 60 * 24; // 24h
     const token = sign(dataStoredInToken, SECRET_KEY as string, { expiresIn });
     return { expiresIn, token };
   }

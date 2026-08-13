@@ -85,7 +85,7 @@ export async function loginAction(values: LoginFormInput): Promise<LoginResult> 
       httpOnly: true,
       path: "/",
       sameSite: "lax",
-      maxAge: 3600,
+      maxAge: 60 * 60 * 24,
       secure: process.env.NODE_ENV === "production",
     });
   }
