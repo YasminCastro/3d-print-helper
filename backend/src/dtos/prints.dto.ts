@@ -84,7 +84,7 @@ export const printDurationRangeBounds: Record<PrintDurationRange, { min: number;
   '6h_mais': { min: 361, max: null },
 };
 
-function arrayQueryParam<T extends z.ZodTypeAny>(schema: T) {
+export function arrayQueryParam<T extends z.ZodTypeAny>(schema: T) {
   return z
     .preprocess((value) => {
       if (value === undefined) return undefined;

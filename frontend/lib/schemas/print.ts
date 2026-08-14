@@ -48,7 +48,6 @@ export const printFormSchema = z.object({
   printDate: z.string().trim().optional(),
   durationHours: optionalNumberInput,
   durationMinutes: optionalNumberInput,
-  status: z.enum(printStatusOptions).optional(),
   result: z.enum(printResultOptions).optional(),
   categoryId: z.string().trim().optional(),
   newCategoryName: z.string().trim().optional(),

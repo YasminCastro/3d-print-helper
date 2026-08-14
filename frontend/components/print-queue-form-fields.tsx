@@ -3,8 +3,6 @@
 import { useFieldArray, type UseFormReturn } from "react-hook-form";
 import {
   ClockIcon,
-  CoinsIcon,
-  ImageIcon,
   LayersIcon,
   LinkIcon,
   NotebookTextIcon,
@@ -13,7 +11,6 @@ import {
   PlusIcon,
   ShoppingBagIcon,
   TagIcon,
-  ThumbsUpIcon,
   Trash2Icon,
   TypeIcon,
 } from "lucide-react";
@@ -40,15 +37,9 @@ import {
   ComboboxTrigger,
 } from "@/components/ui/combobox";
 import { Field, FieldContent, FieldError, FieldGroup, FieldLabel } from "@/components/ui/field";
-import { DatePickerField, toISODate } from "@/components/date-picker-field";
-import { PrintPhotoPicker } from "@/components/print-photo-picker";
-import {
-  NEW_CATEGORY_VALUE,
-  printResultOptions,
-  printStatusOptions,
-  type PrintFormInput,
-} from "@/lib/schemas/print";
-import type { PrintCategory } from "@/lib/types/print";
+import { NEW_CATEGORY_VALUE } from "@/lib/schemas/print";
+import type { PrintQueueFormInput } from "@/lib/schemas/print-queue";
+import type { PrintCategory } from "@/lib/types/print-queue";
 import { categoryDotColorClass } from "@/lib/category-colors";
 import type { FilamentOption } from "@/lib/types/filament";
 import type { ExtraItem } from "@/lib/types/extra-item";
@@ -77,56 +68,14 @@ type FilamentComboItem = { value: string; label: string };
 type ExtraItemComboItem = { value: string; label: string };
 type CategoryComboItem = { value: string; label: string };
 
-export const printStatusLabels: Record<(typeof printStatusOptions)[number], string> = {
-  fila: "Fila",
-  pronto: "Pronto",
-};
-
-export const printStatusColors: Record<(typeof printStatusOptions)[number], string> = {
-  fila: "text-yellow-600 dark:text-yellow-400",
-  pronto: "text-green-600 dark:text-green-400",
-};
-
-export const printStatusDotColors: Record<(typeof printStatusOptions)[number], string> = {
-  fila: "bg-yellow-600 dark:bg-yellow-400",
-  pronto: "bg-green-600 dark:bg-green-400",
-};
-
-export const printResultLabels: Record<(typeof printResultOptions)[number], string> = {
-  ruim: "Ruim",
-  razoavel: "Razoável",
-  bom: "Bom",
-  perfeito: "Perfeito",
-};
-
-export const printResultColors: Record<(typeof printResultOptions)[number], string> = {
-  ruim: "text-red-600 dark:text-red-400",
-  razoavel: "text-yellow-600 dark:text-yellow-400",
-  bom: "text-lime-600 dark:text-lime-400",
-  perfeito: "text-green-600 dark:text-green-400",
-};
-
-export const printResultDotColors: Record<(typeof printResultOptions)[number], string> = {
-  ruim: "bg-red-600 dark:bg-red-400",
-  razoavel: "bg-yellow-600 dark:bg-yellow-400",
-  bom: "bg-lime-600 dark:bg-lime-400",
-  perfeito: "bg-green-600 dark:bg-green-400",
-};
-
-export function PrintFormFields({
+export function PrintQueueFormFields({
   form,
-  photoFile,
-  onPhotoFileChange,
-  existingPhotoUrl,
   categoryOptions,
   filamentOptions,
   printerOptions,
   extraItemOptions,
 }: {
-  form: UseFormReturn<PrintFormInput>;
-  photoFile: File | null;
-  onPhotoFileChange: (file: File | null) => void;
-  existingPhotoUrl?: string | null;
+  form: UseFormReturn<PrintQueueFormInput>;
   categoryOptions: PrintCategory[];
   filamentOptions: FilamentOption[];
   printerOptions: { id: number; name: string }[];
@@ -178,78 +127,23 @@ export function PrintFormFields({
 
   return (
     <FieldGroup>
-      <div className="grid grid-cols-[2fr_1fr] gap-4">
-        <Field data-invalid={!!form.formState.errors.name}>
-          <FieldLabel htmlFor="print-name">
-            <FieldIcon icon={TypeIcon} color="chart-1" />
-            Nome
-          </FieldLabel>
-          <FieldContent>
-            <Input
-              id="print-name"
-              placeholder="Ex: Suporte de celular"
-              {...form.register("name")}
-            />
-            <FieldError errors={[form.formState.errors.name]} />
-          </FieldContent>
-        </Field>
-
-        <Field data-invalid={!!form.formState.errors.result}>
-          <FieldLabel htmlFor="print-result">
-            <FieldIcon icon={ThumbsUpIcon} color="chart-3" />
-            Resultado
-          </FieldLabel>
-          <FieldContent>
-            <Select
-              items={printResultOptions.map((option) => ({
-                value: option,
-                label: printResultLabels[option],
-              }))}
-              value={form.watch("result") ?? ""}
-              onValueChange={(value) =>
-                form.setValue("result", value as PrintFormInput["result"])
-              }
-            >
-              <SelectTrigger id="print-result" className="w-full">
-                <SelectValue placeholder="Selecione" />
-              </SelectTrigger>
-              <SelectContent>
-                {printResultOptions.map((option) => (
-                  <SelectItem key={option} value={option}>
-                    <span className="flex items-center gap-2">
-                      <span
-                        className={`size-2.5 shrink-0 rounded-full ${printResultDotColors[option]}`}
-                      />
-                      {printResultLabels[option]}
-                    </span>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FieldError errors={[form.formState.errors.result]} />
-          </FieldContent>
-        </Field>
-      </div>
-
-      <DatePickerField
-        id="print-date"
-        label="Data da impressão"
-        value={form.watch("printDate") ?? ""}
-        onChange={(value) => form.setValue("printDate", value)}
-        errors={[form.formState.errors.printDate]}
-        action={
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => form.setValue("printDate", toISODate(new Date()))}
-          >
-            Hoje
-          </Button>
-        }
-      />
+      <Field data-invalid={!!form.formState.errors.name}>
+        <FieldLabel htmlFor="print-queue-name">
+          <FieldIcon icon={TypeIcon} color="chart-1" />
+          Nome
+        </FieldLabel>
+        <FieldContent>
+          <Input
+            id="print-queue-name"
+            placeholder="Ex: Suporte de celular"
+            {...form.register("name")}
+          />
+          <FieldError errors={[form.formState.errors.name]} />
+        </FieldContent>
+      </Field>
 
       <Field data-invalid={!!form.formState.errors.categoryId}>
-        <FieldLabel htmlFor="print-category">
+        <FieldLabel htmlFor="print-queue-category">
           <FieldIcon icon={TagIcon} color="chart-2" />
           Categoria
         </FieldLabel>
@@ -264,7 +158,7 @@ export function PrintFormFields({
             }}
           >
             <ComboboxInputGroup>
-              <ComboboxInput id="print-category" placeholder="Pesquisar categoria..." />
+              <ComboboxInput id="print-queue-category" placeholder="Pesquisar categoria..." />
               <ComboboxClear aria-label="Limpar seleção" />
               <ComboboxTrigger aria-label="Abrir lista" />
             </ComboboxInputGroup>
@@ -302,32 +196,15 @@ export function PrintFormFields({
         </FieldContent>
       </Field>
 
-      <div className="grid grid-cols-3 gap-4">
-        <Field data-invalid={!!form.formState.errors.saleValueActual}>
-          <FieldLabel htmlFor="print-sale-value-actual">
-            <FieldIcon icon={CoinsIcon} color="chart-4" />
-            Preço real de venda
-          </FieldLabel>
-          <FieldContent>
-            <Input
-              id="print-sale-value-actual"
-              type="number"
-              step="any"
-              placeholder="Ex: 45.00"
-              {...form.register("saleValueActual", { valueAsNumber: true })}
-            />
-            <FieldError errors={[form.formState.errors.saleValueActual]} />
-          </FieldContent>
-        </Field>
-
+      <div className="grid grid-cols-2 gap-4">
         <Field data-invalid={!!form.formState.errors.profitPercent}>
-          <FieldLabel htmlFor="print-profit-percent">
+          <FieldLabel htmlFor="print-queue-profit-percent">
             <FieldIcon icon={PercentIcon} color="chart-4" />
             Lucro (%)
           </FieldLabel>
           <FieldContent>
             <Input
-              id="print-profit-percent"
+              id="print-queue-profit-percent"
               type="number"
               step="any"
               placeholder="100"
@@ -338,7 +215,7 @@ export function PrintFormFields({
         </Field>
 
         <Field data-invalid={!!form.formState.errors.printerId}>
-          <FieldLabel htmlFor="print-printer">
+          <FieldLabel htmlFor="print-queue-printer">
             <FieldIcon icon={PrinterIcon} color="chart-2" />
             Impressora
           </FieldLabel>
@@ -351,7 +228,7 @@ export function PrintFormFields({
               value={form.watch("printerId") ?? ""}
               onValueChange={(value) => form.setValue("printerId", value ?? "")}
             >
-              <SelectTrigger id="print-printer" className="w-full">
+              <SelectTrigger id="print-queue-printer" className="w-full">
                 <SelectValue placeholder="Selecione a impressora" />
               </SelectTrigger>
               <SelectContent>
@@ -369,18 +246,17 @@ export function PrintFormFields({
 
       <Field
         data-invalid={
-          !!form.formState.errors.durationHours ||
-          !!form.formState.errors.durationMinutes
+          !!form.formState.errors.durationHours || !!form.formState.errors.durationMinutes
         }
       >
-        <FieldLabel htmlFor="print-duration-hours">
+        <FieldLabel htmlFor="print-queue-duration-hours">
           <FieldIcon icon={ClockIcon} color="chart-3" />
           Tempo de impressão
         </FieldLabel>
         <FieldContent>
           <div className="flex items-center gap-2">
             <Input
-              id="print-duration-hours"
+              id="print-queue-duration-hours"
               type="number"
               step="1"
               min="0"
@@ -390,7 +266,7 @@ export function PrintFormFields({
             />
             <span className="text-sm text-muted-foreground">h</span>
             <Input
-              id="print-duration-minutes"
+              id="print-queue-duration-minutes"
               type="number"
               step="1"
               min="0"
@@ -402,10 +278,7 @@ export function PrintFormFields({
             <span className="text-sm text-muted-foreground">min</span>
           </div>
           <FieldError
-            errors={[
-              form.formState.errors.durationHours,
-              form.formState.errors.durationMinutes,
-            ]}
+            errors={[form.formState.errors.durationHours, form.formState.errors.durationMinutes]}
           />
         </FieldContent>
       </Field>
@@ -471,12 +344,7 @@ export function PrintFormFields({
                     valueAsNumber: true,
                   })}
                 />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  onClick={() => remove(index)}
-                >
+                <Button type="button" variant="ghost" size="icon-sm" onClick={() => remove(index)}>
                   <Trash2Icon />
                 </Button>
               </div>
@@ -568,13 +436,13 @@ export function PrintFormFields({
       </Field>
 
       <Field data-invalid={!!form.formState.errors.printLink}>
-        <FieldLabel htmlFor="print-link">
+        <FieldLabel htmlFor="print-queue-link">
           <FieldIcon icon={LinkIcon} color="chart-2" />
           Link da impressão
         </FieldLabel>
         <FieldContent>
           <Input
-            id="print-link"
+            id="print-queue-link"
             type="url"
             placeholder="Ex: https://www.thingiverse.com/thing/..."
             {...form.register("printLink")}
@@ -584,31 +452,17 @@ export function PrintFormFields({
       </Field>
 
       <Field data-invalid={!!form.formState.errors.notes}>
-        <FieldLabel htmlFor="print-notes">
+        <FieldLabel htmlFor="print-queue-notes">
           <FieldIcon icon={NotebookTextIcon} color="chart-3" />
           Notas
         </FieldLabel>
         <FieldContent>
           <Textarea
-            id="print-notes"
+            id="print-queue-notes"
             placeholder="Qualquer observação sobre a impressão..."
             {...form.register("notes")}
           />
           <FieldError errors={[form.formState.errors.notes]} />
-        </FieldContent>
-      </Field>
-
-      <Field>
-        <FieldLabel>
-          <FieldIcon icon={ImageIcon} color="chart-5" />
-          Foto
-        </FieldLabel>
-        <FieldContent>
-          <PrintPhotoPicker
-            file={photoFile}
-            onFileChange={onPhotoFileChange}
-            existingPhotoUrl={existingPhotoUrl}
-          />
         </FieldContent>
       </Field>
     </FieldGroup>

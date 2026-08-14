@@ -10,6 +10,7 @@ import { ExtraItemsRoute } from '@routes/extra-items.route';
 import { FilamentsRoute } from '@routes/filaments.route';
 import { JournalRoute } from '@routes/journal.route';
 import { PrintersRoute } from '@routes/printers.route';
+import { PrintQueueRoute } from '@routes/print-queue.route';
 import { PrintsRoute } from '@routes/prints.route';
 import { UsersRoute } from '@routes/users.route';
 
@@ -27,6 +28,7 @@ const routes = [
   container.resolve(JournalRoute),
   container.resolve(PrintsRoute),
   container.resolve(ExtraItemsRoute),
+  container.resolve(PrintQueueRoute),
 ];
 
 // API prefix는 app.ts에서 기본값 세팅, 필요하면 인자로 전달

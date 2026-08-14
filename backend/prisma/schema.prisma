@@ -24,6 +24,7 @@ model User {
   printCategories PrintCategory[]
   prints          Print[]
   extraItems      ExtraItem[]
+  printQueueItems PrintQueueItem[]
 
   @@map("users")
 }
@@ -45,6 +46,7 @@ model Printer {
   user                   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   prints                 Print[]
   calibrations           Calibration[]
+  printQueueItems        PrintQueueItem[]
 
   @@map("printers")
 }
@@ -91,10 +93,11 @@ model Filament {
   createdAt        DateTime       @default(now()) @map("created_at")
   userId           String         @map("user_id")
 
-  user           User            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  calibrations   Calibration[]
-  journalEntries JournalEntry[]
-  printFilaments PrintFilament[]
+  user                User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  calibrations        Calibration[]
+  journalEntries      JournalEntry[]
+  printFilaments      PrintFilament[]
+  printQueueFilaments PrintQueueFilament[]
 
   @@map("filaments")
 }
@@ -176,8 +179,9 @@ model PrintCategory {
   createdAt DateTime @default(now()) @map("created_at")
   userId    String   @map("user_id")
 
-  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  prints Print[]
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prints          Print[]
+  printQueueItems PrintQueueItem[]
 
   @@unique([name, userId])
   @@map("print_categories")
@@ -234,8 +238,9 @@ model ExtraItem {
   createdAt DateTime @default(now()) @map("created_at")
   userId    String   @map("user_id")
 
-  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
-  printExtraItems PrintExtraItem[]
+  user                User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  printExtraItems     PrintExtraItem[]
+  printQueueExtraItems PrintQueueExtraItem[]
 
   @@map("extra_items")
 }
@@ -250,4 +255,53 @@ model PrintExtraItem {
   position    Int
 
   @@map("print_extra_items")
+}
+
+model PrintQueueItem {
+  id                 Int            @id @default(autoincrement())
+  name               String
+  durationMinutes    Int?           @map("duration_minutes")
+  categoryId         Int?           @map("category_id")
+  category           PrintCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  printerId          Int?           @map("printer_id")
+  printer            Printer?       @relation(fields: [printerId], references: [id], onDelete: SetNull)
+  printLink          String?        @map("print_link")
+  notes              String?
+  profitPercent      Float?         @map("profit_percent")
+  filamentCost       Float?         @map("filament_cost")
+  printCost          Float?         @map("print_cost")
+  saleValue          Float?         @map("sale_value")
+  saleValueWorstCase Float?         @map("sale_value_worst_case")
+  createdAt          DateTime       @default(now()) @map("created_at")
+  userId             String         @map("user_id")
+
+  user       User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filaments  PrintQueueFilament[]
+  extraItems PrintQueueExtraItem[]
+
+  @@map("print_queue_items")
+}
+
+model PrintQueueFilament {
+  id          Int            @id @default(autoincrement())
+  queueItemId Int            @map("queue_item_id")
+  queueItem   PrintQueueItem @relation(fields: [queueItemId], references: [id], onDelete: Cascade)
+  filamentId  Int?           @map("filament_id")
+  filament    Filament?      @relation(fields: [filamentId], references: [id], onDelete: SetNull)
+  grams       Float?
+  position    Int
+
+  @@map("print_queue_filaments")
+}
+
+model PrintQueueExtraItem {
+  id          Int            @id @default(autoincrement())
+  queueItemId Int            @map("queue_item_id")
+  queueItem   PrintQueueItem @relation(fields: [queueItemId], references: [id], onDelete: Cascade)
+  extraItemId Int?           @map("extra_item_id")
+  extraItem   ExtraItem?     @relation(fields: [extraItemId], references: [id], onDelete: SetNull)
+  quantity    Float?
+  position    Int
+
+  @@map("print_queue_extra_items")
 }

@@ -10,6 +10,7 @@ import {
   Images,
   LayoutDashboard,
   Layers,
+  ListOrdered,
   NotebookText,
   Package,
   Printer,
@@ -48,6 +49,7 @@ const NAV_GROUPS: NavGroup[] = [
     icon: Images,
     items: [
       { title: "Impressões", url: "/prints", icon: Images },
+      { title: "Fila de Impressão", url: "/print-queue", icon: ListOrdered },
       { title: "Categorias", url: "/print-categories", icon: Tags },
       { title: "Diário", url: "/journal", icon: NotebookText },
       { title: "Itens Extras", url: "/extra-items", icon: ShoppingBag },

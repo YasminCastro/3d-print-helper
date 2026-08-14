@@ -111,7 +111,6 @@ function toFormValues(print: PrintWithDetails): PrintFormInput {
         : undefined,
     durationMinutes:
       print.duration_minutes != null ? print.duration_minutes % 60 : undefined,
-    status: (print.status as PrintFormInput["status"]) ?? undefined,
     result: (print.result as PrintFormInput["result"]) ?? undefined,
     categoryId: print.category_id != null ? String(print.category_id) : "",
     newCategoryName: "",
@@ -155,6 +154,7 @@ export function PrintDetailView({
   printerOptions,
   extraItemOptions,
   materialMaxPrices,
+  startInEditMode,
 }: {
   print: PrintWithDetails;
   categoryOptions: PrintCategory[];
@@ -162,9 +162,10 @@ export function PrintDetailView({
   printerOptions: { id: number; name: string }[];
   extraItemOptions: ExtraItem[];
   materialMaxPrices: Record<string, number>;
+  startInEditMode?: boolean;
 }) {
   const router = useRouter();
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(startInEditMode ?? false);
   const [isPending, startTransition] = useTransition();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoOpen, setPhotoOpen] = useState(false);
@@ -183,7 +184,6 @@ export function PrintDetailView({
         formData.append("durationHours", String(values.durationHours));
       if (values.durationMinutes !== undefined)
         formData.append("durationMinutes", String(values.durationMinutes));
-      if (values.status) formData.append("status", values.status);
       if (values.result) formData.append("result", values.result);
       if (values.categoryId) formData.append("categoryId", values.categoryId);
       if (values.newCategoryName)

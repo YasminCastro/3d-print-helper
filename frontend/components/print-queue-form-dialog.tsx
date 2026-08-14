@@ -7,9 +7,9 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { PlusIcon } from "lucide-react";
 import { toast } from "sonner";
 
-import { createPrintAction } from "@/lib/actions/prints";
-import { printFormSchema, type PrintFormInput } from "@/lib/schemas/print";
-import type { PrintCategory } from "@/lib/types/print";
+import { createPrintQueueItemAction } from "@/lib/actions/print-queue";
+import { printQueueFormSchema, type PrintQueueFormInput } from "@/lib/schemas/print-queue";
+import type { PrintCategory } from "@/lib/types/print-queue";
 import { getErrorMessage } from "@/lib/utils";
 import type { FilamentOption } from "@/lib/types/filament";
 import type { ExtraItem } from "@/lib/types/extra-item";
@@ -23,18 +23,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PrintFormFields } from "@/components/print-form-fields";
+import { PrintQueueFormFields } from "@/components/print-queue-form-fields";
 
 function buildDefaultValues(
   lastPrinterId?: number | null,
   lastProfitPercent?: number | null
-): PrintFormInput {
+): PrintQueueFormInput {
   return {
     name: "",
-    printDate: "",
     durationHours: undefined,
     durationMinutes: undefined,
-    result: undefined,
     categoryId: "",
     newCategoryName: "",
     printerId: lastPrinterId ? String(lastPrinterId) : "",
@@ -43,11 +41,10 @@ function buildDefaultValues(
     printLink: "",
     notes: "",
     profitPercent: lastProfitPercent ?? 100,
-    saleValueActual: undefined,
   };
 }
 
-export function PrintFormDialog({
+export function PrintQueueFormDialog({
   categoryOptions,
   filamentOptions,
   printerOptions,
@@ -66,27 +63,23 @@ export function PrintFormDialog({
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-  const [photoFile, setPhotoFile] = useState<File | null>(null);
   const defaultValues = buildDefaultValues(lastPrinterId, lastProfitPercent);
 
-  const form = useForm<PrintFormInput>({
-    resolver: zodResolver(printFormSchema),
+  const form = useForm<PrintQueueFormInput>({
+    resolver: zodResolver(printQueueFormSchema),
     defaultValues,
   });
 
-  function onSubmit(values: PrintFormInput) {
+  function onSubmit(values: PrintQueueFormInput) {
     startTransition(async () => {
       const formData = new FormData();
       formData.append("name", values.name);
-      if (values.printDate) formData.append("printDate", values.printDate);
       if (values.durationHours !== undefined)
         formData.append("durationHours", String(values.durationHours));
       if (values.durationMinutes !== undefined)
         formData.append("durationMinutes", String(values.durationMinutes));
-      if (values.result) formData.append("result", values.result);
       if (values.categoryId) formData.append("categoryId", values.categoryId);
-      if (values.newCategoryName)
-        formData.append("newCategoryName", values.newCategoryName);
+      if (values.newCategoryName) formData.append("newCategoryName", values.newCategoryName);
       if (values.printerId) formData.append("printerId", values.printerId);
       formData.append("filaments", JSON.stringify(values.filaments ?? []));
       formData.append("extraItems", JSON.stringify(values.extraItems ?? []));
@@ -94,19 +87,15 @@ export function PrintFormDialog({
       if (values.notes) formData.append("notes", values.notes);
       if (values.profitPercent !== undefined)
         formData.append("profitPercent", String(values.profitPercent));
-      if (values.saleValueActual !== undefined)
-        formData.append("saleValueActual", String(values.saleValueActual));
-      if (photoFile) formData.append("photo", photoFile);
 
       try {
-        await createPrintAction(formData);
+        await createPrintQueueItemAction(formData);
       } catch (error) {
-        toast.error(getErrorMessage(error, "Não foi possível salvar a impressão"));
+        toast.error(getErrorMessage(error, "Não foi possível salvar o item da fila"));
         return;
       }
 
       form.reset(defaultValues);
-      setPhotoFile(null);
       setOpen(false);
     });
   }
@@ -116,29 +105,24 @@ export function PrintFormDialog({
       open={open}
       onOpenChange={(nextOpen) => {
         setOpen(nextOpen);
-        if (!nextOpen) {
-          form.reset(defaultValues);
-          setPhotoFile(null);
-        }
+        if (!nextOpen) form.reset(defaultValues);
       }}
     >
       <DialogTrigger render={trigger ? <button type="button" className="contents" /> : <Button />}>
         {trigger ?? (
           <>
             <PlusIcon />
-            Nova Impressão
+            Novo Item
           </>
         )}
       </DialogTrigger>
       <DialogContent className="sm:max-w-2xl max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Nova Impressão</DialogTitle>
+          <DialogTitle>Novo Item da Fila</DialogTitle>
         </DialogHeader>
         <form onSubmit={form.handleSubmit(onSubmit)}>
-          <PrintFormFields
+          <PrintQueueFormFields
             form={form}
-            photoFile={photoFile}
-            onPhotoFileChange={setPhotoFile}
             categoryOptions={categoryOptions}
             filamentOptions={filamentOptions}
             printerOptions={printerOptions}
